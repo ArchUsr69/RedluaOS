@@ -1,46 +1,61 @@
-# This Makefile is a disaster. It won't work, but i'll fix it sometimes else,
-# i'm just not in the mood now
+# This Bitch still won't work. I Overcomplicated this shit. Just look at it. It's an ugly piece of shit.
+# i can't believe the hardest part of this project is to be able to compile it automatically.
+# Guess i'll do it by hand
 
-CC = arm-none-eabi-gcc
-AS = arm-none-eabi-as
-LD = arm-none-eabi-ld
-OBCOPY = arm-none-eabi-objcopy
+# Toolchain in use
+C_COMPILER = arm-none-eabi-gcc
+ASSEMBLER = arm-none-eabi-as
+LINKER = arm-none-eabi-ld
+OBJCOPY = arm-none-eabi-objcopy
 
-CFLAGS = -ffreestanding -nostdlib -march=armv6
-LDFLAGS = -T linker.ld
+# Toolchain Flags
+C_FLAGS = -ffreestanding -nostdlib -march=armv6
+LD_FLAGS = -T linker.ld
 
-CSOURCE = Hardware/BCM2835/GPIO.c Kernel/kernel.c
-ASSOURCE = Boot/boot.s
-OBJS = $(patsubst %.c,$(BUILD_DIR)/%.o,$(CSOURCE)) \
-	   $(patsubst %.s,$(BUILD_DIR)/%.o,$(ASSOURCE))
+SOURCE_DIR = Kernel \
+			 Hardware \
+			 Boot \
+			 Libraries
 
+# Finds all the C / Assembly files
+C_SOURCE = $(wildcard $(SOURCE_DIR)/*.c)
+C_ASM = $(patsubst $(SOURCE_DIR)/%.c,$(BUILD_DIR)/%.s,$(C_SOURCE))
+C_OBJECTS = $(patsubst $(BUILD_DIR)/%.s,$(BUILD_DIR)/%.o,$(C_ASM))
+
+ASM_SOURCE = $(wildcard $(SOURCE_DIR)/*.s)
+ASM_OBJECTS = $(patsubst $(SOURCE_DIR)/%.s,$(BUILD_DIR)/%.o,$(ASM_SOURCE))
+
+OBJECTS = $(C_OBJECTS) $(ASM_OBJECTS)
 ELF = kernel.elf
 IMAGE = kernel.img
+
 BUILD_DIR = Build
+
+#------Default------#
 
 all: $(IMAGE)
 
 $(BUILD_DIR):
 	mkdir -p $(BUILD_DIR)
 
-# Assembly
-$(BUILD_DIR)/%.o: $(ASSOURCE)/%.s | $(BUILD_DIR)
-	$(AS) $< -o $@
-
 # Turning C to Assembly
-$(BUILD_DIR)/%.s: $(CSOURCE)/%.c
-	$(CC) $(CFLAGS) -S $< -o $@
+$(BUILD_DIR)/%.s: $(SOURCE_DIR)/%.c | $(BUILD_DIR)
+	$(C_COMPILER) $(C_FLAGS) -S $< -o $@
 
-# Assembling
+# Assembling C-generated Assembly
 $(BUILD_DIR)/%.o: $(BUILD_DIR)/%.s | $(BUILD_DIR)
-	$(AS) $< -o $@
+	$(ASSEMBLER) $< -o $@
 
+# Assembling Written Assembly
+$(BUILD_DIR)/%.o: $(SOURCE_DIR)/%.s | $(BUILD_DIR)
+	$(ASSEMBLER) $< -o $@
+	
 # Linking
-$(ELF): $(OBJS)
-	$(LD) $(LDFLAGS) -o $@ $(OBJS)
+$(ELF): $(OBJECTS)
+	$(LD) $(LDFLAGS) $(OBJECTS) -o $@
 
 $(IMAGE): $(ELF)
 	$(OBJCOPY) -O binary $< $@
 
 clean:
-	rm -r $(BUILD_DIR) *.img *.elf
+	rm -r $(BUILD_DIR) kernel.img kernel.elf

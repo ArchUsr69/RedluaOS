@@ -2,7 +2,8 @@
 #include <stddef.h>
 #include "lowLevel.h"
 
-//----------Bitwise-helpers---------//
+//==========Bitwise-helpers==========//
+
 // sets a bit to 1 at a specified offset (1 Byte Number)
 void bit8_setOn(volatile uint8_t *target, uint8_t offset) {
   *target |= (1 << offset);

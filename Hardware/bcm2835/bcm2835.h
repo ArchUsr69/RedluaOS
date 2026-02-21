@@ -6,7 +6,7 @@
 
 // A Library which stores every specific aspect of the BCM2835 Hardware in one place
 
-//-------------GPIO-------------//
+//==========GPIO==========//
 
 #define GPIO_BASE 0x20200000
 
@@ -36,7 +36,7 @@
 void gpio_setFunction(uint8_t pin, uint8_t function);
 void gpio_pinOutput(uint8_t pin);
 
-//-----------Mailbox--------------//
+//==========Mailbox==========//
 
 #define MAILBOX_BASE 0x2000B88
 

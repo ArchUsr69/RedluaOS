@@ -4,7 +4,7 @@
 #ifndef LOWLEVEL_H
 #define LOWLEVEL_H
 
-//----------Bitwise-helpers---------//
+//==========Bitwise-helpers==========//
 
 void bit8_setOn(volatile uint8_t *target, uint8_t offset);
 void bit16_setOn(volatile uint16_t *target, uint16_t offset);

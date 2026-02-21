@@ -6,7 +6,7 @@ _start:
     /* Set up stack pointer */
     mov sp, #0x8000
 
-    /* Call main */
+    /* Calls the actual Kernel */
     bl kernel_main
 
 hang:

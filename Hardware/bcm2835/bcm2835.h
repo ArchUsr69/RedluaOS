@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include <stdbool.h>
 #include "../../Libraries/lowLevel.h"
 
 #ifndef BCM2835_H
@@ -38,11 +39,35 @@ void gpio_pinOutput(uint8_t pin);
 
 //==========Mailbox==========//
 
-#define MAILBOX_BASE 0x2000B88
+#define MAILBOX_BASE 0x2000B880
 
 // Mailbox Registers
-#define MAILBOX_READ ((volatile unsigned int *)(MAILBOX_BASE + 0x00))
-#define MAILBOX_STATUS ((volatile unsigned int *)(MAILBOX_BASE + 0x18))
-#define MAILBOX_WRITE ((volatile unsigned int *)(MAILBOX_BASE + 0x20))
+#define MAILBOX_READ ((volatile uint32_t *)(MAILBOX_BASE + 0x00))
+#define MAILBOX_PEEK ((volatile uint32_t *)(MAILBOX_BASE + 0x04))
+#define MAILBOX_SENDER ((volatile uint32_t *)(MAILBOX_BASE + 0x08))
+#define MAILBOX_STATUS ((volatile uint32_t *)(MAILBOX_BASE + 0x18))
+#define MAILBOX_WRITE ((volatile uint32_t *)(MAILBOX_BASE + 0x20))
+#define MAILBOX_CONFIG ((volatile uint32_t *)(MAILBOX_BASE + 0x1C))
+
+// Mailbox Status
+#define MAILBOX_FULL 0x80000000
+#define MAILBOX_EMPTY 0x40000000
+
+struct mailboxFramebuffer {
+    uint32_t physical_width;
+    uint32_t physical_heigth;
+    uint32_t virtual_width;
+    uint32_t virtual_heigth;
+    uint32_t pitch;
+    uint32_t depth;
+    uint32_t x_offset;
+    uint32_t y_offset;
+    uint32_t address;
+    uint32_t size;
+} __attribute__((aligned(16)));
+
+uint32_t physicalToBus(uint32_t address, bool l2Cache_enabled);
+uint32_t busToPhysical(uint32_t address, bool l2Cache_enabled);
+void mailboxWrite(uint8_t channel, uint32_t data);
 
 #endif

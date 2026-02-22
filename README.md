@@ -1,2 +1,2 @@
 # RedluaOS
-Welcome to the most complicated "Turn on an LED" Programm
+A costum made Kernel for the Raspberry pi 1 B+

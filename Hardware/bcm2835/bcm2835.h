@@ -33,9 +33,12 @@
 #define GPIOCLEAR0 ((volatile uint32_t *)(GPIO_BASE + 0x28))
 #define GPIOCLEAR1 ((volatile uint32_t *)(GPIO_BASE + 0x2C))
 
+// ACT_LED gpio pin number
+#define ACT_LED 47
+
 // Functions
 void gpio_setFunction(uint8_t pin, uint8_t function);
-void gpio_pinOutput(uint8_t pin);
+void gpio_pinWrite(uint8_t pin, bool level);
 
 //==========Mailbox==========//
 
@@ -69,5 +72,6 @@ struct mailboxFramebuffer {
 uint32_t physicalToBus(uint32_t address, bool l2Cache_enabled);
 uint32_t busToPhysical(uint32_t address, bool l2Cache_enabled);
 void mailboxWrite(uint8_t channel, uint32_t data);
+uint32_t mailboxRead(uint8_t channel);
 
 #endif

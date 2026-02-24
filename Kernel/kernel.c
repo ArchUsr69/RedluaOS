@@ -3,7 +3,8 @@
 #include "../Libraries/lowLevel.h"
 #include "../Hardware/bcm2835/bcm2835.h"
 
+// Test Code, does nothing meaningfull yet
 void kernel_main() {
-    gpio_setFunction(47, OUTPUT);
-    gpio_pinOutput(47);
+    gpio_setFunction(ACT_LED, OUTPUT);
+    gpio_pinWrite(ACT_LED, HIGH);
 }

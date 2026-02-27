@@ -12,19 +12,16 @@
 exception is for property tags. In this case, VideoCore suddenly speaks in physical addresses only;
 */
 
-inline uint32_t physicalToBus(uint32_t address, bool l2Cache_enabled) {
-    if (l2Cache_enabled) {
-        return address + 0xC0000000;
-    } else {
-        return address + 0x40000000;
-    }
+inline uint32_t *physicalToBus(uint32_t *address, bool l2Cache_enabled) {
+    uintptr_t translatedAddress = (uintptr_t)address;
+    translatedAddress += (l2Cache_enabled ? 0xC0000000 : 0x40000000);
+    return (uint32_t*)translatedAddress;
 }
-inline uint32_t busToPhysical(uint32_t address, bool l2Cache_enabled) {
-    if (l2Cache_enabled) {
-        return address - 0xC0000000;
-    } else {
-        return address - 0x40000000;
-    }
+
+inline uint32_t *busToPhysical(uint32_t *address, bool l2Cache_enabled) {
+    uintptr_t translatedAddress = (uintptr_t)address;
+    translatedAddress -= (l2Cache_enabled ? 0xC0000000 : 0x40000000);
+    return (uint32_t*)translatedAddress;
 }
 
 //------------------------------//
@@ -69,3 +66,64 @@ uint32_t mailboxRead(uint8_t channel) {
 }
 
 //------------------------------//
+
+/*
+-> initializes a framebuffer;
+-> it prepares the message buffer so that VC can respond to the tags this function sent;
+-> VC allocates the framebuffer for you, and you can look at the data inside the message buffer
+so you can use the framebuffer;
+*/
+
+void mailboxFramebufferInit() {
+    struct mailboxTag allocate_buffer {
+        .tag_id = FRAMEBUFFER_ALLOCATE;
+        .size = 8;
+        .request = 0;
+        .data = {16, 0};
+    }
+
+    struct mailboxTag set_physical_size {
+        .tag_id = FRAMEBUFFER_SET_PHYSICAL_SIZE;
+        .size = 8;
+        .request = 0;
+        .data = {1920, 1080};
+    }
+
+    struct mailboxTag set_virtual_size {
+        .tag_id = FRAMEBUFFER_SET_VIRTUAL_SIZE;
+        .size = 8;
+        .request = 0;
+        .data = {1920, 1080};
+    }
+
+    struct mailboxTag set_depth {
+        .tag_id = SET_DEPTH;
+        .size = 4;
+        .request = 0;
+        .data = {8};
+    }
+
+    struct mailboxTag get_pitch {
+        .tag_id = GET_PITCH;
+        .size = 4;
+        .request = 0;
+        .data = {};
+    }
+
+    struct mailboxTag set_virtual_offset {
+        .tag_id = SET_VIRTUAL_OFFSET;
+        .size = 8;
+        .request = 0;
+        .data = {0, 0};
+    }
+
+    struct mailboxBuffer Buffer {
+        .size = 8;
+        .request = 0;
+        .tags[0] = {16, 0};
+    }
+
+    mailboxWrite(8, physicalToBus(&Buffer, L2_cache_status));
+}
+
+//----------------------------//

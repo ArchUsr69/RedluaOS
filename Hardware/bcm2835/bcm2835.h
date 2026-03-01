@@ -11,7 +11,7 @@
 
 #define GPIO_BASE 0x20200000
 
-// GPIO Pin Function selector
+// GPIO Pin Function selector registers
 #define GPIOFSELECT_BASE ((volatile uint32_t *)(GPIO_BASE))
 #define GPIOFSELECT_OFFSET 0x04
 
@@ -33,14 +33,17 @@
 #define GPIOCLEAR0 ((volatile uint32_t *)(GPIO_BASE + 0x28))
 #define GPIOCLEAR1 ((volatile uint32_t *)(GPIO_BASE + 0x2C))
 
-// ACT_LED gpio pin number
+// ACT_LED and PWR_LED gpio pin number
 #define ACT_LED 47
+#define PWR_LED 35
 
 // Functions
 void gpio_setFunction(uint8_t pin, uint8_t function);
 void gpio_pinWrite(uint8_t pin, bool level);
 
 //==========Mailbox==========//
+
+extern bool L2_CacheStatus;
 
 #define MAILBOX_BASE 0x2000B880
 
@@ -56,7 +59,9 @@ void gpio_pinWrite(uint8_t pin, bool level);
 #define MAILBOX_FULL 0x80000000
 #define MAILBOX_EMPTY 0x40000000
 
-// Mailbox tags
+//--------Mailbox tags--------//
+
+// Framebuffer tags
 #define FRAMEBUFFER_ALLOCATE 0x00040001
 #define FRAMEBUFFER_RELEASE 0x00048001
 #define SCREEN_BLANK 0x00040002
@@ -77,22 +82,16 @@ void gpio_pinWrite(uint8_t pin, bool level);
 #define TEST_PIXELORDER 0x00044006
 #define SET_PIXELORDER 0x00048006
 
-struct mailboxTag {
-    uint32_t tag_id;
-    uint32_t size;
-    uint32_t requested_length;
-    uint32_t data[];
-}
-
+// Buffer structure
 struct mailboxBuffer {
-    uint32_t size = 0;
-    uint32_t request = 0;
-    uint32_t *tags[];
-}
+    uint32_t size;
+    uint32_t request;
+    uint32_t tags[64];
+};
 
-uint32_t physicalToBus(uint32_t *address, bool l2Cache_enabled);
-uint32_t busToPhysical(uint32_t *address, bool l2Cache_enabled);
-void mailboxWrite(uint8_t channel, uint32_t data);
-uint32_t mailboxRead(uint8_t channel);
+// Functions
+static void mailboxWrite(struct mailboxBuffer *pointer);
+static uint32_t mailboxRead();
+uint32_t mailboxFramebufferInit();
 
 #endif

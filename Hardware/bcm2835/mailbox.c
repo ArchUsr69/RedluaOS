@@ -1,8 +1,8 @@
 #include <stdint.h>
 #include <stdbool.h>
-#include "bcm2835.h"
-#include "lowLevel.h"
-#include "framebuffer.h"
+#include <bcm2835.h>
+#include <lowLevel.h>
+#include <framebuffer.h>
 
 /*
 -> standard mailbox buffer structure; 
@@ -10,10 +10,10 @@
 -> request must always be 0 initialized; VC will overwrite with 0x80000000 for success, 0x80000001 for failure;
 */
 
-struct mailboxBuffer __attribute__((aligned(16))) {
+struct mailboxBuffer {
     uint32_t size;
     uint32_t request;
-    uint32_t tags[];
+    uint32_t tags[64];
 };
 
 // ---------------------------- //
@@ -63,7 +63,7 @@ static uint32_t mailboxRead() {
 */
 
 void mailboxFramebufferInit(struct framebuffer_metadata *pointer) {
-    struct mailboxBuffer Buffer;
+    struct mailboxBuffer Buffer __attribute__((aligned(16)));
 
     Buffer.request = 0;
 

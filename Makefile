@@ -11,10 +11,10 @@ BUILD_DIR = Build
 # ===== Find sources (recursive) =====
 C_SOURCE  := $(shell find $(SOURCE_DIRS) -name '*.c')
 ASM_SOURCE := $(shell find $(SOURCE_DIRS) -name '*.s')
-HEADER_FILES := $(shell find $(SOURCE_DIRS) -name '*.h')
+HEADER_DIR := $(shell find . -type f -name '*.h' -exec dirname {} \; | sort -u | sed 's/^/-I/')
 
 # ===== Flags =====
-INCLUDE_FLAG := $(patsubst %, -I%,$(HEADER_FILES))
+INCLUDE_FLAG := $(patsubst %, %,$(HEADER_DIR))
 C_FLAGS = -ffreestanding -nostdlib -march=armv6 $(INCLUDE_FLAG)
 LD_FLAGS = -T linker.ld
 

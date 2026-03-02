@@ -1,10 +1,10 @@
 #include <stdint.h>
 #include <stdbool.h>
-#include "bcm2835.h"
-#include "gpio.h"
-#include "lowLevel.h"
+#include <bcm2835.h>
+#include <gpio.h>
+#include <lowLevel.h>
 
-static const uint8_t bcm2835_gpio_functions[8] {
+static const uint8_t bcm2835_gpio_functions[8] = {
     0b000, // Input
     0b001, // Output
     0b100, // Alternative 0

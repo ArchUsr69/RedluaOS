@@ -1,7 +1,8 @@
 #include <stdint.h>
 #include <stdbool.h>
-#include "lowLevel.h"
-#include "gpio.h"
+#include <framebuffer.h>
+#include <lowLevel.h>
+#include <gpio.h>
 
 #ifndef BCM2835_H
 #define BCM2835_H
@@ -70,6 +71,7 @@ enum mailboxTags {
     SET_PIXELORDER = 0x00048006
 };
 
+struct mailboxBuffer;
 static void mailboxWrite(struct mailboxBuffer *pointer);
 static uint32_t mailboxRead();
 void mailboxFramebufferInit(struct framebuffer_metadata *pointer);

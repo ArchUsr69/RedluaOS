@@ -1,6 +1,9 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#ifndef FRAMEBUFFER_H
+#define FRAMEBUFFER_H
+
 struct framebuffer_metadata {
     uint32_t *pointer;
     uint16_t virtual_height;
@@ -14,12 +17,14 @@ struct framebuffer_metadata {
 
 // Function table;
 struct framebuffer_table {
-    void (*framebufferInit)(struct framebuffer_metadata *pointer);
+    void (*framebuffInit)(struct framebuffer_metadata *pointer);
 };
 
 extern struct framebuffer_table *framebuffer;
 
 // Wrapper functions
-void framebufferInit(struct framebuffer_metadata *pointer) {
-    framebuffer->framebufferInit(pointer);
+static inline void framebufferInit(struct framebuffer_metadata *pointer) {
+    framebuffer->framebuffInit(pointer);
 }
+
+#endif

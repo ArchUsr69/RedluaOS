@@ -1,6 +1,9 @@
 #include <stdint.h>
 #include <stdbool.h>
 
+#ifndef GPIO_H
+#define GPIO_H
+
 enum gpio_functions {
     INPUT,
     OUTPUT,
@@ -12,19 +15,22 @@ enum gpio_functions {
     ALTERNATIVE5
 };
 
-// Funtion table
+// Function table
 struct gpio_table {
-    void (*setFunction)(uint8_t pin, enum gpio_functions function);
-    void (*pinWrite)(uint8_t pin, bool level);
+    void (*setFun)(uint8_t pin, enum gpio_functions function);
+    void (*pinWr)(uint8_t pin, bool level);
 };
 
 extern struct gpio_table *gpio;
 
 // Wrapper functions
-void gpio_setFunction(uint8_t pin, enum gpio_functions function) {
-    gpio->setFunction(pin, function);
+static inline void gpio_setFunction(uint8_t pin, enum gpio_functions function) {
+    gpio->setFun(pin, function);
 }
 
-void gpio_pinWrite(uint8_t pin, bool level) {
-    gpio->pinWrite(pin, level);
+static inline void gpio_pinWrite(uint8_t pin, bool level) {
+    gpio->pinWr(pin, level);
 }
+
+
+#endif

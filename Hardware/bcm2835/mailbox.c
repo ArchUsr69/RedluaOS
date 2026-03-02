@@ -1,7 +1,22 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "bcm2835.h"
-#include "../../Libraries/lowLevel.h"
+#include "lowLevel.h"
+#include "framebuffer.h"
+
+/*
+-> standard mailbox buffer structure; 
+-> size must be calculated;
+-> request must always be 0 initialized; VC will overwrite with 0x80000000 for success, 0x80000001 for failure;
+*/
+
+struct mailboxBuffer __attribute__((aligned(16))) {
+    uint32_t size;
+    uint32_t request;
+    uint32_t tags[];
+};
+
+// ---------------------------- //
 
 /*
 -> sends a pointer to the Buffer to the MAILBOX_WRITE register;
@@ -28,7 +43,6 @@ static void mailboxWrite(struct mailboxBuffer *pointer) {
 
 /*
 -> reads from the MAILBOX_READ register;
--> if the channels don't match, the function must repeat the process
 -> Function only returns only the upper 28 bits from the register downshifted, so the upper 4 bits from the returned data will always be empty
 */
 
@@ -45,16 +59,16 @@ static uint32_t mailboxRead() {
 
 /*
 -> initializes a framebuffer;
--> it prepares the message buffer so that VC can respond to the tags this function sent;
--> VC allocates the framebuffer for you; the function returns all the data you need to use the framebuffer;
+-> takes a framebuffer info struct pointer where it writes all the information about the framebuffer; 
 */
 
-uint32_t mailboxFramebufferInit() {
-    struct mailboxBuffer Buffer __attribute__((aligned(16)));
+void mailboxFramebufferInit(struct framebuffer_metadata *pointer) {
+    struct mailboxBuffer Buffer;
 
     Buffer.request = 0;
 
     //-------------------//
+
     Buffer.tags[0] = FRAMEBUFFER_ALLOCATE;
     Buffer.tags[1] = 8;
     Buffer.tags[2] = 0;
@@ -63,7 +77,7 @@ uint32_t mailboxFramebufferInit() {
 
     //-------------------//
 
-    Buffer.tags[5] = FRAMEBUFFER_SET_PHYSICAL_SIZE;
+    Buffer.tags[5] = SET_PHYSICAL_SIZE;
     Buffer.tags[6] = 8;
     Buffer.tags[7] = 0;
     Buffer.tags[8] = 1080;
@@ -71,7 +85,7 @@ uint32_t mailboxFramebufferInit() {
 
     //-------------------//
 
-    Buffer.tags[10] = FRAMEBUFFER_SET_VIRTUAL_SIZE;
+    Buffer.tags[10] = SET_VIRTUAL_SIZE;
     Buffer.tags[11] = 8;
     Buffer.tags[12] = 0;
     Buffer.tags[13] = 1080;
@@ -84,7 +98,7 @@ uint32_t mailboxFramebufferInit() {
     Buffer.tags[17] = 0;
     Buffer.tags[18] = 8;
 
-    ------------------//
+    //------------------//
 
     Buffer.tags[19] = GET_PITCH;
     Buffer.tags[20] = 4;
@@ -110,6 +124,6 @@ uint32_t mailboxFramebufferInit() {
     Buffer.size = (2 + 33) * 4;
 
     mailboxWrite(&Buffer);
-
-    return Buffer.request;
 }
+
+// ----------------------------- //

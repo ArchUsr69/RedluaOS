@@ -1,0 +1,25 @@
+#include <stdint.h>
+#include <stdbool.h>
+
+struct framebuffer_metadata {
+    uint32_t *pointer;
+    uint16_t virtual_height;
+    uint16_t virtual_width;
+    uint16_t physical_height;
+    uint16_t physical_width;
+    uint16_t virtual_offset;
+    uint8_t depth;
+    uint8_t pitch;
+};
+
+// Function table;
+struct framebuffer_table {
+    void (*framebufferInit)(struct framebuffer_metadata *pointer);
+};
+
+extern struct framebuffer_table *framebuffer;
+
+// Wrapper functions
+void framebufferInit(struct framebuffer_metadata *pointer) {
+    framebuffer->framebufferInit(pointer);
+}

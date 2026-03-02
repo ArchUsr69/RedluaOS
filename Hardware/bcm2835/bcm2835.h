@@ -1,29 +1,19 @@
 #include <stdint.h>
 #include <stdbool.h>
-#include "../../Libraries/lowLevel.h"
+#include "lowLevel.h"
+#include "gpio.h"
 
 #ifndef BCM2835_H
 #define BCM2835_H
 
-// A Library which stores every specific aspect of the BCM2835 Hardware in one place
+// All the BCM2835 Driver details in one header file;
 
 //==========GPIO==========//
 
 #define GPIO_BASE 0x20200000
 
-// GPIO Pin Function selector registers
+//GPIO Pin Function selector register base;
 #define GPIOFSELECT_BASE ((volatile uint32_t *)(GPIO_BASE))
-#define GPIOFSELECT_OFFSET 0x04
-
-// GPIO Functions
-#define INPUT 0b000
-#define OUTPUT 0b001
-#define FUNCTION_0 0b100
-#define FUNCTION_1 0b101
-#define FUNCTION_2 0b110
-#define FUNCTION_3 0b111
-#define FUNCTION_4 0b011
-#define FUNCTION_5 0b010
 
 // Output set Registers
 #define GPIOSET0 ((volatile uint32_t *)(GPIO_BASE + 0x1C))
@@ -38,12 +28,10 @@
 #define PWR_LED 35
 
 // Functions
-void gpio_setFunction(uint8_t pin, uint8_t function);
-void gpio_pinWrite(uint8_t pin, bool level);
+void bcm2835gpio_setFunction(uint8_t pin, enum gpio_functions);
+void bcm2835gpio_pinWrite(uint8_t pin, bool level);
 
 //==========Mailbox==========//
-
-extern bool L2_CacheStatus;
 
 #define MAILBOX_BASE 0x2000B880
 
@@ -59,39 +47,31 @@ extern bool L2_CacheStatus;
 #define MAILBOX_FULL 0x80000000
 #define MAILBOX_EMPTY 0x40000000
 
-//--------Mailbox tags--------//
-
-// Framebuffer tags
-#define FRAMEBUFFER_ALLOCATE 0x00040001
-#define FRAMEBUFFER_RELEASE 0x00048001
-#define SCREEN_BLANK 0x00040002
-#define FRAMEBUFFER_GET_PHYSICAL_SIZE 0x00040003
-#define FRAMEBUFFER_TEST_PHYSICAL_SIZE 0x00044003
-#define FRAMEBUFFER_SET_PHYSICAL_SIZE 0x00048003
-#define FRAMEBUFFER_GET_VIRTUAL_SIZE 0x00040004
-#define FRAMEBUFFER_TEST_VIRTUAL_SIZE 0x00044004
-#define FRAMEBUFFER_SET_VIRTUAL_SIZE 0x00048004
-#define GET_DEPTH 0x00040005
-#define TEST_DEPTH 0x00044005
-#define SET_DEPTH 0x00048005
-#define GET_PITCH 0x00040008
-#define GET_VIRTUAL_OFFSET 0x00040009
-#define TEST_VIRTUAL_OFFSET 0x00044009
-#define SET_VIRTUAL_OFFSET 0x00048009
-#define GET_PIXELORDER 0x00040006
-#define TEST_PIXELORDER 0x00044006
-#define SET_PIXELORDER 0x00048006
-
-// Buffer structure
-struct mailboxBuffer {
-    uint32_t size;
-    uint32_t request;
-    uint32_t tags[64];
+// Mailbox Tags
+enum mailboxTags {
+    FRAMEBUFFER_ALLOCATE = 0x00040001,
+    FRAMEBUFFER_RELEASE = 0x00048001,
+    SCREEN_BLANK = 0x00040002,
+    GET_PHYSICAL_SIZE = 0x00040003,
+    TEST_PHYSICAL_SIZE = 0x00044003,
+    SET_PHYSICAL_SIZE = 0x00048003,
+    GET_VIRTUAL_SIZE = 0x00040004,
+    TEST_VIRTUAL_SIZE = 0x00044004,
+    SET_VIRTUAL_SIZE = 0x00048004,
+    GET_DEPTH = 0x00040005,
+    TEST_DEPTH = 0x00044005,
+    SET_DEPTH = 0x00048005,
+    GET_PITCH = 0x00040008,
+    GET_VIRTUAL_OFFSET = 0x00040009,
+    TEST_VIRTUAL_OFFSET = 0x00044009,
+    SET_VIRTUAL_OFFSET = 0x00048009,
+    GET_PIXELORDER = 0x00040006,
+    TEST_PIXELORDER = 0x00044006,
+    SET_PIXELORDER = 0x00048006
 };
 
-// Functions
 static void mailboxWrite(struct mailboxBuffer *pointer);
 static uint32_t mailboxRead();
-uint32_t mailboxFramebufferInit();
+void mailboxFramebufferInit(struct framebuffer_metadata *pointer);
 
 #endif

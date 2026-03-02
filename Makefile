@@ -4,16 +4,19 @@ ASSEMBLER  = arm-none-eabi-as
 LINKER     = arm-none-eabi-ld
 OBJCOPY    = arm-none-eabi-objcopy
 
-# ===== Flags =====
-C_FLAGS = -ffreestanding -nostdlib -march=armv6
-LD_FLAGS = -T linker.ld
-
+# ===== Sources =====
 SOURCE_DIRS = Kernel Hardware Boot Libraries
 BUILD_DIR = Build
 
 # ===== Find sources (recursive) =====
 C_SOURCE  := $(shell find $(SOURCE_DIRS) -name '*.c')
 ASM_SOURCE := $(shell find $(SOURCE_DIRS) -name '*.s')
+HEADER_FILES := $(shell find $(SOURCE_DIRS) -name '*.h')
+
+# ===== Flags =====
+INCLUDE_FLAG := $(patsubst %, -I%,$(HEADER_FILES))
+C_FLAGS = -ffreestanding -nostdlib -march=armv6 $(INCLUDE_FLAG)
+LD_FLAGS = -T linker.ld
 
 # ===== Generated intermediate assembly from C =====
 C_ASM := $(patsubst %.c,$(BUILD_DIR)/%.s,$(C_SOURCE))
@@ -21,7 +24,6 @@ C_ASM := $(patsubst %.c,$(BUILD_DIR)/%.s,$(C_SOURCE))
 # ===== Object files =====
 C_OBJECTS  := $(patsubst %.c,$(BUILD_DIR)/%.o,$(C_SOURCE))
 ASM_OBJECTS := $(patsubst %.s,$(BUILD_DIR)/%.o,$(ASM_SOURCE))
-
 OBJECTS := $(C_OBJECTS) $(ASM_OBJECTS)
 
 ELF   = kernel.elf

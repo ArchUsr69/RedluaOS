@@ -21,6 +21,7 @@ struct gpio_table {
     void (*pinWrite)(uint8_t pin, bool level);
 };
 
+// pointer to global struct instance
 extern struct gpio_table *gpio;
 
 // Wrapper functions

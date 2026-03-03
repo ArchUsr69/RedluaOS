@@ -1,9 +1,10 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <bcm2835.h>
+#include <framebuffer.h>
 
 struct framebuffer_table mailbox_framebuffer = {
-    .framebuffInit = mailboxFramebufferInit
+    .framebufferInit = mailboxFramebufferInit
 };
 
 struct gpio_table bcm_gpio_table = {
@@ -13,9 +14,16 @@ struct gpio_table bcm_gpio_table = {
 
 struct gpio_table *gpio = &bcm_gpio_table;
 struct framebuffer_table *framebuffer = &mailbox_framebuffer;
+struct framebuffer_metadata framebuffer_metadata;
 
 // Still Test code;
 void kernel_main() {
-    gpio_setFunction(ACT_LED, OUTPUT);
-    gpio_pinWrite(ACT_LED, HIGH);
+    bool status = test();
+    if (status == 1) {
+        gpio_setFunction(PWR_LED, OUTPUT);
+        gpio_pinWrite(PWR_LED, LOW);
+    } else if (status == 2) {
+        gpio_setFunction(ACT_LED, OUTPUT);
+        gpio_pinWrite(ACT_LED, HIGH);
+    }
 }

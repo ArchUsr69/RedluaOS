@@ -22,7 +22,7 @@ static void mailboxWrite(struct mailboxBuffer *pointer) {
     uint32_t register_contents = 0;
     writeField32(&register_contents, (uint32_t)pointer, 4, 28);
     writeField32(&register_contents, MAILBOX_CHANNEL, 0, 4);
-    __asm__ volatile("dmb sy"); // memory barrier
+    flush_dcache(pointer, sizeof(pointer));
     *MAILBOX_WRITE = register_contents;
 }
 
@@ -42,6 +42,42 @@ static uint32_t mailboxRead() {
     return register_contents;
 }
 
+//--------------------------//
+
+/*
+-> functions that manage Cache;
+-> without those, the mailbox interface wouldn't even work, like, at all;
+-> don't try to understand much. It's magic. Even i don't understand this crap
+*/
+
+static inline void flush_dcache(void *address, uint8_t size) {
+    uintptr_t start = (uintptr_t)address & ~31;
+    uintptr_t end = (uintptr_t)address + size;
+
+    for (uintptr_t i = start; i < end; i += 32) {
+        asm volatile (
+            "mcr p15, 0, %0, c7, c14, 1\n"
+            :
+            : "r" (i)
+            : "memory"
+        );
+    }
+}
+
+static inline void invalidate_dcache(void *address, uint8_t size) {
+    uintptr_t start = (uintptr_t)address & ~31;
+    uintptr_t end = (uintptr_t)address + size;
+
+    for (uintptr_t i = start; i < end; i += 32) {
+        asm volatile (
+            "mcr p15, 0, %0, c7, c6, 1\n"
+            :
+            : "r" (i)
+            : "memory"
+        );
+    }
+}
+
 //------------------------------//
 
 /*
@@ -51,7 +87,7 @@ static uint32_t mailboxRead() {
 -> but the values get into that array anyway;
 */
 
-void mailboxFramebufferInit(struct framebuffer_metadata *framebuffer_metadata) {
+bool mailboxFramebufferInit(struct framebuffer_metadata *framebuffer_metadata) {
     struct mailboxBuffer Buffer __attribute__((aligned(16)));
 
     Buffer.size = (2 + 37) * 4;
@@ -121,6 +157,9 @@ void mailboxFramebufferInit(struct framebuffer_metadata *framebuffer_metadata) {
     Buffer.tags[36] = 0;
 
     mailboxWrite(&Buffer);
+    if (Buffer.request_response == BUFFER_PARSE_FAILURE || 0 || Buffer.tags[4] > 100) {
+        return 1;
+    }
 
     // fills metadata structure
     framebuffer_metadata->pointer = (uint8_t *)Buffer.tags[3];
@@ -177,9 +216,69 @@ void mailboxFramebufferInit(struct framebuffer_metadata *framebuffer_metadata) {
     Buffer.tags[22] = framebuffer_metadata->virtual_Y_offset;
 
     // ---------------- //
-    
+
     // End tag
     Buffer.tags[23] = 0;
+    mailboxWrite(&Buffer);
+    if (Buffer.request_response == BUFFER_PARSE_FAILURE || 0) {
+        return 1;
+    }
+    return 0;
 }
 
-// ----------------------------- //
+uint8_t test() {
+    struct mailboxBuffer Buffer __attribute__((aligned(16)));
+
+    Buffer.tags[0] = FRAMEBUFFER_ALLOCATE;
+    Buffer.tags[1] = 4;
+    Buffer.tags[2] = 0;
+    Buffer.tags[3] = 16;
+    Buffer.tags[4] = 0;
+
+    // ---------------- //
+
+    Buffer.tags[5] = SET_PHYSICAL_SIZE;
+    Buffer.tags[6] = 8;
+    Buffer.tags[7] = 0;
+    Buffer.tags[8] = 1080;
+    Buffer.tags[9] = 720;
+
+    // ----------------- //
+
+    Buffer.tags[10] = SET_VIRTUAL_SIZE;
+    Buffer.tags[11] = 8;
+    Buffer.tags[12] = 0;
+    Buffer.tags[13] = 1080;
+    Buffer.tags[14] = 720;
+
+    // ----------------- //
+
+    Buffer.tags[15] = SET_DEPTH;
+    Buffer.tags[16] = 4;
+    Buffer.tags[17] = 0;
+    Buffer.tags[18] = 8;
+
+    // ---------------- //
+
+    Buffer.tags[19] = SET_PIXELORDER;
+    Buffer.tags[20] = 4;
+    Buffer.tags[21] = 0;
+    Buffer.tags[22] = 0;
+
+    // ---------------- //
+
+    Buffer.tags[23] = SET_VIRTUAL_OFFSET;
+    Buffer.tags[24] = 8;
+    Buffer.tags[25] = 0;
+    Buffer.tags[26] = 0;
+    Buffer.tags[27] = 0;
+
+    // ---------------- //
+
+    Buffer.tags[28] = 0;
+
+    Buffer.size = (2 + 29) * 4;
+    Buffer.request_response = 0;
+
+    mailboxWrite(&Buffer);
+}

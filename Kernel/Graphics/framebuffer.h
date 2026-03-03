@@ -20,7 +20,7 @@ struct framebuffer_metadata {
 
 // Function table;
 struct framebuffer_table {
-    void (*framebufferInit)(struct framebuffer_metadata *framebuffer_metadata);
+    bool (*framebufferInit)(struct framebuffer_metadata *framebuffer_metadata);
 };
 
 // pointer to global struct instance

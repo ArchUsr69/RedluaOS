@@ -68,3 +68,9 @@ clean:
 	rm -rf $(BUILD_DIR) $(IMAGE) $(ELF)
 
 .PHONY: all clean
+
+copy_image:
+	sudo mount /dev/mmcblk0p1 /mnt/SDCard
+	sudo rm /mnt/SDCard/$(IMAGE)
+	sudo cp $(IMAGE) /mnt/SDCard
+	sudo umount /mnt/SDCard

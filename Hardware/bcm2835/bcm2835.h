@@ -102,12 +102,12 @@ enum mailboxTags {
 };
 
 /*
--> standard mailbox buffer structure; 
+-> standard mailbox buffer structure;
 -> size must be calculated;
 -> request_response must always be 0 initialized; VC will overwrite with 0x80000000 for success, 0x80000001 for failure;
 */
 
-static struct mailboxBuffer {
+struct mailboxBuffer {
     uint32_t size;
     uint32_t request_response;
     uint32_t tags[64];
@@ -118,6 +118,8 @@ static struct mailboxBuffer {
 // Function prototypes
 static void mailboxWrite(struct mailboxBuffer *pointer);
 static uint32_t mailboxRead();
-void mailboxFramebufferInit(struct framebuffer_metadata *pointer);
-
+bool mailboxFramebufferInit(struct framebuffer_metadata *pointer);
+static inline void flush_dcache(void *address, uint8_t size);
+static inline void invalidate_dcache(void *address, uint8_t size);
+uint8_t test();
 #endif

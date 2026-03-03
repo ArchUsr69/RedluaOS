@@ -7,8 +7,8 @@ struct framebuffer_table mailbox_framebuffer = {
 };
 
 struct gpio_table bcm_gpio_table = {
-    .setFun = bcm2835gpio_setFunction,
-    .pinWr = bcm2835gpio_pinWrite
+    .setFunction = bcm2835gpio_setFunction,
+    .pinWrite = bcm2835gpio_pinWrite
 };
 
 struct gpio_table *gpio = &bcm_gpio_table;

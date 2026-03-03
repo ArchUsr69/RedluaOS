@@ -17,14 +17,14 @@ struct framebuffer_metadata {
 
 // Function table;
 struct framebuffer_table {
-    void (*framebuffInit)(struct framebuffer_metadata *pointer);
+    void (*framebufferInit)(struct framebuffer_metadata *pointer);
 };
 
 extern struct framebuffer_table *framebuffer;
 
 // Wrapper functions
 static inline void framebufferInit(struct framebuffer_metadata *pointer) {
-    framebuffer->framebuffInit(pointer);
+    framebuffer->framebufferInit(pointer);
 }
 
 #endif

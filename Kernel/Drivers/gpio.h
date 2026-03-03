@@ -17,19 +17,19 @@ enum gpio_functions {
 
 // Function table
 struct gpio_table {
-    void (*setFun)(uint8_t pin, enum gpio_functions function);
-    void (*pinWr)(uint8_t pin, bool level);
+    void (*setFunction)(uint8_t pin, enum gpio_functions function);
+    void (*pinWrite)(uint8_t pin, bool level);
 };
 
 extern struct gpio_table *gpio;
 
 // Wrapper functions
 static inline void gpio_setFunction(uint8_t pin, enum gpio_functions function) {
-    gpio->setFun(pin, function);
+    gpio->setFunction(pin, function);
 }
 
 static inline void gpio_pinWrite(uint8_t pin, bool level) {
-    gpio->pinWr(pin, level);
+    gpio->pinWrite(pin, level);
 }
 
 

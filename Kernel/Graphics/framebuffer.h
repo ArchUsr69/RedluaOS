@@ -16,11 +16,12 @@ struct framebuffer_metadata {
     uint8_t depth;
     uint8_t pitch;
     bool pixel_order;
+    bool is_initialized;
 };
 
 // Function table;
 struct framebuffer_table {
-    bool (*framebufferInit)(struct framebuffer_metadata *framebuffer_metadata);
+    void (*framebufferInit)(struct framebuffer_metadata *framebuffer_metadata);
 };
 
 // pointer to global struct instance

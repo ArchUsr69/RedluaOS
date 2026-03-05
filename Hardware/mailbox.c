@@ -10,6 +10,7 @@
 good idea to have the channel and pointer in the same register;
 -> pointer MUST be 16 byte aligned, or else it wouldn't fit;
 -> the function must wait until the register is ready to be written to;
+-> Buffer size must be calculated so that the cache can be flushed accordingly;
 
 What the register expects:
 
@@ -17,12 +18,12 @@ bit [31-4] -> pointer
 bit [4-0] -> channel
 */
 
-static void mailboxWrite(uint32_t *pointer, uint8_t channel) {
+void mailboxWrite(uint32_t *pointer, uint8_t channel, uint16_t buffer_size) {
     while (*MAILBOX_WRITE_STATUS & MAILBOX_FULL) { /* spins */ }
     uint32_t register_contents = 0;
     writeField32(&register_contents, (uint32_t)pointer, 4, 28);
     writeField32(&register_contents, channel, 0, 4);
-    flush_dcache(pointer, sizeof(pointer));
+    flush_dcache(pointer, buffer_size);
     *MAILBOX_WRITE = register_contents;
 }
 
@@ -33,7 +34,7 @@ static void mailboxWrite(uint32_t *pointer, uint8_t channel) {
 -> Function only returns only the upper 28 bits from the register downshifted, so the upper 4 bits from the returned data will always be empty
 */
 
-static uint32_t mailboxRead(uint8_t channel) {
+uint32_t mailboxRead(uint8_t channel) {
     uint32_t register_contents;
     do {
         while (*MAILBOX_READ_STATUS & MAILBOX_EMPTY) { /* spins */ }
@@ -44,71 +45,34 @@ static uint32_t mailboxRead(uint8_t channel) {
 
 //--------------------------//
 
-/*
--> functions that manage Cache;
--> without those, the mailbox interface wouldn't even work;
--> don't try to understand much. It's magic. Even i don't understand this crap
-*/
-
-static inline void flush_dcache(void *address, uint8_t size) {
-    uintptr_t start = (uintptr_t)address & ~31;
-    uintptr_t end = (uintptr_t)address + size;
-
-    for (uintptr_t i = start; i < end; i += 32) {
-        asm volatile (
-            "mcr p15, 0, %0, c7, c14, 1\n"
-            :
-            : "r" (i)
-            : "memory"
-        );
-    }
-}
-
-static inline void invalidate_dcache(void *address, uint8_t size) {
-    uintptr_t start = (uintptr_t)address & ~31;
-    uintptr_t end = (uintptr_t)address + size;
-
-    for (uintptr_t i = start; i < end; i += 32) {
-        asm volatile (
-            "mcr p15, 0, %0, c7, c6, 1\n"
-            :
-            : "r" (i)
-            : "memory"
-        );
-    }
-}
-
-//------------------------------//
 
 /*
 -> initializes a framebuffer;
--> takes a framebuffer_metadata struct pointer where it writes all the information about the framebuffer; 
+-> takes a framebuffer_metadata struct pointer where it writes all the information about the framebuffer;
 -> some values must already be initialized: see the values bellow;
 */
 
 void mailboxFramebufferInit(struct framebuffer_metadata *framebuffer_metadata) {
-    if (framebuffer_metadata->is_initialized = true) { return; } 
+    if (framebuffer_metadata->is_initialized) return;
 
-    uint32_t Buffer[10];
-
-    // ---------------- //
+    uint32_t Buffer[10] __attribute__((aligned(16)));
 
     Buffer[0] = framebuffer_metadata->physical_width;
     Buffer[1] = framebuffer_metadata->physical_height;
     Buffer[2] = framebuffer_metadata->virtual_width;
     Buffer[3] = framebuffer_metadata->virtual_height;
-    Buffer[4] = 0; // depth
+    Buffer[4] = 0; // pitch
     Buffer[5] = framebuffer_metadata->depth;
     Buffer[6] = framebuffer_metadata->virtual_X_offset;
     Buffer[7] = framebuffer_metadata->virtual_Y_offset;
-    Buffer[8] = 0; // framebuffer address;
-    Buffer[9] = 0; // framebuffer size;
+    Buffer[8] = 0; // framebuffer address (set by VC)
+    Buffer[9] = 0; // framebuffer size (set by VC)
 
-    // ---------------- //
+    // Send GPU bus address to mailbox
+    mailboxWrite((uint32_t *)((uintptr_t)&Buffer[0] + 0x40000000), 1, sizeof(Buffer));
+    mailboxRead(1);
 
-    mailboxWrite(&Buffer, 1);
-
-    framebuffer_metadata->depth = Buffer[4];
-    framebuffer_metadata->pointer = Buffer[8];
+    framebuffer_metadata->pitch = (uint8_t)Buffer[4];
+    framebuffer_metadata->pointer = (uint8_t *)Buffer[8];
     framebuffer_metadata->size = Buffer[9];
- }
+}

@@ -2,9 +2,10 @@
 #include <stdbool.h>
 #include <bcm2835.h>
 #include <framebuffer.h>
+#include <mailbox.h>
 
 struct framebuffer_table mailbox_framebuffer = {
-    .framebufferInit = mailboxFramebufferInit
+    .framebuffer_Init = mailboxFramebufferInit
 };
 
 struct gpio_table bcm_gpio_table = {
@@ -16,14 +17,33 @@ struct gpio_table *gpio = &bcm_gpio_table;
 struct framebuffer_table *framebuffer = &mailbox_framebuffer;
 struct framebuffer_metadata framebuffer_metadata;
 
+void fill_screen_blue(struct framebuffer_metadata *framebuffer) {
+    if (!framebuffer || !framebuffer->pointer) return;
+
+    uint32_t *pixel = (uint32_t *)framebuffer->pointer;
+    uint32_t color = framebuffer->pixel_order ? 0xFF0000 : 0x0000FF; // BGR : RGB
+    uint32_t bytes_per_pixel = framebuffer->depth / 8;
+
+    for (uint16_t y = 0; y < framebuffer->virtual_height; y++) {
+        for (uint16_t x = 0; x < framebuffer->virtual_width; x++) {
+            *(uint32_t *)((uint8_t *)pixel + y * framebuffer->pitch + x * bytes_per_pixel) = color;
+        }
+    }
+}
+
 // Still Test code;
 void kernel_main() {
-    bool status = test();
-    if (status == 1) {
-        gpio_setFunction(PWR_LED, OUTPUT);
-        gpio_pinWrite(PWR_LED, LOW);
-    } else if (status == 2) {
-        gpio_setFunction(ACT_LED, OUTPUT);
-        gpio_pinWrite(ACT_LED, HIGH);
-    }
+    framebuffer_metadata.physical_width = 1080;
+    framebuffer_metadata.physical_height = 720;
+    framebuffer_metadata.virtual_width = 1080;
+    framebuffer_metadata.virtual_height = 720;
+    framebuffer_metadata.pitch = 8;
+    framebuffer_metadata.virtual_X_offset = 0;
+    framebuffer_metadata.virtual_Y_offset = 0;
+
+    gpio_setFunction(ACT_LED, OUTPUT);
+    gpio_setFunction(PWR_LED, OUTPUT);
+    gpio_pinWrite(ACT_LED, HIGH);
+    framebufferInit(&framebuffer_metadata);
+    fill_screen_blue(&framebuffer_metadata);
 }

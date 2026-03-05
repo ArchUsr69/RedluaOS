@@ -68,10 +68,44 @@ struct mailboxBuffer {
 // ---------------------------- //
 
 // Function prototypes
-static void mailboxWrite(uint32_t *pointer, uint8_t channel);
-static uint32_t mailboxRead();
-void mailboxFramebufferInit(uint32_t *pointer);
-static inline void flush_dcache(void *address, uint8_t size);
-static inline void invalidate_dcache(void *address, uint8_t size);
+void mailboxWrite(uint32_t *pointer, uint8_t channel, uint16_t buffer_size);
+uint32_t mailboxRead(uint8_t channel);
+void mailboxFramebufferInit(struct framebuffer_metadata *pointer);
+
+/*
+-> functions that manage Cache;
+-> without those, the mailbox interface wouldn't even work;
+-> don't try to understand much. It's magic. Even i don't understand this crap
+*/
+
+static inline void flush_dcache(void *address, uint8_t size) {
+    uintptr_t start = (uintptr_t)address & ~31;
+    uintptr_t end = (uintptr_t)address + size;
+
+    for (uintptr_t i = start; i < end; i += 32) {
+        asm volatile (
+            "mcr p15, 0, %0, c7, c14, 1\n"
+            :
+            : "r" (i)
+            : "memory"
+        );
+    }
+}
+
+static inline void invalidate_dcache(void *address, uint8_t size) {
+    uintptr_t start = (uintptr_t)address & ~31;
+    uintptr_t end = (uintptr_t)address + size;
+
+    for (uintptr_t i = start; i < end; i += 32) {
+        asm volatile (
+            "mcr p15, 0, %0, c7, c6, 1\n"
+            :
+            : "r" (i)
+            : "memory"
+        );
+    }
+}
+
+//------------------------------//
 
 #endif

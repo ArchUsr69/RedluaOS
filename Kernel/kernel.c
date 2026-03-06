@@ -33,17 +33,18 @@ void fill_screen_blue(struct framebuffer_metadata *framebuffer) {
 
 // Still Test code;
 void kernel_main() {
-    framebuffer_metadata.physical_width = 1080;
-    framebuffer_metadata.physical_height = 720;
-    framebuffer_metadata.virtual_width = 1080;
-    framebuffer_metadata.virtual_height = 720;
-    framebuffer_metadata.pitch = 8;
+    framebuffer_metadata.physical_width = 1024;
+    framebuffer_metadata.physical_height = 768;
+    framebuffer_metadata.virtual_width = 1024;
+    framebuffer_metadata.virtual_height = 768;
+    framebuffer_metadata.depth = 16;
     framebuffer_metadata.virtual_X_offset = 0;
     framebuffer_metadata.virtual_Y_offset = 0;
 
     gpio_setFunction(ACT_LED, OUTPUT);
     gpio_setFunction(PWR_LED, OUTPUT);
-    gpio_pinWrite(ACT_LED, HIGH);
-    framebufferInit(&framebuffer_metadata);
-    fill_screen_blue(&framebuffer_metadata);
+    bool status = framebufferInit(&framebuffer_metadata);
+    if (status == 1) {
+        gpio_pinWrite(ACT_LED, HIGH);
+    }
 }

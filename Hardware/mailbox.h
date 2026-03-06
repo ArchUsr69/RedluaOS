@@ -70,7 +70,7 @@ struct mailboxBuffer {
 // Function prototypes
 void mailboxWrite(uint32_t *pointer, uint8_t channel, uint16_t buffer_size);
 uint32_t mailboxRead(uint8_t channel);
-void mailboxFramebufferInit(struct framebuffer_metadata *pointer);
+bool mailboxFramebufferInit(struct framebuffer_metadata *pointer);
 
 /*
 -> functions that manage Cache;

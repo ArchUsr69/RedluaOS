@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include <stddef.h>
 #include <stdbool.h>
 #include <framebuffer.h>
 #include <lowLevel.h>
@@ -54,7 +55,7 @@ enum mailboxTags {
 };
 
 /*
--> Property interface mailbox buffer structure;
+-> Property interface mailbox buffer structure (unused for now);
 -> size must be calculated;
 -> request_response must always be 0 initialized; VC will overwrite with 0x80000000 for success, 0x80000001 for failure;
 */
@@ -68,9 +69,9 @@ struct mailboxBuffer {
 // ---------------------------- //
 
 // Function prototypes
-void mailboxWrite(uint32_t *pointer, uint8_t channel, uint16_t buffer_size);
+void mailboxWrite(uintptr_t pointer, uint8_t channel, uint16_t buffer_size);
 uint32_t mailboxRead(uint8_t channel);
-bool mailboxFramebufferInit(struct framebuffer_metadata *pointer);
+void mailboxFramebufferInit(struct framebuffer_metadata *pointer);
 
 /*
 -> functions that manage Cache;
@@ -78,9 +79,9 @@ bool mailboxFramebufferInit(struct framebuffer_metadata *pointer);
 -> don't try to understand much. It's magic. Even i don't understand this crap
 */
 
-static inline void flush_dcache(void *address, uint8_t size) {
-    uintptr_t start = (uintptr_t)address & ~31;
-    uintptr_t end = (uintptr_t)address + size;
+static inline void flush_dcache(uintptr_t address, uint8_t size) {
+    uintptr_t start = address & ~31;
+    uintptr_t end = address + size;
 
     for (uintptr_t i = start; i < end; i += 32) {
         asm volatile (
@@ -92,9 +93,9 @@ static inline void flush_dcache(void *address, uint8_t size) {
     }
 }
 
-static inline void invalidate_dcache(void *address, uint8_t size) {
-    uintptr_t start = (uintptr_t)address & ~31;
-    uintptr_t end = (uintptr_t)address + size;
+static inline void invalidate_dcache(uintptr_t address, uint8_t size) {
+    uintptr_t start = address & ~31;
+    uintptr_t end = address + size;
 
     for (uintptr_t i = start; i < end; i += 32) {
         asm volatile (

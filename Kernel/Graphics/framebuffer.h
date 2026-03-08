@@ -21,14 +21,14 @@ struct framebuffer_metadata {
 
 // Function table;
 struct framebuffer_table {
-    bool (*framebuffer_Init)(struct framebuffer_metadata *framebuffer_metadata);
+    void (*framebuffer_Init)(struct framebuffer_metadata *framebuffer_metadata);
 };
 
 // pointer to global struct instance; defined by the kernel
 extern struct framebuffer_table *framebuffer;
 
 // Wrapper functions
-static inline bool framebufferInit(struct framebuffer_metadata *framebuffer_metadata) {
+static inline void framebufferInit(struct framebuffer_metadata *framebuffer_metadata) {
     return framebuffer->framebuffer_Init(framebuffer_metadata);
 }
 

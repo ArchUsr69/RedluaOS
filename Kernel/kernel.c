@@ -33,8 +33,11 @@ void kernel_main() {
     framebufferMetadata.virtual_Y_Offset = 0;
 
     gpio_setFunction(ACT_LED, OUTPUT);
-    gpio_pinWrite(ACT_LED, HIGH);
+    gpio_pinWrite(ACT_LED, LOW);
     framebufferInit(&framebufferMetadata);
+    if (framebufferMetadata.virtual_Height != 1080) {
+        gpio_pinWrite(ACT_LED, HIGH);
+    }
 
     uint16_t *framebufferPointer = (uint16_t *)framebufferMetadata.pointer;
     size_t pixelCount = framebufferMetadata.size / 2;

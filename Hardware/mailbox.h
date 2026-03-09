@@ -53,7 +53,7 @@ enum mailboxChannels {
     TOUCH_SCREEN,
     UNDEFINED, // do not use this channel
     PROPERTY_TAGS
-}
+};
 
 enum mailboxTags {
     FRAMEBUFFER_ALLOCATE = 0x00040001,
@@ -92,8 +92,8 @@ struct mailboxBuffer {
 // ---------------------------- //
 
 // Function prototypes
-void mailboxWrite(uintptr_t pointer, enum mailboxChannel channel, uint16_t bufferSize);
-uint32_t mailboxRead(enum mailboxChannel channel);
+void mailboxWrite(uint32_t *pointer, enum mailboxChannels channel, uint16_t bufferSize);
+uint32_t mailboxRead(enum mailboxChannels channel);
 void mailboxFramebufferInit(struct framebufferMetadata *framebufferMetadata);
 
 /*

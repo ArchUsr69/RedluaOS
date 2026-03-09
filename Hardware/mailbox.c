@@ -17,12 +17,12 @@ bit [31-4] -> pointer
 bit [3-0] -> channel
 */
 
-void mailboxWrite(uint32_t *pointer, enum mailboxChannel channel, uint16_t bufferSize) {
+void mailboxWrite(uint32_t *pointer, enum mailboxChannels channel, uint16_t bufferSize) {
     if (channel == UNDEFINED) return;
     while (*MAILBOX_READ_STATUS & MAILBOX_FULL) { /* spins */ }
-    uint32_t register_Contents = (uint32_t)pointer | channel;
+    uint32_t registerContents = (uint32_t)pointer | channel;
     flush_dcache((uintptr_t)pointer, bufferSize);
-    *MAILBOX_WRITE = register_contents;
+    *MAILBOX_WRITE = registerContents;
 }
 
 //------------------------------//
@@ -33,13 +33,13 @@ void mailboxWrite(uint32_t *pointer, enum mailboxChannel channel, uint16_t buffe
 -> must be called so that VC responds to the sent message;
 */
 
-uint32_t mailboxRead(enum mailboxChannel channel) {
-    if (channel == UNDEFINED) return;
+uint32_t mailboxRead(enum mailboxChannels channel) {
+    if (channel == UNDEFINED) return 788; // idk, just a random number. I'll find a substitue later
     while (true) {
         while (*MAILBOX_READ_STATUS & MAILBOX_EMPTY) { /* spins */ }
-        uint32_t register_Contents = *MAILBOX_READ;
-        if (register_Contents & channel) {
-            return readField32(&register_Contents, 4, 28);
+        uint32_t registerContents = *MAILBOX_READ;
+        if (registerContents & channel) {
+            return readField32(&registerContents, 4, 28);
         }
     }
 }
@@ -69,13 +69,16 @@ void mailboxFramebufferInit(struct framebufferMetadata *framebufferMetadata) {
     Buffer[8] = 0; // framebuffer address (set by VC)
     Buffer[9] = 0; // framebuffer size (set by VC)
 
-    // Send GPU bus address to mailbox
-    mailboxWrite(&Buffer | VC_OFFSET, FRAMEBUFFER, sizeof(Buffer));
-    mailboxRead(FRAMEBUFFER);
+    // Send GPU bus address to mailbox (4 attempts)
+    for (uint8_t attempts = 0; attempts < 4; attempts++) {
+        mailboxWrite((uint32_t *)((uint32_t)(&Buffer) | (uint32_t)(VC_OFFSET)), FRAMEBUFFER, sizeof(Buffer));
+        mailboxRead(FRAMEBUFFER);
+        if (framebufferMetadata->pointer) { break; }
+    }
 
     // fills the requested information
     framebufferMetadata->pitch = (uint16_t)Buffer[4];
-    framebufferMetadata->pointer = (uint8_t *)(Buffer[8] & ARM_OFFSET);
+    framebufferMetadata->pointer = (uint8_t *)((uint32_t)(Buffer[8]) & (uint32_t)(ARM_OFFSET));
     framebufferMetadata->size = Buffer[9];
     framebufferMetadata->is_Initialized = true;
 }

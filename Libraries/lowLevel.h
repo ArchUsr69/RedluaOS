@@ -42,7 +42,7 @@ static inline void writeBit32(volatile uint32_t *target, uint8_t offset, bool bi
     }
 }
 
-//------------------------------//
+// ------------------------------ //
 
 /*
 -> functions that write to specific sections of specified length, value and start;
@@ -76,7 +76,7 @@ static inline void writeField32(volatile uint32_t *target, uint32_t value, uint8
     *target |= (value << offset) & mask;
 }
 
-//------------------------------//
+// ------------------------------ //
 
 
 /*
@@ -98,7 +98,7 @@ static inline bool readBit32(volatile uint32_t *target, uint8_t offset) {
     return (*target >> offset) & 1;
 }
 
-//------------------------------//
+// ------------------------------ //
 
 
 /*
@@ -121,6 +121,6 @@ static inline uint32_t readField32(volatile uint32_t *target, uint8_t offset, ui
     return (*target >> offset) & ((1 << length) - 1);
 }
 
-//------------------------------//
+// ------------------------------ //
 
 #endif

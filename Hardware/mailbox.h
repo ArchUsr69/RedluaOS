@@ -31,7 +31,30 @@
 #define BUFFER_PARSE_SUCCESS 0x80000000
 #define BUFFER_PARSE_FAILURE 0x80000001
 
-// Mailbox Tags
+/*
+-> address offsets;
+-> if ARM -> VC, bitwise OR the address (address | VC_OFFSET)
+-> if VC -> ARM, bitwise AND the returned address (address & ARM_OFFSET)
+-> Exception is when you use the property interface channel; then somehow VC speaks in physical addresses;
+*/
+
+#define VC_OFFSET 0x40000000
+#define ARM_OFFSET 0x3FFFFFFF
+
+// ------------------- //
+
+enum mailboxChannels {
+    POWER,
+    FRAMEBUFFER,
+    VIRTUAL_UART,
+    VCHIQ,
+    LED,
+    BUTTONS,
+    TOUCH_SCREEN,
+    UNDEFINED, // do not use this channel
+    PROPERTY_TAGS
+}
+
 enum mailboxTags {
     FRAMEBUFFER_ALLOCATE = 0x00040001,
     FRAMEBUFFER_RELEASE = 0x00048001,
@@ -62,20 +85,20 @@ enum mailboxTags {
 
 struct mailboxBuffer {
     uint32_t size;
-    uint32_t request_response;
+    uint32_t requestResponse;
     uint32_t tags[64];
 };
 
 // ---------------------------- //
 
 // Function prototypes
-void mailboxWrite(uintptr_t pointer, uint8_t channel, uint16_t buffer_size);
-uint32_t mailboxRead(uint8_t channel);
-void mailboxFramebufferInit(struct framebuffer_metadata *pointer);
+void mailboxWrite(uintptr_t pointer, enum mailboxChannel channel, uint16_t bufferSize);
+uint32_t mailboxRead(enum mailboxChannel channel);
+void mailboxFramebufferInit(struct framebufferMetadata *framebufferMetadata);
 
 /*
 -> functions that manage Cache;
--> without those, the mailbox interface wouldn't even work;
+-> without those, the mailbox interface wouldn't probably work;
 -> don't try to understand much. It's magic. Even i don't understand this crap
 */
 
@@ -93,6 +116,7 @@ static inline void flush_dcache(uintptr_t address, uint8_t size) {
     }
 }
 
+// (unused for now)
 static inline void invalidate_dcache(uintptr_t address, uint8_t size) {
     uintptr_t start = address & ~31;
     uintptr_t end = address + size;

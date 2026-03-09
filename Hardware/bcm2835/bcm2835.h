@@ -48,7 +48,7 @@ static const uint8_t bcm2835gpio_functions[8] = {
 // ------------------------- //
 
 // Function prototypes
-void bcm2835gpio_setFunction(uint8_t pin, enum gpio_functions function);
+void bcm2835gpio_setFunction(uint8_t pin, enum gpioFunctions function);
 void bcm2835gpio_pinWrite(uint8_t pin, bool level);
 
 #endif

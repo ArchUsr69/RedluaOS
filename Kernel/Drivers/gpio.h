@@ -4,7 +4,7 @@
 #ifndef GPIO_H
 #define GPIO_H
 
-enum gpio_functions {
+enum gpioFunctions {
     INPUT,
     OUTPUT,
     ALTERNATIVE0,
@@ -16,16 +16,16 @@ enum gpio_functions {
 };
 
 // Function table
-struct gpio_table {
-    void (*setFunction)(uint8_t pin, enum gpio_functions function);
+struct gpioTable {
+    void (*setFunction)(uint8_t pin, enum gpioFunctions function);
     void (*pinWrite)(uint8_t pin, bool level);
 };
 
 // pointer to global struct instance (defined by main)
-extern struct gpio_table *gpio;
+extern struct gpioTable *gpio;
 
 // Wrapper functions
-static inline void gpio_setFunction(uint8_t pin, enum gpio_functions function) {
+static inline void gpio_setFunction(uint8_t pin, enum gpioFunctions function) {
     gpio->setFunction(pin, function);
 }
 

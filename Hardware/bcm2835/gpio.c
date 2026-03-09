@@ -10,7 +10,7 @@
 -> translates the standard gpio function numbers into the bcm2835 gpio function values;
 */ 
 
-void bcm2835gpio_setFunction(uint8_t pin, enum gpio_functions function) {
+void bcm2835gpio_setFunction(uint8_t pin, enum gpioFunctions function) {
     if (pin > TOTAL_PINS) return;
     uint8_t start = (pin % 10) * 3;
     writeField32(GPIOFSELECT_BASE + (pin /10), bcm2835gpio_functions[function], start, 3);

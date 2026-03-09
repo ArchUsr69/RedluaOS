@@ -4,32 +4,32 @@
 #ifndef FRAMEBUFFER_H
 #define FRAMEBUFFER_H
 
-struct framebuffer_metadata {
+struct framebufferMetadata {
     uint8_t *pointer;
     uint32_t size;
-    uint16_t virtual_height;
-    uint16_t virtual_width;
-    uint16_t physical_height;
-    uint16_t physical_width;
-    uint16_t virtual_X_offset;
-    uint16_t virtual_Y_offset;
+    uint16_t virtual_Height;
+    uint16_t virtual_Width;
+    uint16_t physical_Height;
+    uint16_t physical_Width;
+    uint16_t virtual_X_Offset;
+    uint16_t virtual_Y_Offset;
     uint16_t depth;
     uint16_t pitch;
-    bool pixel_order;
-    bool is_initialized;
+    bool pixel_Order;
+    bool is_Initialized;
 };
 
 // Function table;
-struct framebuffer_table {
-    void (*framebuffer_Init)(struct framebuffer_metadata *framebuffer_metadata);
+struct framebufferTable {
+    void (*framebufferInit)(struct framebufferMetadata *framebufferMetadata);
 };
 
 // pointer to global struct instance; defined by the kernel
-extern struct framebuffer_table *framebuffer;
+extern struct framebufferTable *framebuffer;
 
 // Wrapper functions
-static inline void framebufferInit(struct framebuffer_metadata *framebuffer_metadata) {
-    return framebuffer->framebuffer_Init(framebuffer_metadata);
+static inline void framebufferInit(struct framebufferMetadata *framebufferMetadata) {
+    return framebuffer->framebufferInit(framebufferMetadata);
 }
 
 #endif

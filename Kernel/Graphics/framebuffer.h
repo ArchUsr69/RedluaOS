@@ -14,7 +14,7 @@ struct framebufferMetadata {
     uint16_t virtual_X_Offset;
     uint16_t virtual_Y_Offset;
     uint16_t pitch;
-    const uint16_t depth = 16;
+    uint16_t depth;
     bool pixel_Order;
     bool is_Initialized;
 };
@@ -38,7 +38,7 @@ struct colourPalette {
     uint16_t brightMagenta;
     uint16_t brightCyan;
     uint16_t brightWhite;
-}
+};
 
 // Function table;
 struct framebufferTable {

@@ -15,41 +15,59 @@ struct gpioTable bcmGpioTable = {
     .pinWrite = bcm2835gpio_pinWrite
 };
 
-// Global pointers definitions
+// Allocating a framebuffer metadata structure that holds information about the framebuffer 
+struct framebufferMetadata framebufferMetadata = {
+    .physical_Width = 1920,
+    .physical_Height = 1080,
+    .virtual_Width = 1920,
+    .virtual_Height = 1080,
+    .virtual_X_Offset = 0,
+    .virtual_Y_Offset = 0
+};
+
+struct colourPalette OneDarker = {
+    .background = 0x0000,
+    .foreground = 0xADD7,
+    .black = 0x0000,
+    .red = 0xF13B,
+    .green = 0x94E5,
+    .yellow = 0xD38A,
+    .blue = 0x4AAF,
+    .magenta = 0xC31B,
+    .cyan = 0x21D8,
+    .white = 0xADD7,
+    .brightBlack = 0x5366,
+    .brightRed = 0xFF8E,
+    .brightGreen = 0xAFE9,
+    .brightYellow = 0xF18B,
+    .brightBlue = 0x57FF,
+    .brightMagenta = 0xDE5F,
+    .brightCyan = 0x4DF0,
+    .brightWhite = 0xFFFF
+};
+
+// Global pointers definitions for function tables
 struct gpioTable *gpio = &bcmGpioTable;
 struct framebufferTable *framebuffer = &mailboxFramebuffer;
 
-// Allocating a framebuffer metadata structure that holds information about the framebuffer 
-struct framebufferMetadata framebufferMetadata;
-
-// It creates a colour gradient that switches between 3 colours; looks very cool tbh;
+// It creates a colour gradient that switches between the entire colour palette;
 void kernel_main() {
-    framebufferMetadata.physical_Width = 1920;
-    framebufferMetadata.physical_Height = 1080;
-    framebufferMetadata.virtual_Width = 1920;
-    framebufferMetadata.virtual_Height = 1080;
-    framebufferMetadata.depth = 16;
-    framebufferMetadata.virtual_X_Offset = 0;
-    framebufferMetadata.virtual_Y_Offset = 0;
-
     gpio_setFunction(ACT_LED, OUTPUT);
+    gpio_setFunction(PWR_LED, OUTPUT);
+    gpio_pinWrite(PWR_LED, LOW)
     gpio_pinWrite(ACT_LED, LOW);
     framebufferInit(&framebufferMetadata);
-    if (framebufferMetadata.virtual_Height != 1080) {
-        gpio_pinWrite(ACT_LED, HIGH);
-    }
 
     uint16_t *framebufferPointer = (uint16_t *)framebufferMetadata.pointer;
     size_t pixelCount = framebufferMetadata.size / 2;
+    uint16_t *colour = &OneDarker->background;
+    uint16_t *end = &OneDarker + 18;
     while (1) {
+        if (colour < end) {colour = &OneDarker->background}
         for (size_t i = 0; i < pixelCount; i++) {
-            framebufferPointer[i] = 0x1F; // Blue
+            framebufferPointer[i] = *colour;
         }
-        for (size_t i = 0; i < pixelCount; i++) {
-            framebufferPointer[i] = 0x07E0; // Green
-        }
-        for (size_t i = 0; i < pixelCount; i++) {
-            framebufferPointer[i] = 0xF800; // Red
+        colour++;
         }
     }
 }

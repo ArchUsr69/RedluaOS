@@ -17,12 +17,11 @@ bit [31-4] -> pointer
 bit [3-0] -> channel
 */
 
-void mailboxWrite(uint32_t *pointer, enum mailboxChannels channel, uint16_t bufferSize) {
+void mailboxWrite(uintptr_t pointer, enum mailboxChannels channel, size_t bufferSize) {
     if (channel == UNDEFINED) return;
     while (*MAILBOX_READ_STATUS & MAILBOX_FULL) { /* spins */ }
-    uint32_t registerContents = (uint32_t)pointer | channel;
-    flush_dcache((uintptr_t)pointer, bufferSize);
-    *MAILBOX_WRITE = registerContents;
+    flush_dcache(pointer, bufferSize);
+    *MAILBOX_WRITE = pointer | channel;
 }
 
 //------------------------------//
@@ -71,14 +70,14 @@ void mailboxFramebufferInit(struct framebufferMetadata *framebufferMetadata) {
 
     // Send GPU bus address to mailbox (4 attempts)
     for (uint8_t attempts = 0; attempts < 4; attempts++) {
-        mailboxWrite((uint32_t *)((uint32_t)(&Buffer) | (uint32_t)(VC_OFFSET)), FRAMEBUFFER, sizeof(Buffer));
+        mailboxWrite((uintptr_t)&Buffer | VC_OFFSET, FRAMEBUFFER, sizeof(Buffer));
         mailboxRead(FRAMEBUFFER);
         if (framebufferMetadata->pointer) { break; }
     }
 
     // fills the requested information
     framebufferMetadata->pitch = (uint16_t)Buffer[4];
-    framebufferMetadata->pointer = (uint8_t *)((uint32_t)(Buffer[8]) & (uint32_t)(ARM_OFFSET));
-    framebufferMetadata->size = Buffer[9];
+    framebufferMetadata->pointer = (uint8_t *)((uintptr_t)Buffer[8] & ARM_OFFSET);
+    framebufferMetadata->size = (size_t)Buffer[9];
     framebufferMetadata->is_Initialized = true;
 }

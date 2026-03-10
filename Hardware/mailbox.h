@@ -92,7 +92,7 @@ struct mailboxBuffer {
 // ---------------------------- //
 
 // Function prototypes
-void mailboxWrite(uint32_t *pointer, enum mailboxChannels channel, uint16_t bufferSize);
+void mailboxWrite(uintptr_t *pointer, enum mailboxChannels channel, size_t bufferSize);
 uint32_t mailboxRead(enum mailboxChannels channel);
 void mailboxFramebufferInit(struct framebufferMetadata *framebufferMetadata);
 
@@ -102,7 +102,7 @@ void mailboxFramebufferInit(struct framebufferMetadata *framebufferMetadata);
 -> don't try to understand much. It's magic. Even i don't understand this crap
 */
 
-static inline void flush_dcache(uintptr_t address, uint8_t size) {
+static inline void flush_dcache(uintptr_t address, size_t size) {
     uintptr_t start = address & ~31;
     uintptr_t end = address + size;
 
@@ -117,7 +117,7 @@ static inline void flush_dcache(uintptr_t address, uint8_t size) {
 }
 
 // (unused for now)
-static inline void invalidate_dcache(uintptr_t address, uint8_t size) {
+static inline void invalidate_dcache(uintptr_t address, size_t size) {
     uintptr_t start = address & ~31;
     uintptr_t end = address + size;
 

@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include <stdbool.h>
+#include <bitmap.h>
 
 #ifndef FRAMEBUFFER_H
 #define FRAMEBUFFER_H
@@ -15,6 +16,8 @@ struct framebufferMetadata {
     uint16_t virtual_Y_Offset;
     uint16_t pitch;
     uint16_t depth;
+    uint16_t x;
+    uint16_t y;
     bool pixel_Order;
     bool is_Initialized;
 };
@@ -50,7 +53,7 @@ extern struct framebufferTable *framebuffer;
 
 // Wrapper functions
 static inline void framebufferInit(struct framebufferMetadata *framebufferMetadata) {
-    return framebuffer->framebufferInit(framebufferMetadata);
+    framebuffer->framebufferInit(framebufferMetadata);
 }
 
 #endif

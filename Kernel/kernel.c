@@ -4,6 +4,7 @@
 #include <bcm2835.h>
 #include <framebuffer.h>
 #include <mailbox.h>
+#include <draw.h>
 
 // Hardcoded driver selection
 struct framebufferTable mailboxFramebuffer = {
@@ -23,7 +24,9 @@ struct framebufferMetadata framebufferMetadata = {
     .virtual_Height = 1080,
     .virtual_X_Offset = 0,
     .virtual_Y_Offset = 0,
-    .depth = 16
+    .depth = 16,
+    .x = 0,
+    .y = 0
 };
 
 struct colourPalette OneDarker = {
@@ -53,14 +56,15 @@ struct framebufferTable *framebuffer = &mailboxFramebuffer;
 
 // does practically nothing;
 void kernel_main() {
+    uint8_t name[6] = { 4, 3, 20, 0, 17, 3 };
     gpio_setFunction(ACT_LED, OUTPUT);
     gpio_setFunction(PWR_LED, OUTPUT);
     gpio_pinWrite(PWR_LED, LOW);
     gpio_pinWrite(ACT_LED, LOW);
     framebufferInit(&framebufferMetadata);
-    uint16_t *pointer = (uint16_t *)framebufferMetadata.pointer;
 
-    for (size_t i = 0; i < (framebufferMetadata.size / 2); i++) {
-        pointer[i] = OneDarker.blue;
+    for (uint8_t i = 0; i < 6; i++) {
+        drawCharacter(&framebufferMetadata, OneDarker.foreground, name[i]);
     }
 }
+

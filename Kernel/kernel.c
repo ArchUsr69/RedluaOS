@@ -1,10 +1,13 @@
 #include <stdint.h>
 #include <stddef.h>
 #include <stdbool.h>
+// ----------------- //
+#include <gpio.h>
 #include <bcm2835.h>
 #include <framebuffer.h>
 #include <mailbox.h>
-#include <draw.h>
+#include <text.h>
+#include <utils.h>
 
 // Hardcoded driver selection
 struct framebufferTable mailboxFramebuffer = {
@@ -56,15 +59,15 @@ struct framebufferTable *framebuffer = &mailboxFramebuffer;
 
 // does practically nothing;
 void kernel_main() {
-    uint8_t name[6] = { 4, 3, 20, 0, 17, 3 };
+    uint8_t name[8] = { 0, 1, 2, 3, 4, 5, 6, 7 };
     gpio_setFunction(ACT_LED, OUTPUT);
     gpio_setFunction(PWR_LED, OUTPUT);
     gpio_pinWrite(PWR_LED, LOW);
     gpio_pinWrite(ACT_LED, LOW);
     framebufferInit(&framebufferMetadata);
 
-    for (uint8_t i = 0; i < 6; i++) {
-        drawCharacter(&framebufferMetadata, OneDarker.foreground, name[i]);
+    for (uint8_t i = 0; i < 8; i++) {
+        drawCharacter(&framebufferMetadata, OneDarker.blue, name[i]);
     }
 }
 

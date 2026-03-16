@@ -1,8 +1,8 @@
 #include <stdint.h>
 #include <stdbool.h>
 
-#ifndef LOWLEVEL_H
-#define LOWLEVEL_H
+#ifndef UTILS_H
+#define UTILS_H
 
 //==========Bitwise-helpers==========//
 

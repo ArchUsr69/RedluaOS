@@ -1,12 +1,11 @@
 #include <stdint.h>
 #include <stdbool.h>
-#include <bitmap.h>
 
 #ifndef FRAMEBUFFER_H
 #define FRAMEBUFFER_H
 
 struct framebufferMetadata {
-    uint8_t *pointer;
+    uintptr_t pointer;
     uint32_t size;
     uint16_t virtual_Height;
     uint16_t virtual_Width;

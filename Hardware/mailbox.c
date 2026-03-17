@@ -1,10 +1,11 @@
 #include <stdint.h>
 #include <stdbool.h>
-#include <mailbox.h>
 // ------------------ //
+#include <mailbox.h>
 #include <utils.h>
 #include <framebuffer.h>
 
+// for now Hardcoded; It should be PERIPHERAL_BASE + MAILBOX_BASE offset
 #define MAILBOX_BASE 0x2000B880
 
 // Mailbox 0 Registers (*NEVER WRITE TO THESE REGISTERS*)
@@ -30,9 +31,18 @@
 #define BUFFER_PARSE_FAILURE 0x80000001
 
 /*
+-> Returned when trying read from Channel 7; It is undefined / unused, so just don't use it;
+-> unless you work for Broadcom and know what this channel does;
+*/ 
+
+#define UNDEFINED_CHANNEL_USAGE 0x80000002
+
+// ------------------- //
+
+/*
 -> address offsets;
--> if ARM -> VC, bitwise OR the address (address | VC_OFFSET)
--> if VC -> ARM, bitwise AND the returned address (address & ARM_OFFSET)
+-> if ARM -> VC, bitwise OR the address (address | VC_OFFSET);
+-> if VC -> ARM, bitwise AND the returned address (address & ARM_OFFSET);
 -> Exception is when you use the property interface channel; then somehow VC speaks in physical addresses;
 */
 
@@ -41,7 +51,7 @@
 
 // ------------------- //
 
-enum mailboxChannels {
+static enum mailboxChannels {
     POWER,
     FRAMEBUFFER,
     VIRTUAL_UART,
@@ -49,11 +59,11 @@ enum mailboxChannels {
     LED,
     BUTTONS,
     TOUCH_SCREEN,
-    UNDEFINED, // do not use this channel
+    UNDEFINED, // don't use this channel
     PROPERTY_TAGS
 };
 
-enum mailboxTags {
+static enum mailboxTags {
     FRAMEBUFFER_ALLOCATE = 0x00040001,
     FRAMEBUFFER_RELEASE = 0x00048001,
     SCREEN_BLANK = 0x00040002,
@@ -78,10 +88,10 @@ enum mailboxTags {
 /*
 -> Property interface mailbox buffer structure (unused for now);
 -> size must be calculated;
--> request_response must always be 0 initialized; VC will overwrite with 0x80000000 for success, 0x80000001 for fai>
+-> requestResponse must always be 0 initialized; VC will overwrite with 0x80000000 for success, 0x80000001 for fail;
 */
 
-struct mailboxBuffer {
+static struct mailboxBuffer {
     uint32_t size;
     uint32_t requestResponse;
     uint32_t tags[64];
@@ -92,7 +102,7 @@ struct mailboxBuffer {
 /*
 -> functions that manage Cache;
 -> without those, the mailbox interface wouldn't probably work;
--> don't try to understand much. It's magic. Even i don't understand this crap
+-> don't try to understand much. It's magic. Even i don't understand this crap;
 */
 
 static inline void flush_dcache(uintptr_t address, size_t size) {
@@ -109,7 +119,7 @@ static inline void flush_dcache(uintptr_t address, size_t size) {
     }
 }
 
-// (unused for now)
+// (unused for now);
 static inline void invalidate_dcache(uintptr_t address, size_t size) {
     uintptr_t start = address & ~31;
     uintptr_t end = address + size;
@@ -124,7 +134,7 @@ static inline void invalidate_dcache(uintptr_t address, size_t size) {
     }
 }
 
-//------------------------------//
+// ------------------------------ //
 
 /*
 -> sends a pointer of the message buffer to VideoCore;
@@ -139,36 +149,37 @@ bit [31-4] -> pointer
 bit [3-0] -> channel
 */
 
-void mailboxWrite(uintptr_t pointer, enum mailboxChannels channel, size_t bufferSize) {
+static void mailboxWrite(uintptr_t pointer, enum mailboxChannels channel, size_t bufferSize) {
     if (channel == UNDEFINED) return;
     while (*MAILBOX_READ_STATUS & MAILBOX_FULL) { /* spins */ }
     flush_dcache(pointer, bufferSize);
     *MAILBOX_WRITE = pointer | channel;
 }
 
-//------------------------------//
+// ------------------------------ //
 
 /*
 -> reads what VideoCore sent us back;
 -> Function only returns only the upper 28 bits from the register downshifted;
 -> must be called so that VC responds to the sent message;
+-> will return 0x80000002 if trying to read channel 7;
 */
 
-uint32_t mailboxRead(enum mailboxChannels channel) {
-    if (channel == UNDEFINED) return 788; // idk, just a random number. I'll find a substitue later
+static uint32_t mailboxRead(enum mailboxChannels channel) {
+    if (channel == UNDEFINED) return UNDEFINED_CHANNEL_USAGE;
     while (true) {
         while (*MAILBOX_READ_STATUS & MAILBOX_EMPTY) { /* spins */ }
         uint32_t registerContents = *MAILBOX_READ;
         if (registerContents & channel) {
-            return readField32(&registerContents, 4, 28);
+            return registerContents >> 4;
         }
     }
 }
 
-//--------------------------//
+// -------------------------- //
 
 // Framebuffer message
-static volatile uint32_t __attribute__((aligned(16))) Buffer[10];
+static volatile uint32_t __attribute__((aligned(16))) MessageBuffer[10];
 
 /*
 -> initializes a framebuffer;
@@ -179,27 +190,29 @@ static volatile uint32_t __attribute__((aligned(16))) Buffer[10];
 void mailboxFramebufferInit(struct framebufferMetadata *framebufferMetadata) {
     if (framebufferMetadata->is_Initialized) return;
 
-    Buffer[0] = framebufferMetadata->physical_Width;
-    Buffer[1] = framebufferMetadata->physical_Height;
-    Buffer[2] = framebufferMetadata->virtual_Width;
-    Buffer[3] = framebufferMetadata->virtual_Height;
-    Buffer[4] = 0; // pitch
-    Buffer[5] = framebufferMetadata->depth;
-    Buffer[6] = framebufferMetadata->virtual_X_Offset;
-    Buffer[7] = framebufferMetadata->virtual_Y_Offset;
-    Buffer[8] = 0; // framebuffer address (set by VC)
-    Buffer[9] = 0; // framebuffer size (set by VC)
+    MessageBuffer[0] = framebufferMetadata->physical_Width;
+    MessageBuffer[1] = framebufferMetadata->physical_Height;
+    MessageBuffer[2] = framebufferMetadata->virtual_Width;
+    MessageBuffer[3] = framebufferMetadata->virtual_Height;
+    MessageBuffer[4] = 0; // pitch
+    MessageBuffer[5] = framebufferMetadata->depth;
+    MessageBuffer[6] = framebufferMetadata->virtual_X_Offset;
+    MessageBuffer[7] = framebufferMetadata->virtual_Y_Offset;
+    MessageBuffer[8] = 0; // framebuffer address (set by VC)
+    MessageBuffer[9] = 0; // framebuffer size (set by VC)
 
-    // Send GPU bus address to mailbox (4 attempts)
+    // Send GPU bus address to mailbox (4 attempts);
     for (uint8_t attempts = 0; attempts < 4; attempts++) {
         mailboxWrite((uintptr_t)&Buffer | VC_OFFSET, FRAMEBUFFER, sizeof(Buffer));
         mailboxRead(FRAMEBUFFER);
         if (framebufferMetadata->pointer) { break; }
     }
 
-    // fills the requested information
-    framebufferMetadata->pitch = (uint16_t)Buffer[4];
-    framebufferMetadata->pointer = (uintptr_t)((uintptr_t)Buffer[8] & ARM_OFFSET);
-    framebufferMetadata->size = (size_t)Buffer[9];
+    // fills whatever VC sent back;
+    framebufferMetadata->physical_Width = (uint16_t)MessageBuffer[0];
+    framebufferMetadata->physical_Height = (uint16_t)MessageBuffer[1];
+    framebufferMetadata->pitch = (uint16_t)MessageBuffer[4];
+    framebufferMetadata->pointer = (uintptr_t)((uintptr_t)MessageBuffer[8] & ARM_OFFSET);
+    framebufferMetadata->size = (size_t)MessageBuffer[9];
     framebufferMetadata->is_Initialized = true;
 }

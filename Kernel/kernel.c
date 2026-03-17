@@ -59,15 +59,14 @@ struct framebufferTable *framebuffer = &mailboxFramebuffer;
 
 // does practically nothing;
 void kernel_main() {
-    uint8_t name[8] = { 0, 1, 2, 3, 4, 5, 6, 7 };
-    gpio_setFunction(ACT_LED, OUTPUT);
-    gpio_setFunction(PWR_LED, OUTPUT);
-    gpio_pinWrite(PWR_LED, LOW);
-    gpio_pinWrite(ACT_LED, LOW);
+    gpio_setFunction(STATUS_LED, OUTPUT);
+    gpio_setFunction(POWER_LED, OUTPUT);
+    gpio_pinWrite(POWER_LED, LOW);
+    gpio_pinWrite(STATUS_LED, LOW);
     framebufferInit(&framebufferMetadata);
 
-    for (uint8_t i = 0; i < 8; i++) {
-        drawCharacter(&framebufferMetadata, OneDarker.blue, name[i]);
+    for (uint8_t i = 0; i < 127; i++) {
+        drawCharacter(&framebufferMetadata, OneDarker.red, i);
     }
 }
 

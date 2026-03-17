@@ -6,9 +6,6 @@
 
 //==========Bitwise-helpers==========//
 
-#define HIGH 1
-#define LOW 0
-
 /*
 -> functions that write 1/0 to a selected bit at a selected offset;
 -> the offset is the indexed bit which you want to change;

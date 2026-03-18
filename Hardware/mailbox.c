@@ -33,7 +33,7 @@
 /*
 -> Returned when trying read from Channel 7; It is undefined / unused, so just don't use it;
 -> unless you work for Broadcom and know what this channel does;
-*/ 
+*/
 
 #define UNDEFINED_CHANNEL_USAGE 0x80000002
 
@@ -51,7 +51,7 @@
 
 // ------------------- //
 
-static enum mailboxChannels {
+enum mailboxChannels {
     POWER,
     FRAMEBUFFER,
     VIRTUAL_UART,
@@ -63,7 +63,7 @@ static enum mailboxChannels {
     PROPERTY_TAGS
 };
 
-static enum mailboxTags {
+enum mailboxTags {
     FRAMEBUFFER_ALLOCATE = 0x00040001,
     FRAMEBUFFER_RELEASE = 0x00048001,
     SCREEN_BLANK = 0x00040002,
@@ -91,7 +91,7 @@ static enum mailboxTags {
 -> requestResponse must always be 0 initialized; VC will overwrite with 0x80000000 for success, 0x80000001 for fail;
 */
 
-static struct mailboxBuffer {
+struct mailboxBuffer {
     uint32_t size;
     uint32_t requestResponse;
     uint32_t tags[64];
@@ -203,7 +203,7 @@ void mailboxFramebufferInit(struct framebufferMetadata *framebufferMetadata) {
 
     // Send GPU bus address to mailbox (4 attempts);
     for (uint8_t attempts = 0; attempts < 4; attempts++) {
-        mailboxWrite((uintptr_t)&Buffer | VC_OFFSET, FRAMEBUFFER, sizeof(Buffer));
+        mailboxWrite((uintptr_t)&MessageBuffer | VC_OFFSET, FRAMEBUFFER, sizeof(MessageBuffer));
         mailboxRead(FRAMEBUFFER);
         if (framebufferMetadata->pointer) { break; }
     }

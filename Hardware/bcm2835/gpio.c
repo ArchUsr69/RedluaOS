@@ -63,11 +63,11 @@ void bcm2835gpio_setFunction(uint8_t pin, enum gpioFunctions function) {
 void bcm2835gpio_pinWrite(uint8_t pin, bool level) {
     if (pin > TOTAL_PINS) return;
     if (level) {
-        volatile uint32_t *register = (pin <= REGISTER_SIZE) ? GPIOSET0 : GPIOSET1;
-        writeBit32(register, pin % REGISTER_SIZE, HIGH);
+        volatile uint32_t *target = (pin <= REGISTER_SIZE) ? GPIOSET0 : GPIOSET1;
+        writeBit32(target, pin % REGISTER_SIZE, HIGH);
     } else {
-        volatile uint32_t *register = (pin <= REGISTER_SIZE) ? GPIOCLEAR0 : GPIOCLEAR1;
-        writeBit32(register, pin % REGISTER_SIZE, HIGH);
+        volatile uint32_t *target = (pin <= REGISTER_SIZE) ? GPIOCLEAR0 : GPIOCLEAR1;
+        writeBit32(target, pin % REGISTER_SIZE, HIGH);
     }
 }
 

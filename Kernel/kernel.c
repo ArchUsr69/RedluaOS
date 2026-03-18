@@ -6,7 +6,7 @@
 #include <bcm2835.h>
 #include <framebuffer.h>
 #include <mailbox.h>
-#include <text.h>
+#include <bitmap.h>
 #include <utils.h>
 
 // Hardcoded driver selection
@@ -65,8 +65,10 @@ void kernel_main() {
     gpio_pinWrite(STATUS_LED, LOW);
     framebufferInit(&framebufferMetadata);
 
-    for (uint8_t i = 0; i < 127; i++) {
-        drawCharacter(&framebufferMetadata, OneDarker.red, i);
+    char name[] = {"Hello, my name is Eduard. I hope this font looks good."};
+
+    for (uint8_t i = 0; i < sizeof(name); i++) {
+        drawCharacter(&framebufferMetadata, OneDarker.red, (uint8_t)name[i]);
     }
 }
 

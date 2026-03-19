@@ -57,18 +57,15 @@ struct colourPalette OneDarker = {
 struct gpioTable *gpio = &bcmGpioTable;
 struct framebufferTable *framebuffer = &mailboxFramebuffer;
 
-// does practically nothing;
 void kernel_main() {
     gpio_setFunction(STATUS_LED, OUTPUT);
     gpio_setFunction(POWER_LED, OUTPUT);
     gpio_pinWrite(POWER_LED, LOW);
     gpio_pinWrite(STATUS_LED, LOW);
+
     framebufferInit(&framebufferMetadata);
-
     char name[] = {"Hello, my name is Eduard. I hope this font looks good."};
-
     for (uint8_t i = 0; i < sizeof(name); i++) {
         drawCharacter(&framebufferMetadata, OneDarker.red, (uint8_t)name[i]);
     }
 }
-

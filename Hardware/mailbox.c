@@ -178,41 +178,45 @@ static uint32_t mailboxRead(enum mailboxChannels channel) {
 
 // -------------------------- //
 
-// Framebuffer message
-static volatile uint32_t __attribute__((aligned(16))) MessageBuffer[10];
-
 /*
--> initializes a framebuffer;
 -> takes a framebufferMetadata struct pointer where it writes all the information about the framebuffer;
--> some values must already be initialized: see the values bellow;
+-> All values must already be initialized; 
+-> it is pretty messy, but it works pretty fine;
+-> the order of the information can be found inside the array. *DO NOT CHANGE*
+-> every word must have 32 bits;
 */
 
 void mailboxFramebufferInit(struct framebufferMetadata *framebufferMetadata) {
     if (framebufferMetadata->is_Initialized) return;
 
-    MessageBuffer[0] = framebufferMetadata->physical_Width;
-    MessageBuffer[1] = framebufferMetadata->physical_Height;
-    MessageBuffer[2] = framebufferMetadata->virtual_Width;
-    MessageBuffer[3] = framebufferMetadata->virtual_Height;
-    MessageBuffer[4] = 0; // pitch
-    MessageBuffer[5] = framebufferMetadata->depth;
-    MessageBuffer[6] = framebufferMetadata->virtual_X_Offset;
-    MessageBuffer[7] = framebufferMetadata->virtual_Y_Offset;
-    MessageBuffer[8] = 0; // framebuffer address (set by VC)
-    MessageBuffer[9] = 0; // framebuffer size (set by VC)
+    // The Ugly array that holds the information;
+    static volatile uint32_t __attribute__((aligned(16))) legacyFramebuffer[10] = {
+        framebufferMetadata->physical_Width,
+        framebufferMetadata->physical_Height,
+        framebufferMetadata->virtual_Width,
+        framebufferMetadata->virtual_Height,
+        framebufferMetadata->pitch,            // *SET TO 0*
+        framebufferMetadata->depth,
+        framebufferMetadata->virtual_X_Offset,
+        framebufferMetadata->virtual_Y_Offset,
+        framebufferMetadata->pointer,          // *SET TO 0*
+        framebufferMetadata->size,             // *SET TO 0*
+    };
 
-    // Send GPU bus address to mailbox (4 attempts);
+    // Send the Message Buffer (4 attempts);
     for (uint8_t attempts = 0; attempts < 4; attempts++) {
-        mailboxWrite((uintptr_t)&MessageBuffer | VC_OFFSET, FRAMEBUFFER, sizeof(MessageBuffer));
+        mailboxWrite((uintptr_t)&legacyFramebuffer | VC_OFFSET, FRAMEBUFFER, sizeof(legacyFramebuffer));
         mailboxRead(FRAMEBUFFER);
-        if (framebufferMetadata->pointer) { break; }
+        if (legacyFramebuffer[8] != 0) { break; }
     }
 
-    // fills whatever VC sent back;
-    framebufferMetadata->physical_Width = (uint16_t)MessageBuffer[0];
-    framebufferMetadata->physical_Height = (uint16_t)MessageBuffer[1];
-    framebufferMetadata->pitch = (uint16_t)MessageBuffer[4];
-    framebufferMetadata->pointer = (uintptr_t)((uintptr_t)MessageBuffer[8] & ARM_OFFSET);
-    framebufferMetadata->size = (size_t)MessageBuffer[9];
+    // Fills whatever VC sent back;
+    framebufferMetadata->physical_Width = (uint16_t)legacyFramebuffer[0];
+    framebufferMetadata->physical_Height = (uint16_t)legacyFramebuffer[1];
+    framebufferMetadata->pitch = (uint16_t)legacyFramebuffer[4];
+    framebufferMetadata->pointer = (uintptr_t)legacyFramebuffer[8] & ARM_OFFSET;
+    framebufferMetadata->size = (size_t)legacyFramebuffer[9];
     framebufferMetadata->is_Initialized = true;
 }
+
+// -------------------------- //

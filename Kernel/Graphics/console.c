@@ -1,41 +1,42 @@
 #include <stdint.h>
 // ------------------ //
-#include <bitmap.h>
+#include <console.h>
 #include <framebuffer.h>
 
-// only used by the drawCharacter function;
-static void drawPixel(struct framebufferMetadata *pixel, uint16_t colour) {
-    if (pixel->x >= pixel->virtual_Width || pixel->y >= pixel->virtual_Height) return;
-    uint16_t *pointer = (uint16_t *)pixel->pointer;
-    pointer[(pixel->y * (pixel->pitch >> 1)) + pixel->x] = colour;
-}
-
 // Draws a standard Character (very slow right now; i need a DMA Driver)
-void drawCharacter(struct framebufferMetadata *screen, uint16_t colour, uint8_t character) {
+void consoleWrite(struct framebufferMetadata *screen, uint16_t colour, uint8_t character) {    
     if (screen->x >= screen->virtual_Width) {
         screen->x = 0;
-        screen->y += 16;
+        screen->y++;
     }
 
     if (screen->y >= screen->virtual_Height) return;
 
-    uint16_t startX = screen->x;
-    uint16_t startY = screen->y;
+    for (uint8_t row; row < 16; row++) {
+        uint16_t mask = colour ^ 0x0000;
+        uint32_t *pointer = (uint32_t *)screen->pointer;
+        uint8_t rowBits = ConsoleFont[character][row];
 
-    for (uint8_t row = 0; row < 16; row++) {
-        screen->x = startX;
-        screen->y = startY + row;
+        pointer[screen->x + ((screen->y + row) * screen->pitch >> 2)] =
+            (colour ^ (-( (rowBits >> 7) & 1U ) & mask)) |
+            ((colour ^ (-( (rowBits >> 6) & 1U ) & mask)) << 16);
 
-        for (uint8_t column = 0; column < 8; column++) {
-            if (RedFont[character][row] & (0x80 >> column)) {
-                drawPixel(screen, colour);
-            }
-            screen->x++;
-        }
+        pointer[screen->x + 1 + ((screen->y + row) * screen->pitch >> 2)] =
+            (colour ^ (-( (rowBits >> 5) & 1U ) & mask)) |
+            ((colour ^ (-( (rowBits >> 4) & 1U ) & mask)) << 16);
+
+        pointer[screen->x + 2 + ((screen->y + row) * screen->pitch >> 2)] =
+            (colour ^ (-( (rowBits >> 3) & 1U ) & mask)) |
+            ((colour ^ (-( (rowBits >> 2) & 1U ) & mask)) << 16);
+
+        pointer[screen->x + 3 + ((screen->y + row) * screen->pitch >> 2)] =
+            (colour ^ (-( (rowBits >> 1) & 1U ) & mask)) |
+            ((colour ^ (-( (rowBits >> 0) & 1U ) & mask)) << 16);
+
     }
-
-    screen->x = startX + 8;
-    screen->y = startY;
+    
+    screen->x += 8;
+    screen->y += 16;
 }
 
 // ------------------------------------------------ //
@@ -49,7 +50,7 @@ unless you don't want to touch grass for the next week;
 -> It's still a work in progress;
 */
 
-const uint8_t RedFont[127][16] = {
+const uint8_t ConsoleFont[127][16] = {
 
     // 32 Control Character;
     {0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,

@@ -5,9 +5,7 @@
 #define FRAMEBUFFER_H
 
 struct framebufferMetadata {
-    struct colourPalette *colourPalette;
     uintptr_t pointer;
-    uintptr_t virtual_pointer;
     uint32_t size;
     uint16_t virtual_Height;
     uint16_t virtual_Width;
@@ -49,11 +47,9 @@ struct framebufferTable {
     void (*framebufferInit)(struct framebufferMetadata *framebufferMetadata);
 };
 
-// pointer to global struct instance; defined by the kernel
-extern struct framebufferTable *framebuffer;
-
 // Wrapper functions
 static inline void framebufferInit(struct framebufferMetadata *framebufferMetadata) {
+    extern struct framebufferTable *framebuffer;
     framebuffer->framebufferInit(framebufferMetadata);
 }
 

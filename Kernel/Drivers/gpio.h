@@ -39,15 +39,14 @@ struct gpioTable {
 
 // ---------------- //
 
-// pointer to global struct instance (defined by main for now)
-extern struct gpioTable *gpio;
-
 // Wrapper functions
-static inline void gpio_setFunction(uint8_t pin, enum gpioFunctions function) {
+static inline void gpioSetFunction(uint8_t pin, enum gpioFunctions function) {
+    extern struct gpioTable *gpio;
     gpio->setFunction(pin, function);
 }
 
-static inline void gpio_pinWrite(uint8_t pin, bool level) {
+static inline void gpioPinWrite(uint8_t pin, bool level) {
+    extern struct gpioTable *gpio;
     gpio->pinWrite(pin, level);
 }
 

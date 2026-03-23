@@ -6,7 +6,7 @@
 #include <bcm2835.h>
 #include <framebuffer.h>
 #include <mailbox.h>
-#include <bitmap.h>
+#include <console.h>
 #include <utils.h>
 
 // Hardcoded driver selection
@@ -15,8 +15,8 @@ struct framebufferTable mailboxFramebuffer = {
 };
 
 struct gpioTable bcmGpioTable = {
-    .setFunction = bcm2835gpio_setFunction,
-    .pinWrite = bcm2835gpio_pinWrite
+    .setFunction = bcm2835gpioSetFunction,
+    .pinWrite = bcm2835gpioPinWrite
 };
 
 // Allocating a framebuffer metadata structure that holds information about the framebuffer
@@ -58,14 +58,23 @@ struct gpioTable *gpio = &bcmGpioTable;
 struct framebufferTable *framebuffer = &mailboxFramebuffer;
 
 void kernel_main() {
-    gpio_setFunction(STATUS_LED, OUTPUT);
-    gpio_setFunction(POWER_LED, OUTPUT);
-    gpio_pinWrite(POWER_LED, LOW);
-    gpio_pinWrite(STATUS_LED, LOW);
+    gpioSetFunction(STATUS_LED, OUTPUT);
+    gpioSetFunction(POWER_LED, OUTPUT);
+    gpioPinWrite(POWER_LED, LOW);
+    gpioPinWrite(STATUS_LED, LOW);
 
     framebufferInit(&framebufferMetadata);
-    char name[] = {"Hello, my name is Eduard. I hope this font looks good."};
-    for (uint8_t i = 0; i < sizeof(name); i++) {
-        drawCharacter(&framebufferMetadata, OneDarker.red, (uint8_t)name[i]);
+
+    while (true) {
+        for (uint8_t i = 0; i < framebufferMetadata.size / 2; i++) {
+            consoleWrite(&framebufferMetadata, OneDarker.red, 78);
+        }
+
+        framebufferMetadata.x = 0;
+        framebufferMetadata.y = 0;
+    
+        for (uint8_t i = 0; i < framebufferMetadata.size / 2; i++) {
+            consoleWrite(&framebufferMetadata, OneDarker.background, 67);
+        }
     }
 }

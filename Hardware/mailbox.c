@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include <stddef.h>
 #include <stdbool.h>
 // ------------------ //
 #include <mailbox.h>
@@ -40,7 +41,6 @@
 // ------------------- //
 
 /*
--> address offsets;
 -> if ARM -> VC, bitwise OR the address (address | VC_OFFSET);
 -> if VC -> ARM, bitwise AND the returned address (address & ARM_OFFSET);
 -> Exception is when you use the property interface channel; then somehow VC speaks in physical addresses;
@@ -89,7 +89,7 @@ enum mailboxTags {
 -> Property interface mailbox buffer structure (unused for now);
 -> size must be calculated;
 -> requestResponse must always be 0 initialized; VC will overwrite with 0x80000000 for success, 0x80000001 for fail;
--> only allocates 32 Words for tags; Try not to use so many tags at once
+-> only allocates 32 Words for tags; Try not to use so many tags at once;
 */
 
 struct mailboxBuffer {
@@ -106,7 +106,7 @@ struct mailboxBuffer {
 -> don't try to understand much. It's magic. Even i don't understand this crap;
 */
 
-static inline void flush_dcache(uintptr_t address, size_t size) {
+static inline void flushCache(uintptr_t address, size_t size) {
     uintptr_t start = address & ~31;
     uintptr_t end = address + size;
 
@@ -121,7 +121,7 @@ static inline void flush_dcache(uintptr_t address, size_t size) {
 }
 
 // (unused for now);
-static inline void invalidate_dcache(uintptr_t address, size_t size) {
+static inline void invalidateCache(uintptr_t address, size_t size) {
     uintptr_t start = address & ~31;
     uintptr_t end = address + size;
 
@@ -144,16 +144,16 @@ good idea to have the channel and pointer in the same register;
 -> the function must wait until the register is ready to be written to;
 -> Buffer size must be calculated so that the cache can be flushed accordingly;
 
-What the register expects:
+   What the register expects:
 
-bit [31-4] -> pointer
-bit [3-0] -> channel
+   bit [31-4] -> pointer;
+   bit [3-0] -> channel;
 */
 
 static void mailboxWrite(uintptr_t pointer, enum mailboxChannels channel, size_t bufferSize) {
     if (channel == UNDEFINED) return;
     while (*MAILBOX_READ_STATUS & MAILBOX_FULL) { /* spins */ }
-    flush_dcache(pointer, bufferSize);
+    flushCache(pointer, bufferSize);
     *MAILBOX_WRITE = pointer | channel;
 }
 
@@ -161,7 +161,7 @@ static void mailboxWrite(uintptr_t pointer, enum mailboxChannels channel, size_t
 
 /*
 -> reads what VideoCore sent us back;
--> Function only returns only the upper 28 bits from the register downshifted;
+-> Function only returns the upper 28 bits from the register downshifted;
 -> must be called so that VC responds to the sent message;
 -> will return 0x80000002 if trying to read channel 7;
 */
@@ -191,7 +191,7 @@ void mailboxFramebufferInit(struct framebufferMetadata *framebufferMetadata) {
     if (framebufferMetadata->is_Initialized == true) return;
 
     // The Ugly array that holds the information;
-    static volatile uint32_t __attribute__((aligned(16))) legacyFramebuffer[10] = {
+    volatile uint32_t __attribute__((aligned(16))) legacyFramebuffer[10] = {
         framebufferMetadata->physical_Width,
         framebufferMetadata->physical_Height,
         framebufferMetadata->virtual_Width,
@@ -201,7 +201,7 @@ void mailboxFramebufferInit(struct framebufferMetadata *framebufferMetadata) {
         framebufferMetadata->virtual_X_Offset,
         framebufferMetadata->virtual_Y_Offset,
         framebufferMetadata->pointer,          // *SET TO 0*
-        framebufferMetadata->size,             // *SET TO 0*
+        framebufferMetadata->size             // *SET TO 0*
     };
 
     // Send the Message Buffer (4 attempts);
@@ -218,6 +218,7 @@ void mailboxFramebufferInit(struct framebufferMetadata *framebufferMetadata) {
     framebufferMetadata->pointer = (uintptr_t)legacyFramebuffer[8] & ARM_OFFSET;
     framebufferMetadata->size = (size_t)legacyFramebuffer[9];
     framebufferMetadata->is_Initialized = true;
-}
 
 // -------------------------- //
+
+}

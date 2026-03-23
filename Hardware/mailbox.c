@@ -9,18 +9,18 @@
 #define MAILBOX_BASE 0x2000B880
 
 // Mailbox 0 Registers (*NEVER WRITE TO THESE REGISTERS*)
-#define MAILBOX_READ ((volatile uint32_t *)(MAILBOX_BASE + 0x00))
-#define MAILBOX_READ_PEEK ((volatile uint32_t *)(MAILBOX_BASE + 0x10))
-#define MAILBOX_READ_SENDER ((volatile uint32_t *)(MAILBOX_BASE + 0x14))
-#define MAILBOX_READ_STATUS ((volatile uint32_t *)(MAILBOX_BASE + 0x18))
-#define MAILBOX_READ_CONFIG ((volatile uint32_t *)(MAILBOX_BASE + 0x1C))
+#define MAILBOX_READ ((REGISTER_32 *)(MAILBOX_BASE + 0x00))
+#define MAILBOX_READ_PEEK ((REGISTER_32 *)(MAILBOX_BASE + 0x10))
+#define MAILBOX_READ_SENDER ((REGISTER_32 *)(MAILBOX_BASE + 0x14))
+#define MAILBOX_READ_STATUS ((REGISTER_32 *)(MAILBOX_BASE + 0x18))
+#define MAILBOX_READ_CONFIG ((REGISTER_32 *)(MAILBOX_BASE + 0x1C))
 
 // Mailbox 1 Registers (You shouldn't read these registers; not that you have to)
-#define MAILBOX_WRITE ((volatile uint32_t *)(MAILBOX_BASE + 0x20))
-#define MAILBOX_WRITE_PEEK ((volatile uint32_t *)(MAILBOX_BASE + 0x30))
-#define MAILBOX_WRITE_SENDER ((volatile uint32_t *)(MAILBOX_BASE + 0x34))
-#define MAILBOX_WRITE_STATUS ((volatile uint32_t *)(MAILBOX_BASE + 0x38))
-#define MAILBOX_WRITE_CONFIG ((volatile uint32_t *)(MAILBOX_BASE + 0x3C))
+#define MAILBOX_WRITE ((REGISTER_32 *)(MAILBOX_BASE + 0x20))
+#define MAILBOX_WRITE_PEEK ((REGISTER_32 *)(MAILBOX_BASE + 0x30))
+#define MAILBOX_WRITE_SENDER ((REGISTER_32 *)(MAILBOX_BASE + 0x34))
+#define MAILBOX_WRITE_STATUS ((REGISTER_32 *)(MAILBOX_BASE + 0x38))
+#define MAILBOX_WRITE_CONFIG ((REGISTER_32 *)(MAILBOX_BASE + 0x3C))
 
 // Mailbox Status Flags
 #define MAILBOX_FULL 0x80000000
@@ -89,12 +89,13 @@ enum mailboxTags {
 -> Property interface mailbox buffer structure (unused for now);
 -> size must be calculated;
 -> requestResponse must always be 0 initialized; VC will overwrite with 0x80000000 for success, 0x80000001 for fail;
+-> only allocates 32 Words for tags; Try not to use so many tags at once
 */
 
 struct mailboxBuffer {
     uint32_t size;
     uint32_t requestResponse;
-    uint32_t tags[64];
+    uint32_t tags[32];
 };
 
 // ---------------------------- //
@@ -187,7 +188,7 @@ static uint32_t mailboxRead(enum mailboxChannels channel) {
 */
 
 void mailboxFramebufferInit(struct framebufferMetadata *framebufferMetadata) {
-    if (framebufferMetadata->is_Initialized) return;
+    if (framebufferMetadata->is_Initialized == true) return;
 
     // The Ugly array that holds the information;
     static volatile uint32_t __attribute__((aligned(16))) legacyFramebuffer[10] = {

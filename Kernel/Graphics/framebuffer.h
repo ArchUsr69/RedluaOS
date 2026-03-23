@@ -5,7 +5,9 @@
 #define FRAMEBUFFER_H
 
 struct framebufferMetadata {
+    struct colourPalette *colourPalette;
     uintptr_t pointer;
+    uintptr_t virtual_pointer;
     uint32_t size;
     uint16_t virtual_Height;
     uint16_t virtual_Width;

@@ -8,19 +8,17 @@
 #define GPIO_BASE 0x20200000
 
 // GPIO Pin Function selector register base
-#define GPIOFSELECT_BASE ((volatile uint32_t *)(GPIO_BASE))
+#define GPIOFSELECT_BASE ((REGISTER_32 *)(GPIO_BASE + 0x00))
 
 // Output set Registers
-#define GPIOSET0 ((volatile uint32_t *)(GPIO_BASE + 0x1C))
-#define GPIOSET1 ((volatile uint32_t *)(GPIO_BASE + 0x20))
+#define GPIOSET0 ((REGISTER_32 *)(GPIO_BASE + 0x1C))
+#define GPIOSET1 ((REGISTER_32 *)(GPIO_BASE + 0x20))
 
 // Output clear Registers
-#define GPIOCLEAR0 ((volatile uint32_t *)(GPIO_BASE + 0x28))
-#define GPIOCLEAR1 ((volatile uint32_t *)(GPIO_BASE + 0x2C))
+#define GPIOCLEAR0 ((REGISTER_32 *)(GPIO_BASE + 0x28))
+#define GPIOCLEAR1 ((REGISTER_32 *)(GPIO_BASE + 0x2C))
 
-// Misc
 #define TOTAL_PINS 53
-#define REGISTER_SIZE 32
 
 /*
 -> maps the standard gpio function numbers to the bcm2835 gpio function values;
@@ -62,12 +60,12 @@ void bcm2835gpio_setFunction(uint8_t pin, enum gpioFunctions function) {
 
 void bcm2835gpio_pinWrite(uint8_t pin, bool level) {
     if (pin > TOTAL_PINS) return;
-    if (level) {
-        volatile uint32_t *target = (pin <= REGISTER_SIZE) ? GPIOSET0 : GPIOSET1;
-        writeBit32(target, pin % REGISTER_SIZE, HIGH);
+    if (level == HIGH) {
+        REGISTER_32 *target = (pin <= LONG_SIZE) ? GPIOSET0 : GPIOSET1;
+        writeBit32(target, pin % LONG_SIZE, HIGH);
     } else {
-        volatile uint32_t *target = (pin <= REGISTER_SIZE) ? GPIOCLEAR0 : GPIOCLEAR1;
-        writeBit32(target, pin % REGISTER_SIZE, HIGH);
+        REGISTER_32 *target = (pin <= LONG_SIZE) ? GPIOCLEAR0 : GPIOCLEAR1;
+        writeBit32(target, pin % LONG_SIZE, HIGH);
     }
 }
 

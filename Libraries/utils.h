@@ -4,39 +4,38 @@
 #ifndef UTILS_H
 #define UTILS_H
 
+#define HIGH 1U
+#define LOW 0
+
+#define BYTE_SIZE 8
+#define WORD_SIZE 16
+#define LONG_SIZE 32
+
+// Specially made for MMIO Registers, but can be used for normal RAM Usage;
+typedef volatile uint8_t REGISTER_8;
+typedef volatile uint16_t REGISTER_16;
+typedef volatile uint32_t REGISTER_32;
+
 //==========Bitwise-helpers==========//
 
 /*
--> functions that write 1/0 to a selected bit at a selected offset;
+-> functions that switches the bit at a selected offset;
 -> the offset is the indexed bit which you want to change;
--> bit is, uhh well, the value, duhhh (1 or 0);
 */
 
-static inline void writeBit8(volatile uint8_t *target, uint8_t offset, bool bit) {
-    if (offset >= 8) { /* does nothing; safety check */ return; }
-    if (bit) {
-        *target |= (1 << offset);
-    } else {
-        *target &= ~(1 << offset);
-    }
+static inline void switchBit8(REGISTER_8 *target, uint8_t offset) {
+    if (offset >= BYTE_SIZE) return;
+    *target ^= (HIGH << offset);
 }
 
-static inline void writeBit16(volatile uint16_t *target, uint8_t offset, bool bit) {
-    if (offset >= 16) { return; }
-    if (bit) {
-        *target |= (1 << offset);
-    } else {
-        *target &= ~(1 << offset);
-    }
+static inline void switchBit16(REGISTER_16 *target, uint8_t offset) {
+    if (offset >= WORD_SIZE) return;
+    *target ^= (HIGH << offset);
 }
 
-static inline void writeBit32(volatile uint32_t *target, uint8_t offset, bool bit) {
-    if (offset >= 32) { return; }
-    if (bit) {
-        *target |= (1 << offset);
-    } else {
-        *target &= ~(1 << offset);
-    }
+static inline void switchBit32(REGISTER_32 *target, uint8_t offset) {
+    if (offset >= LONG_SIZE) return;
+    *target ^= (HIGH << offset);
 }
 
 // ------------------------------ //
@@ -52,23 +51,23 @@ static inline void writeBit32(volatile uint32_t *target, uint8_t offset, bool bi
 don't align the value; the start of the value is always at the first bit of the number you're passing;
 */
 
-static inline void writeField8(volatile uint8_t *target, uint8_t value, uint8_t offset, uint8_t length) {
-    if (offset + length >= 8) { /* does nothing; safety check */ return; }
-    uint8_t mask = ((1 << length) - 1) << offset;
+static inline void writeField8(REGISTER_8 *target, uint8_t value, uint8_t offset, uint8_t length) {
+    if (offset + length >= BYTE_SIZE) return;
+    uint8_t mask = ((HIGH << length) - HIGH) << offset;
     *target &= ~mask;
     *target |= (value << offset) & mask;
 }
 
-static inline void writeField16(volatile uint16_t *target, uint16_t value, uint8_t offset, uint8_t length) {
-    if (offset + length >= 16) { return; }
-    uint16_t mask = ((1 << length) - 1) << offset;
+static inline void writeField16(REGISTER_16 *target, uint16_t value, uint8_t offset, uint8_t length) {
+    if (offset + length >= WORD_SIZE) return;
+    uint16_t mask = ((HIGH << length) - HIGH) << offset;
     *target &= ~mask;
     *target |= (value << offset) & mask;
 }
 
-static inline void writeField32(volatile uint32_t *target, uint32_t value, uint8_t offset, uint8_t length) {
-    if (offset + length >= 32) { return; }
-    uint32_t mask = ((1 << length) - 1) << offset;
+static inline void writeField32(REGISTER_32 *target, uint32_t value, uint8_t offset, uint8_t length) {
+    if (offset + length >= LONG_SIZE) return;
+    uint32_t mask = ((HIGH << length) - HIGH) << offset;
     *target &= ~mask;
     *target |= (value << offset) & mask;
 }
@@ -80,19 +79,19 @@ static inline void writeField32(volatile uint32_t *target, uint32_t value, uint8
 -> functions that return the selected Bit (offset), pretty easy to understand, right?
 */
 
-static inline bool readBit8(volatile uint8_t *target, uint8_t offset) {
-    if (offset >= 8) { return 0; }
-    return (*target >> offset) & 1;
+static inline bool readBit8(REGISTER_8 *target, uint8_t offset) {
+    if (offset >= BYTE_SIZE) return LOW;
+    return (*target >> offset) & HIGH;
 }
 
-static inline bool readBit16(volatile uint16_t *target, uint8_t offset) {
-    if (offset >= 16) { return 0; }
-    return (*target >> offset) & 1;
+static inline bool readBit16(REGISTER_16 *target, uint8_t offset) {
+    if (offset >= WORD_SIZE) return LOW;
+    return (*target >> offset) & HIGH;
 }
 
-static inline bool readBit32(volatile uint32_t *target, uint8_t offset) {
-    if (offset >= 32) { return 0; }
-    return (*target >> offset) & 1;
+static inline bool readBit32(REGISTER_32 *target, uint8_t offset) {
+    if (offset >= LONG_SIZE) return LOW;
+    return (*target >> offset) & HIGH;
 }
 
 // ------------------------------ //
@@ -103,19 +102,19 @@ static inline bool readBit32(volatile uint32_t *target, uint8_t offset) {
 -> offset and length function the same as in the functions from above;
 */
 
-static inline uint8_t readField8(volatile uint8_t *target, uint8_t offset, uint8_t length) {
-    if (offset + length >= 8) { return 0; }
-    return (*target >> offset) & ((1 << length) - 1);
+static inline uint8_t readField8(REGISTER_8 *target, uint8_t offset, uint8_t length) {
+    if (offset + length >= BYTE_SIZE) return LOW;
+    return (*target >> offset) & ((HIGH << length) - HIGH);
 }
 
-static inline uint16_t readField16(volatile uint16_t *target, uint8_t offset, uint8_t length) {
-    if (offset + length >= 16) { return 0; }
-    return (*target >> offset) & ((1 << length) - 1);
+static inline uint16_t readField16(REGISTER_16 *target, uint8_t offset, uint8_t length) {
+    if (offset + length >= WORD_SIZE) return LOW;
+    return (*target >> offset) & ((HIGH << length) - HIGH);
 }
 
-static inline uint32_t readField32(volatile uint32_t *target, uint8_t offset, uint8_t length) {
-    if (offset + length >= 32) { return 0; }
-    return (*target >> offset) & ((1 << length) - 1);
+static inline uint32_t readField32(REGISTER_32 *target, uint8_t offset, uint8_t length) {
+    if (offset + length >= LONG_SIZE) return LOW;
+    return (*target >> offset) & ((HIGH << length) - HIGH);
 }
 
 // ------------------------------ //

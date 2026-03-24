@@ -5,38 +5,37 @@
 
 // Draws a standard Character (very slow right now; i need a DMA Driver)
 void consoleWrite(struct framebufferMetadata *screen, uint16_t colour, uint8_t character) {    
-    if (screen->x >= screen->virtual_Width) {
+    if (screen->x >= screen->virtual_Width / 8) {
         screen->x = 0;
         screen->y++;
     }
 
-    if (screen->y >= screen->virtual_Height) return;
+    if (screen->y >= screen->virtual_Height / 16) return;
 
-    for (uint8_t row; row < 16; row++) {
-        uint16_t mask = colour ^ 0x0000;
-        uint32_t *pointer = (uint32_t *)screen->pointer;
+    uint16_t mapped_x = screen->x * 4;
+    uint16_t mapped_y = screen->y * 16;
+    uint32_t *pointer = (uint32_t *)screen->pointer;
+
+    for (uint8_t row = 0; row < 16; row++) {
         uint8_t rowBits = ConsoleFont[character][row];
+        pointer[mapped_x + ((mapped_y + row) * screen->pitch >> 2)] =
+            (0x0000 ^ (-( (rowBits >> 7) & 1U ) & colour)) |
+            ((0x0000 ^ (-( (rowBits >> 6) & 1U ) & colour)) << 16);
 
-        pointer[screen->x + ((screen->y + row) * screen->pitch >> 2)] =
-            (colour ^ (-( (rowBits >> 7) & 1U ) & mask)) |
-            ((colour ^ (-( (rowBits >> 6) & 1U ) & mask)) << 16);
+        pointer[mapped_x + 1 + ((mapped_y + row) * screen->pitch >> 2)] =
+            (0x0000 ^ (-( (rowBits >> 5) & 1U ) & colour)) |
+            ((0x0000 ^ (-( (rowBits >> 4) & 1U ) & colour)) << 16);
 
-        pointer[screen->x + 1 + ((screen->y + row) * screen->pitch >> 2)] =
-            (colour ^ (-( (rowBits >> 5) & 1U ) & mask)) |
-            ((colour ^ (-( (rowBits >> 4) & 1U ) & mask)) << 16);
+        pointer[mapped_x + 2 + ((mapped_y + row) * screen->pitch >> 2)] =
+            (0x0000 ^ (-( (rowBits >> 3) & 1U ) & colour)) |
+            ((0x0000 ^ (-( (rowBits >> 2) & 1U ) & colour)) << 16);
 
-        pointer[screen->x + 2 + ((screen->y + row) * screen->pitch >> 2)] =
-            (colour ^ (-( (rowBits >> 3) & 1U ) & mask)) |
-            ((colour ^ (-( (rowBits >> 2) & 1U ) & mask)) << 16);
-
-        pointer[screen->x + 3 + ((screen->y + row) * screen->pitch >> 2)] =
-            (colour ^ (-( (rowBits >> 1) & 1U ) & mask)) |
-            ((colour ^ (-( (rowBits >> 0) & 1U ) & mask)) << 16);
+        pointer[mapped_x + 3 + ((mapped_y + row) * screen->pitch >> 2)] =
+            (0x0000 ^ (-( (rowBits >> 1) & 1U ) & colour)) |
+            ((0x0000 ^ (-( (rowBits >> 0) & 1U ) & colour)) << 16);
 
     }
-    
-    screen->x += 8;
-    screen->y += 16;
+    screen->x++;
 }
 
 // ------------------------------------------------ //

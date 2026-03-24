@@ -64,17 +64,21 @@ void kernel_main() {
     gpioPinWrite(STATUS_LED, LOW);
 
     framebufferInit(&framebufferMetadata);
+    uint16_t totalCharacters = (framebufferMetadata.virtual_Height / 16) * (framebufferMetadata.virtual_Width / 8);
 
     while (true) {
-        for (uint8_t i = 0; i < framebufferMetadata.size / 2; i++) {
-            consoleWrite(&framebufferMetadata, OneDarker.red, 78);
+        for (uint16_t i = 0; i < totalCharacters; i++) {
+            consoleWrite(&framebufferMetadata, OneDarker.red, 70);
         }
 
-        framebufferMetadata.x = 0;
         framebufferMetadata.y = 0;
-    
-        for (uint8_t i = 0; i < framebufferMetadata.size / 2; i++) {
-            consoleWrite(&framebufferMetadata, OneDarker.background, 67);
+        framebufferMetadata.x = 0;
+
+        for (uint16_t i = 0; i < totalCharacters; i++) {
+            consoleWrite(&framebufferMetadata, OneDarker.blue, 70);
         }
+
+        framebufferMetadata.y = 0;
+        framebufferMetadata.x = 0;
     }
 }

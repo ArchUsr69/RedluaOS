@@ -2,40 +2,119 @@
 // ------------------ //
 #include <console.h>
 #include <framebuffer.h>
+#include <utils.h>
 
-// Draws a standard Character (very slow right now; i need a DMA Driver)
-void consoleWrite(struct framebufferMetadata *screen, uint16_t colour, uint8_t character) {    
-    if (screen->x >= screen->virtual_Width / 8) {
-        screen->x = 0;
-        screen->y++;
+#define CHARACTER_WIDTH 8
+#define CHARACTER_HEIGHT 16
+
+/*
+-> The default colour Palette RedluaOS will use;
+-> Later on, i will make it possible to change the colours via user input;
+*/
+
+struct consoleColours {
+    uint16_t background;
+    uint16_t foreground;
+    uint16_t black;
+    uint16_t red;
+    uint16_t green;
+    uint16_t yellow;
+    uint16_t blue;
+    uint16_t magenta;
+    uint16_t cyan;
+    uint16_t white;
+    uint16_t brightBlack;
+    uint16_t brightRed;
+    uint16_t brightGreen;
+    uint16_t brightYellow;
+    uint16_t brightBlue;
+    uint16_t brightMagenta;
+    uint16_t brightCyan;
+    uint16_t brightWhite;
+};
+
+struct consoleColours OneDarker = {
+    .background = 0x0000,
+    .foreground = 0xFFFF,
+    .black = 0x2966,
+    .red = 0xDB6E,
+    .green = 0x7EED,
+    .yellow = 0xF7EC,
+    .blue = 0x4D9E,
+    .magenta = 0xFB3D,
+    .cyan = 0x55B8,
+    .white = 0xFFFF,
+    .brightBlack = 0xAD97,
+    .brightRed = 0xDB6E,
+    .brightGreen = 0x7EED,
+    .brightYellow = 0xF7EC,
+    .brightBlue = 0x4D9E,
+    .brightMagenta = 0xFB3D,
+    .brightCyan = 0x55B8,
+    .brightWhite = 0xFFFF
+};
+
+// --------------------- //
+
+/*
+-> Initializes a console;
+-> MUST have the framebuffer initialized for it to work, or else it will just return;
+-> it also returns if the console has already been initialized;
+*/
+
+void consoleInit() {
+    if (framebuffer.pointer == 0 || console.rows != 0) return;
+    console.rows = framebuffer.virtualHeight / CHARACTER_HEIGHT;
+    console.columns = framebuffer.virtualWidth / CHARACTER_WIDTH;
+    console.cursorX = 0;
+    console.cursorY = 0;
+};
+
+// ---------------------- //
+
+/*
+-> a mathematical monster basically;
+-> It is pretty fragile, so don't try to change much from the math;
+-> It assumes depth = 16, so make sure that it is, or else it won't work;
+-> Writes 4 bytes at once to squeeze performance; yet it is still slow AF;
+-> I'm gonna try to make it more flexible in another time;
+*/
+
+void consoleWrite(enum consoleColours foreground, enum consoleColours background, uint8_t character) {
+    if (console.cursorX >= console.columns) {
+        console.cursorX = 0;
+        console.cursorY++;
     }
 
-    if (screen->y >= screen->virtual_Height / 16) return;
+    if (console.cursorY >= console.Rows) return;
 
-    uint16_t mapped_x = screen->x * 4;
-    uint16_t mapped_y = screen->y * 16;
-    uint32_t *pointer = (uint32_t *)screen->pointer;
+    uint16_t x = console.cursorX * (CHARACTER_WIDTH / (framebuffer.depth >> 3));
+    uint16_t y = console.cursorY * CHARACTER_HEIGHT;
+    REGISTER_32 *framebuffer = (REGISTER_32 *)framebuffer.pointer;
+    uint16_t Foreground = consoleColours[foreground];
+    uint16_t Background = consoleColours[background];
 
-    for (uint8_t row = 0; row < 16; row++) {
-        uint8_t rowBits = ConsoleFont[character][row];
-        pointer[mapped_x + ((mapped_y + row) * screen->pitch >> 2)] =
-            (0x0000 ^ (-( (rowBits >> 7) & 1U ) & colour)) |
-            ((0x0000 ^ (-( (rowBits >> 6) & 1U ) & colour)) << 16);
+    for (uint8_t row = 0; row < CHARACTER_HEIGHT; row++) {
+        uint8_t characterRow = consoleFont[character][row];
+        uint32_t linearOffset = (y + row) * (framebuffer.pitch >> 2));
 
-        pointer[mapped_x + 1 + ((mapped_y + row) * screen->pitch >> 2)] =
-            (0x0000 ^ (-( (rowBits >> 5) & 1U ) & colour)) |
-            ((0x0000 ^ (-( (rowBits >> 4) & 1U ) & colour)) << 16);
+        framebuffer[(x + 0) + linearOffset] =
+            (Background ^ (-( (characterRow >> 7) & 1U ) & Foreground)) |
+            ((Background ^ (-( (characterRow >> 6) & 1U ) & Foreground)) << CHARACTER_HEIGHT);
 
-        pointer[mapped_x + 2 + ((mapped_y + row) * screen->pitch >> 2)] =
-            (0x0000 ^ (-( (rowBits >> 3) & 1U ) & colour)) |
-            ((0x0000 ^ (-( (rowBits >> 2) & 1U ) & colour)) << 16);
+        framebuffer[(x + 1) + linearOffset] =
+            (Background ^ (-( (characterRow >> 5) & 1U ) & Foreground)) |
+            ((Background ^ (-( (characterRow >> 4) & 1U ) & Foreground)) << CHARACTER_HEIGHT);
 
-        pointer[mapped_x + 3 + ((mapped_y + row) * screen->pitch >> 2)] =
-            (0x0000 ^ (-( (rowBits >> 1) & 1U ) & colour)) |
-            ((0x0000 ^ (-( (rowBits >> 0) & 1U ) & colour)) << 16);
+        framebuffer[(x + 2) + linearOffset] =
+            (Background ^ (-( (characterRow >> 3) & 1U ) & Foreground)) |
+            ((Background ^ (-( (characterRow >> 2) & 1U ) & Foreground)) << CHARACTER_HEIGHT);
 
+        framebuffer[(x + 3) + linearOffset] =
+            (Background ^ (-( (characterRow >> 1) & 1U ) & Foreground)) |
+            ((Background ^ (-( (characterRow >> 0) & 1U ) & Foreground)) << CHARACTER_HEIGHT);
     }
-    screen->x++;
+    console.cursorX++;
 }
 
 // ------------------------------------------------ //
@@ -46,10 +125,9 @@ void consoleWrite(struct framebufferMetadata *screen, uint16_t colour, uint8_t c
 -> Feel free to create your own Font or add one; I wouldn't recommend that though,
 unless you don't want to touch grass for the next week;
 -> Seriously, making your own Bitmap is a pain in the ass; Tedious as fuck. Don't do it. I beg you
--> It's still a work in progress;
 */
 
-const uint8_t ConsoleFont[127][16] = {
+const uint8_t consoleFont[127][CHARACTER_HEIGHT] = {
 
     // 32 Control Character;
     {0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,

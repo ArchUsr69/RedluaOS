@@ -2,12 +2,12 @@
 #include <stddef.h>
 #include <stdbool.h>
 // ------------------ //
-#include <mailbox.h>
+#include <broadcom.h>
 #include <utils.h>
 #include <framebuffer.h>
 
 // for now Hardcoded; It should be PERIPHERAL_BASE + MAILBOX_BASE offset
-#define MAILBOX_BASE 0x2000B880
+#define MAILBOX_BASE (PERIPHERAL_BASE + 0xB880)
 
 // Mailbox 0 Registers (*NEVER WRITE TO THESE REGISTERS*)
 #define MAILBOX_READ ((REGISTER_32 *)(MAILBOX_BASE + 0x00))
@@ -152,7 +152,7 @@ good idea to have the channel and pointer in the same register;
 
 static void mailboxWrite(uintptr_t pointer, enum mailboxChannels channel, size_t bufferSize) {
     if (channel == UNDEFINED) return;
-    while (*MAILBOX_READ_STATUS & MAILBOX_FULL) { /* spins */ }
+    while (*MAILBOX_READ_STATUS & MAILBOX_FULL != 0) { /* spins */ }
     flushCache(pointer, bufferSize);
     *MAILBOX_WRITE = pointer | channel;
 }
@@ -169,9 +169,9 @@ static void mailboxWrite(uintptr_t pointer, enum mailboxChannels channel, size_t
 static uint32_t mailboxRead(enum mailboxChannels channel) {
     if (channel == UNDEFINED) return UNDEFINED_CHANNEL_USAGE;
     while (true) {
-        while (*MAILBOX_READ_STATUS & MAILBOX_EMPTY) { /* spins */ }
+        while (*MAILBOX_READ_STATUS & MAILBOX_EMPTY != 0) { /* spins */ }
         uint32_t registerContents = *MAILBOX_READ;
-        if (registerContents & channel) {
+        if (registerContents & channel != 0) {
             return registerContents >> 4;
         }
     }
@@ -187,37 +187,36 @@ static uint32_t mailboxRead(enum mailboxChannels channel) {
 -> every word must have 32 bits;
 */
 
-void mailboxFramebufferInit(struct framebufferMetadata *framebufferMetadata) {
-    if (framebufferMetadata->is_Initialized == true) return;
+void BCMFramebufferInit() {;
+    if (screen->pointer != 0) return;
 
     // The Ugly array that holds the information;
-    volatile uint32_t __attribute__((aligned(16))) legacyFramebuffer[10] = {
-        framebufferMetadata->physical_Width,
-        framebufferMetadata->physical_Height,
-        framebufferMetadata->virtual_Width,
-        framebufferMetadata->virtual_Height,
-        framebufferMetadata->pitch,            // *SET TO 0*
-        framebufferMetadata->depth,
-        framebufferMetadata->virtual_X_Offset,
-        framebufferMetadata->virtual_Y_Offset,
-        framebufferMetadata->pointer,          // *SET TO 0*
-        framebufferMetadata->size             // *SET TO 0*
+    volatile uint32_t __attribute__((aligned(16))) messageBuffer[10] = {
+        framebuffer.physical_Width,
+        framebuffer.physical_Height,
+        framebuffer.virtual_Width,
+        framebuffer.virtual_Height,
+        framebuffer.pitch,            // *SET TO 0*
+        framebuffer.depth,
+        framebuffer.virtual_X_Offset,
+        framebuffer.virtual_Y_Offset,
+        framebuffer.pointer,          // *SET TO 0*
+        framebuffer.size             // *SET TO 0*
     };
 
     // Send the Message Buffer (4 attempts);
     for (uint8_t attempts = 0; attempts < 4; attempts++) {
-        mailboxWrite((uintptr_t)&legacyFramebuffer | VC_OFFSET, FRAMEBUFFER, sizeof(legacyFramebuffer));
+        mailboxWrite((uintptr_t)&messageBuffer | VC_OFFSET, FRAMEBUFFER, sizeof(messageBuffer));
         mailboxRead(FRAMEBUFFER);
         if (legacyFramebuffer[8] != 0) { break; }
     }
 
     // Fills whatever VC sent back;
-    framebufferMetadata->physical_Width = (uint16_t)legacyFramebuffer[0];
-    framebufferMetadata->physical_Height = (uint16_t)legacyFramebuffer[1];
-    framebufferMetadata->pitch = (uint16_t)legacyFramebuffer[4];
-    framebufferMetadata->pointer = (uintptr_t)legacyFramebuffer[8] & ARM_OFFSET;
-    framebufferMetadata->size = (size_t)legacyFramebuffer[9];
-    framebufferMetadata->is_Initialized = true;
+    framebuffer.physical_Width = (uint16_t)messageBuffer[0];
+    framebuffer.physical_Height = (uint16_t)messageBuffer[1];
+    framebuffer.pitch = (uint16_t)messageBuffer[4];
+    framebuffer.pointer = (uintptr_t)messageBuffer[8] & ARM_OFFSET;
+    framebuffer.size = (size_t)messageBuffer[9];
 
 // -------------------------- //
 

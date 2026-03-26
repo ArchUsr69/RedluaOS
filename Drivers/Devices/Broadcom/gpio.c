@@ -1,11 +1,11 @@
 #include <stdint.h>
 #include <stdbool.h>
-// ---------------- //
-#include <bcm2835.h>
+// --------------- //
+#include <broadcom.h>
 #include <gpio.h>
 #include <utils.h>
 
-#define GPIO_BASE 0x20200000
+#define GPIO_BASE (PERIPHERAL_BASE + 0x200000)
 
 // GPIO Pin Function selector registers
 #define GPIOFSELECT_BASE ((REGISTER_32 *)(GPIO_BASE + 0x00))
@@ -26,7 +26,7 @@
 -> Those are the raw values that will be written to the Function Selet registers;
 */
 
-static const uint8_t bcm2835gpioFunctions[8] = {
+static const uint8_t BCMgpioFunctions[8] = {
     0b000, // Input
     0b001, // Output
     0b100, // Alternative 0
@@ -46,10 +46,10 @@ static const uint8_t bcm2835gpioFunctions[8] = {
    There are multiple Registers; so the offset must be calculated;
 */
 
-void bcm2835gpioSetFunction(uint8_t pin, enum gpioFunctions function) {
+void BCMgpioSetFunction(uint8_t pin, enum gpioFunctions function) {
     if (pin > TOTAL_PINS) return;
     uint8_t start = (pin % 10) * 3;
-    writeField32(GPIOFSELECT_BASE + (pin / 10), bcm2835gpioFunctions[function], start, 3);
+    writeField32(GPIOFSELECT_BASE + (pin / 10), BCMgpioFunctions[function], start, 3);
 }
 
 // ------------------------- //
@@ -62,14 +62,14 @@ void bcm2835gpioSetFunction(uint8_t pin, enum gpioFunctions function) {
    writing LOW to the SET/CLEAR registers won't do anything;
 */
 
-void bcm2835gpioPinWrite(uint8_t pin, bool level) {
+void BCMgpioPinWrite(uint8_t pin, bool level) {
     if (pin > TOTAL_PINS) return;
     if (level == HIGH) {
-        REGISTER_32 *target = (pin <= LONG_SIZE) ? GPIOSET0 : GPIOSET1;
-        switchBit32(target, pin % LONG_SIZE);
+        REGISTER_32 *target = (pin <= DWORD_SIZE) ? GPIOSET0 : GPIOSET1;
+        switchBit32(target, pin % DWORD_SIZE);
     } else {
-        REGISTER_32 *target = (pin <= LONG_SIZE) ? GPIOCLEAR0 : GPIOCLEAR1;
-        switchBit32(target, pin % LONG_SIZE);
+        REGISTER_32 *target = (pin <= DWORD_SIZE) ? GPIOCLEAR0 : GPIOCLEAR1;
+        switchBit32(target, pin % DWORD_SIZE);
     }
 }
 

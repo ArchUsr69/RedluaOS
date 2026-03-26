@@ -9,14 +9,12 @@
 
 #define BYTE_SIZE 8
 #define WORD_SIZE 16
-#define LONG_SIZE 32
+#define DWORD_SIZE 32
 
 // Specially made for MMIO Registers, but can be used for normal RAM Usage;
 typedef volatile uint8_t REGISTER_8;
 typedef volatile uint16_t REGISTER_16;
 typedef volatile uint32_t REGISTER_32;
-
-//==========Bitwise-helpers==========//
 
 /*
 -> functions that switches the bit at a selected offset;
@@ -34,7 +32,7 @@ static inline void switchBit16(REGISTER_16 *target, uint8_t offset) {
 }
 
 static inline void switchBit32(REGISTER_32 *target, uint8_t offset) {
-    if (offset >= LONG_SIZE) return;
+    if (offset >= DWORD_SIZE) return;
     *target ^= (HIGH << offset);
 }
 
@@ -66,7 +64,7 @@ static inline void writeField16(REGISTER_16 *target, uint16_t value, uint8_t off
 }
 
 static inline void writeField32(REGISTER_32 *target, uint32_t value, uint8_t offset, uint8_t length) {
-    if (offset + length >= LONG_SIZE) return;
+    if (offset + length >= DWORD_SIZE) return;
     uint32_t mask = ((HIGH << length) - HIGH) << offset;
     *target &= ~mask;
     *target |= (value << offset) & mask;
@@ -90,7 +88,7 @@ static inline bool readBit16(REGISTER_16 *target, uint8_t offset) {
 }
 
 static inline bool readBit32(REGISTER_32 *target, uint8_t offset) {
-    if (offset >= LONG_SIZE) return LOW;
+    if (offset >= DWORD_SIZE) return LOW;
     return (*target >> offset) & HIGH;
 }
 
@@ -113,7 +111,7 @@ static inline uint16_t readField16(REGISTER_16 *target, uint8_t offset, uint8_t 
 }
 
 static inline uint32_t readField32(REGISTER_32 *target, uint8_t offset, uint8_t length) {
-    if (offset + length >= LONG_SIZE) return LOW;
+    if (offset + length >= DWORD_SIZE) return LOW;
     return (*target >> offset) & ((HIGH << length) - HIGH);
 }
 

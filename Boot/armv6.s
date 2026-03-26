@@ -7,7 +7,7 @@ _start:
     mov sp, #0x8000
 
     /* Calls the actual Kernel */
-    bl kernel_main
-
+    bl armv6Init
+    
 hang:
     b hang

@@ -22,32 +22,23 @@ enum gpioFunctions {
     ALTERNATIVE5
 };
 
-// ---------------- //
+// ------------------------- //
 
-/*
--> function table;
--> Must be filled with the driver equivalent at Init;
--> The Kernel only has access to this;
--> all Drivers must respect the types and arguments in order for them to works;
--> the struct MUST be global in order for the kernel to access it;
-*/
-
+// Driver Table
 struct gpioTable {
     void (*setFunction)(uint8_t pin, enum gpioFunctions function);
     void (*pinWrite)(uint8_t pin, bool level);
 };
 
-// ---------------- //
+extern struct gpioTable gpioTable;
 
 // Wrapper functions
 static inline void gpioSetFunction(uint8_t pin, enum gpioFunctions function) {
-    extern struct gpioTable *gpio;
-    gpio->setFunction(pin, function);
+    gpioTable.setFunction(pin, function);
 }
 
 static inline void gpioPinWrite(uint8_t pin, bool level) {
-    extern struct gpioTable *gpio;
-    gpio->pinWrite(pin, level);
+    gpioTable.pinWrite(pin, level);
 }
 
 #endif

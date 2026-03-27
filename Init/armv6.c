@@ -4,24 +4,26 @@
 #include <gpio.h>
 #include <framebuffer.h>
 #include <utils.h>
-
+#include <console.h>
+#include <broadcom.h>
 
 // Preprocessor bullshit
 #ifdef BROADCOM
     #include <broadcom.h>
+    struct gpioTable gpioTable = {
+        .setFunction = BCMgpioSetFunction,
+        .pinWrite = BCMgpioPinWrite
+    };
 
-    gpioTable.setFunction = BCMgpioSetFunction;
-    gpioTable.pinWrite = BCMgpioPinWrite;
-
-    framebufferTable.framebufferInit = BCMFramebufferInit;
-
-    #ifdef BCM2835
-        PERIPHERAL_BASE = 0x20000000;
-    #endif
+    struct framebufferTable framebufferTable = {
+        .framebufferInit = BCMframebufferInit
+    };
 #endif
 
+void kernelMain();
+
 void armv6Init() {
-    framebufferInit();
+    BCMframebufferInit();
     consoleInit();
-    extern kernelMain();
+    kernelMain();
 }

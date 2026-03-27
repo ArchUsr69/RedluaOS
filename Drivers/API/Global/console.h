@@ -7,7 +7,7 @@ enum consoleColours {
     Background,
     Foreground,
     Black,
-    Rred,
+    Red,
     Green,
     Yellow,
     Blue,
@@ -42,6 +42,6 @@ extern struct console console;
 // ------------------ //
 
 void consoleInit();
-void consoleWrite(enum consoleColours colour, uint8_t character);
+void consoleWrite(enum consoleColours foreground, enum consoleColours background, uint8_t character);
 
 #endif

@@ -4,15 +4,15 @@
 #include <framebuffer.h>
 #include <utils.h>
 
-#define CHARACTER_WIDTH 8
-#define CHARACTER_HEIGHT 16
+#define CHARACTER_WIDTH (uint8_t)8
+#define CHARACTER_HEIGHT (uint8_t)16
 
 /*
 -> The default colour Palette RedluaOS will use;
 -> Later on, i will make it possible to change the colours via user input;
 */
 
-struct consoleColours {
+struct consolePalette {
     uint16_t background;
     uint16_t foreground;
     uint16_t black;
@@ -33,7 +33,7 @@ struct consoleColours {
     uint16_t brightWhite;
 };
 
-struct consoleColours OneDarker = {
+struct consolePalette OneDarker = {
     .background = 0x0000,
     .foreground = 0xFFFF,
     .black = 0x2966,
@@ -55,69 +55,6 @@ struct consoleColours OneDarker = {
 };
 
 // --------------------- //
-
-/*
--> Initializes a console;
--> MUST have the framebuffer initialized for it to work, or else it will just return;
--> it also returns if the console has already been initialized;
-*/
-
-void consoleInit() {
-    if (framebuffer.pointer == 0 || console.rows != 0) return;
-    console.rows = framebuffer.virtualHeight / CHARACTER_HEIGHT;
-    console.columns = framebuffer.virtualWidth / CHARACTER_WIDTH;
-    console.cursorX = 0;
-    console.cursorY = 0;
-};
-
-// ---------------------- //
-
-/*
--> a mathematical monster basically;
--> It is pretty fragile, so don't try to change much from the math;
--> It assumes depth = 16, so make sure that it is, or else it won't work;
--> Writes 4 bytes at once to squeeze performance; yet it is still slow AF;
--> I'm gonna try to make it more flexible in another time;
-*/
-
-void consoleWrite(enum consoleColours foreground, enum consoleColours background, uint8_t character) {
-    if (console.cursorX >= console.columns) {
-        console.cursorX = 0;
-        console.cursorY++;
-    }
-
-    if (console.cursorY >= console.Rows) return;
-
-    uint16_t x = console.cursorX * (CHARACTER_WIDTH / (framebuffer.depth >> 3));
-    uint16_t y = console.cursorY * CHARACTER_HEIGHT;
-    REGISTER_32 *framebuffer = (REGISTER_32 *)framebuffer.pointer;
-    uint16_t Foreground = consoleColours[foreground];
-    uint16_t Background = consoleColours[background];
-
-    for (uint8_t row = 0; row < CHARACTER_HEIGHT; row++) {
-        uint8_t characterRow = consoleFont[character][row];
-        uint32_t linearOffset = (y + row) * (framebuffer.pitch >> 2));
-
-        framebuffer[(x + 0) + linearOffset] =
-            (Background ^ (-( (characterRow >> 7) & 1U ) & Foreground)) |
-            ((Background ^ (-( (characterRow >> 6) & 1U ) & Foreground)) << CHARACTER_HEIGHT);
-
-        framebuffer[(x + 1) + linearOffset] =
-            (Background ^ (-( (characterRow >> 5) & 1U ) & Foreground)) |
-            ((Background ^ (-( (characterRow >> 4) & 1U ) & Foreground)) << CHARACTER_HEIGHT);
-
-        framebuffer[(x + 2) + linearOffset] =
-            (Background ^ (-( (characterRow >> 3) & 1U ) & Foreground)) |
-            ((Background ^ (-( (characterRow >> 2) & 1U ) & Foreground)) << CHARACTER_HEIGHT);
-
-        framebuffer[(x + 3) + linearOffset] =
-            (Background ^ (-( (characterRow >> 1) & 1U ) & Foreground)) |
-            ((Background ^ (-( (characterRow >> 0) & 1U ) & Foreground)) << CHARACTER_HEIGHT);
-    }
-    console.cursorX++;
-}
-
-// ------------------------------------------------ //
 
 /*
 -> This is the Default Font the Kernel will use;
@@ -606,3 +543,68 @@ const uint8_t consoleFont[127][CHARACTER_HEIGHT] = {
     {0x00,0x00,0x00,0x00,0x00,0x00,0x31,0x49,
      0x46,0x00,0x00,0x00,0x00,0x00,0x00,0x00}
 };
+
+/*
+-> Initializes a console;
+-> MUST have the framebuffer initialized for it to work, or else it will just return;
+-> it also returns if the console has already been initialized;
+*/
+
+void consoleInit() {
+    if (framebuffer.pointer == 0 || console.rows != 0) return;
+    console.rows = framebuffer.virtualHeight >> (CHARACTER_HEIGHT >> 2);
+    console.columns = framebuffer.virtualWidth >> (CHARACTER_WIDTH >> 2);
+    console.cursorX = 0;
+    console.cursorY = 0;
+};
+
+// ---------------------- //
+
+/*
+-> a mathematical monster basically;
+-> It is pretty fragile, so don't try to change much from the math;
+-> It assumes depth = 16, so make sure that it is, or else it won't work;
+-> Writes 4 bytes at once to squeeze performance; yet it is still slow AF;
+-> I'm gonna try to make it more flexible in another time;
+*/
+
+void consoleWrite(enum consoleColours foreground, enum consoleColours background, uint8_t character) {
+    if (console.cursorX >= console.columns) {
+        console.cursorX = 0;
+        console.cursorY++;
+    }
+
+    if (console.cursorY >= console.rows) return;
+
+    uint16_t x = console.cursorX * ((framebuffer.depth >> 3) >> (CHARACTER_WIDTH >> 2));
+    uint16_t y = console.cursorY * CHARACTER_HEIGHT;
+    REGISTER_32 *screen = (REGISTER_32 *)framebuffer.pointer;
+    uint16_t *suckmyass = (uint16_t *)&OneDarker;
+    uint16_t Foreground = suckmyass[foreground];
+    uint16_t Background = suckmyass[background];
+
+    for (uint8_t row = 0; row < CHARACTER_HEIGHT; row++) {
+        uint8_t characterRow = consoleFont[character][row];
+        uint32_t linearOffset = (y + row) * (framebuffer.pitch >> 2);
+
+        screen[(x + 0) + linearOffset] =
+            (Background ^ (-( (characterRow >> 7) & 1U ) & Foreground)) |
+            ((Background ^ (-( (characterRow >> 6) & 1U ) & Foreground)) << CHARACTER_HEIGHT);
+
+        screen[(x + 1) + linearOffset] =
+            (Background ^ (-( (characterRow >> 5) & 1U ) & Foreground)) |
+            ((Background ^ (-( (characterRow >> 4) & 1U ) & Foreground)) << CHARACTER_HEIGHT);
+
+        screen[(x + 2) + linearOffset] =
+            (Background ^ (-( (characterRow >> 3) & 1U ) & Foreground)) |
+            ((Background ^ (-( (characterRow >> 2) & 1U ) & Foreground)) << CHARACTER_HEIGHT);
+
+        screen[(x + 3) + linearOffset] =
+            (Background ^ (-( (characterRow >> 1) & 1U ) & Foreground)) |
+            ((Background ^ (-( (characterRow >> 0) & 1U ) & Foreground)) << CHARACTER_HEIGHT);
+    }
+    console.cursorX++;
+}
+
+// ------------------------------------------------ //
+

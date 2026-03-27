@@ -187,15 +187,15 @@ static uint32_t mailboxRead(enum mailboxChannels channel) {
 -> every word must have 32 bits;
 */
 
-void BCMFramebufferInit() {;
-    if (screen->pointer != 0) return;
+void BCMframebufferInit() {;
+    if (framebuffer.pointer != 0) return;
 
     // The Ugly array that holds the information;
     volatile uint32_t __attribute__((aligned(16))) messageBuffer[10] = {
-        framebuffer.physical_Width,
-        framebuffer.physical_Height,
-        framebuffer.virtual_Width,
-        framebuffer.virtual_Height,
+        framebuffer.physicalWidth,
+        framebuffer.physicalHeight,
+        framebuffer.virtualWidth,
+        framebuffer.virtualHeight,
         framebuffer.pitch,            // *SET TO 0*
         framebuffer.depth,
         framebuffer.virtual_X_Offset,
@@ -208,12 +208,12 @@ void BCMFramebufferInit() {;
     for (uint8_t attempts = 0; attempts < 4; attempts++) {
         mailboxWrite((uintptr_t)&messageBuffer | VC_OFFSET, FRAMEBUFFER, sizeof(messageBuffer));
         mailboxRead(FRAMEBUFFER);
-        if (legacyFramebuffer[8] != 0) { break; }
+        if (messageBuffer[8] != 0) { break; }
     }
 
     // Fills whatever VC sent back;
-    framebuffer.physical_Width = (uint16_t)messageBuffer[0];
-    framebuffer.physical_Height = (uint16_t)messageBuffer[1];
+    framebuffer.physicalWidth = (uint16_t)messageBuffer[0];
+    framebuffer.physicalHeight = (uint16_t)messageBuffer[1];
     framebuffer.pitch = (uint16_t)messageBuffer[4];
     framebuffer.pointer = (uintptr_t)messageBuffer[8] & ARM_OFFSET;
     framebuffer.size = (size_t)messageBuffer[9];

@@ -9,7 +9,7 @@ MODEL ?= BCM2835
 
 # Architecture selection;
 
-ifeq($(ARCH),armv6)
+ifeq ($(ARCH),armv6)
 	# ------ Toolchain ------ #
 	C_COMPILER = arm-none-eabi-gcc
 	ASSEMBLER  = arm-none-eabi-as
@@ -23,7 +23,7 @@ else
 endif
 
 # Sources
-SOURCE_DIRS = Kernel Libraries $(wildcard */$(DEVICE))
+SOURCE_DIRS = Kernel Libraries $(shell find -type d -name $(DEVICE)) Drivers/API $(INIT_SECTION)
 BUILD_DIR = Build
 
 # Finds sources

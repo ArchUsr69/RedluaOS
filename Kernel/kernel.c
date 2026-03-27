@@ -7,11 +7,17 @@
 #include <console.h>
 #include <utils.h>
 
-struct gpioTable gpioTable;
-struct framebufferTable framebufferTable;
+struct framebuffer framebuffer = {
+    .virtualHeight = 1080,
+    .virtualWidth = 1920,
+    .physicalHeight = 1080,
+    .physicalWidth = 1920,
+    .virtual_X_Offset = 0,
+    .virtual_Y_Offset = 0,
+    .depth = 16
+};
 
-struct framebuffer framebuffer;
-struct console console;
+struct console console = {0};
 
 void kernelMain() {
     gpioSetFunction(47, OUTPUT);
@@ -19,21 +25,18 @@ void kernelMain() {
     gpioPinWrite(47, LOW);
     gpioPinWrite(15, LOW);
 
-    framebufferInit();
-    consoleInit();
-
     uint16_t totalCharacters = console.columns * console.rows;
 
     while (true) {
         for (uint16_t i = 0; i < totalCharacters; i++) {
-            consoleWrite(OneDarker.red, 70);
+            consoleWrite(Red, Background, 70);
         }
 
         console.cursorX = 0;
         console.cursorY = 0;
 
         for (uint16_t i = 0; i < totalCharacters; i++) {
-            consoleWrite(OneDarker.blue, 70);
+            consoleWrite(Blue, Background, 70);
         }
 
         console.cursorX = 0;

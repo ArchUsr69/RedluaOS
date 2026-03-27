@@ -8,7 +8,9 @@
 #ifndef BROADCOM_H
 #define BROADCOM_H
 
-const REGISTER_32 PERIPHERAL_BASE;
+#ifdef BCM2835
+    #define PERIPHERAL_BASE 0x20000000
+#endif
 
 void BCMgpioSetFunction(uint8_t pin, enum gpioFunctions function);
 void BCMgpioPinWrite(uint8_t pin, bool level);

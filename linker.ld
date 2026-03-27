@@ -1,10 +1,4 @@
-ENTRY(_start)
-
-MEMORY
-{
-    FLASH (rx) : ORIGIN = 0x8000, LENGTH = 512K
-    RAM (rwx) : ORIGIN = 0x8000, LENGTH = 2M
-}
+ENTRY(_boot)
 
 SECTIONS {
 
@@ -22,10 +16,10 @@ SECTIONS {
 
     .data : {
         *(.data*)
-    } > RAM AT > FLASH
+    }
     	
     .bss : { 
         *(.bss) 
         *(COMMON)
-    } > RAM 
+    } 
 }

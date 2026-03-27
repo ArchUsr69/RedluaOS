@@ -11,7 +11,7 @@
 -> pixelOrder == 0: RGB; pixelOrder == 1: BGR; 
 */
 
-struct framebuffer {
+struct framebufferInfo {
     uintptr_t pointer;
     uint32_t size;
     uint16_t virtualHeight;
@@ -25,7 +25,7 @@ struct framebuffer {
     bool pixelOrder;
 };
 
-extern struct framebuffer framebuffer;
+extern struct framebufferInfo GlobalFramebuffer;
 
 // --------------------------------- //
 
@@ -34,11 +34,11 @@ struct framebufferTable {
     void (*framebufferInit)();
 };
 
-extern struct framebufferTable framebufferTable;
+extern struct framebufferTable GlobalFramebufferTable;
 
 // Wrapper functions
 static inline void framebufferInit() {
-    framebufferTable.framebufferInit();
+    framebuffer.framebufferInit();
 }
 
 #endif

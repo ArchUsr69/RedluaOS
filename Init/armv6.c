@@ -10,20 +10,34 @@
 // Preprocessor bullshit
 #ifdef BROADCOM
     #include <broadcom.h>
-    struct gpioTable gpioTable = {
+    
+    struct gpioTable GlobalGpioTable = {
         .setFunction = BCMgpioSetFunction,
         .pinWrite = BCMgpioPinWrite
     };
 
-    struct framebufferTable framebufferTable = {
+    struct framebufferTable GlobalFramebufferTable = {
         .framebufferInit = BCMframebufferInit
     };
 #endif
 
+// It is declared here too so that it can call Main;
 void kernelMain();
 
+struct framebufferInfo GlobalFramebuffer = {
+    .virtualHeight = 1080,
+    .virtualWidth = 1920,
+    .physicalHeight = 1080,
+    .physicalWidth = 1920,
+    .virtual_X_Offset = 0,
+    .virtual_Y_Offset = 0,
+    .depth = 16
+};
+
+struct consoleInfo GlobalConsole = {0};
+
 void armv6Init() {
-    BCMframebufferInit();
+    framebufferInit();
     consoleInit();
     kernelMain();
 }

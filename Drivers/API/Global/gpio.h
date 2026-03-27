@@ -30,15 +30,15 @@ struct gpioTable {
     void (*pinWrite)(uint8_t pin, bool level);
 };
 
-extern struct gpioTable gpioTable;
+extern struct gpioTable GlobalGpioTable;
 
 // Wrapper functions
 static inline void gpioSetFunction(uint8_t pin, enum gpioFunctions function) {
-    gpioTable.setFunction(pin, function);
+    gpio.setFunction(pin, function);
 }
 
 static inline void gpioPinWrite(uint8_t pin, bool level) {
-    gpioTable.pinWrite(pin, level);
+    gpio.pinWrite(pin, level);
 }
 
 #endif

@@ -64,7 +64,7 @@ unless you don't want to touch grass for the next week;
 -> Seriously, making your own Bitmap is a pain in the ass; Tedious as fuck. Don't do it. I beg you
 */
 
-const uint8_t consoleFont[127][CHARACTER_HEIGHT] = {
+static uint8_t consoleFont[127][CHARACTER_HEIGHT] = {
 
     // 32 Control Character;
     {0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,

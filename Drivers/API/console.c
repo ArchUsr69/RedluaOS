@@ -4,8 +4,8 @@
 #include <framebuffer.h>
 #include <utils.h>
 
-#define CHARACTER_WIDTH (uint8_t)8
-#define CHARACTER_HEIGHT (uint8_t)16
+#define CHARACTER_WIDTH 8
+#define CHARACTER_HEIGHT 16
 
 /*
 -> The default colour Palette RedluaOS will use;
@@ -553,7 +553,7 @@ static uint8_t consoleFont[127][CHARACTER_HEIGHT] = {
 void consoleInit() {
     if (GlobalFramebuffer.pointer == 0 || GlobalConsole.rows != 0) return;
     GlobalConsole.rows = GlobalFramebuffer.virtualHeight >> (CHARACTER_HEIGHT >> 2);
-    GlobalConsole.columns = GlobalFramebuffer.virtualWidth >> (CHARACTER_WIDTH >> 2);
+    GlobalConsole.columns = GlobalFramebuffer.virtualWidth >> 3;
     GlobalConsole.cursorX = 0;
     GlobalConsole.cursorY = 0;
 };
@@ -576,7 +576,7 @@ void consoleWrite(enum consoleColours foreground, enum consoleColours background
 
     if (GlobalConsole.cursorY >= GlobalConsole.rows) return;
 
-    uint16_t x = GlobalConsole.cursorX * ((GlobalFramebuffer.depth >> 3) >> (CHARACTER_WIDTH >> 2));
+    uint16_t x = GlobalConsole.cursorX * (CHARACTER_WIDTH >> 1);
     uint16_t y = GlobalConsole.cursorY * CHARACTER_HEIGHT;
     REGISTER_32 *screen = (REGISTER_32 *)GlobalFramebuffer.pointer;
     uint16_t *suckmyass = (uint16_t *)&OneDarker;

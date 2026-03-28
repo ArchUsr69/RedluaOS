@@ -37,9 +37,11 @@ struct framebufferInfo GlobalFramebuffer = {
 struct consoleInfo GlobalConsole = {0};
 
 void armv6Init() {
+    gpioSetFunction(47, OUTPUT);
+    gpioSetFunction(35, OUTPUT);
+    gpioPinWrite(35, LOW);
+    gpioPinWrite(47, HIGH);
     framebufferInit();
     consoleInit();
-    gpioSetFunction(47, OUTPUT);
-    gpioPinWrite(47, HIGH);
     kernelMain();
 }

@@ -17,9 +17,13 @@ SECTIONS {
     .data : {
         *(.data*)
     }
-    	
+
+    . = ALIGN(4);
+    __bss_start = .;
     .bss : { 
         *(.bss) 
         *(COMMON)
-    } 
+    }
+    . = ALIGN(4);
+    __bss_end = .;
 }

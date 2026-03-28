@@ -66,10 +66,10 @@ void BCMgpioPinWrite(uint8_t pin, bool level) {
     if (pin > TOTAL_PINS) return;
     if (level == HIGH) {
         REGISTER_32 *target = (pin <= DWORD_SIZE) ? GPIOSET0 : GPIOSET1;
-        switchBit32(target, pin % DWORD_SIZE);
+        *target = (HIGH << (pin % DWORD_SIZE));
     } else {
         REGISTER_32 *target = (pin <= DWORD_SIZE) ? GPIOCLEAR0 : GPIOCLEAR1;
-        switchBit32(target, pin % DWORD_SIZE);
+        *target = (HIGH << (pin % DWORD_SIZE));
     }
 }
 

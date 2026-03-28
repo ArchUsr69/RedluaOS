@@ -150,10 +150,9 @@ good idea to have the channel and pointer in the same register;
    bit [3-0] -> channel;
 */
 
-static void mailboxWrite(uintptr_t pointer, enum mailboxChannels channel, size_t bufferSize) {
+volatile void mailboxWrite(uintptr_t pointer, enum mailboxChannels channel) {
     if (channel == UNDEFINED) return;
     while (*MAILBOX_READ_STATUS & MAILBOX_FULL != 0) { /* spins */ }
-    flushCache(pointer, bufferSize);
     *MAILBOX_WRITE = pointer | channel;
 }
 
@@ -166,7 +165,7 @@ static void mailboxWrite(uintptr_t pointer, enum mailboxChannels channel, size_t
 -> will return 0x80000002 if trying to read channel 7;
 */
 
-static uint32_t mailboxRead(enum mailboxChannels channel) {
+volatile uint32_t mailboxRead(enum mailboxChannels channel) {
     if (channel == UNDEFINED) return UNDEFINED_CHANNEL_USAGE;
     while (true) {
         while (*MAILBOX_READ_STATUS & MAILBOX_EMPTY != 0) { /* spins */ }
@@ -187,30 +186,27 @@ static uint32_t mailboxRead(enum mailboxChannels channel) {
 -> every word must have 32 bits;
 */
 
+volatile uint32_t __attribute__((aligned(16))) messageBuffer[10];
+
 void BCMframebufferInit() {;
     if (GlobalFramebuffer.pointer != 0) return;
 
-    // The Ugly array that holds the information;
-    volatile uint32_t __attribute__((aligned(16))) messageBuffer[10] = {
-        GlobalFramebuffer.physicalWidth,
-        GlobalFramebuffer.physicalHeight,
-        GlobalFramebuffer.virtualWidth,
-        GlobalFramebuffer.virtualHeight,
-        GlobalFramebuffer.pitch,            // *SET TO 0*
-        GlobalFramebuffer.depth,
-        GlobalFramebuffer.virtual_X_Offset,
-        GlobalFramebuffer.virtual_Y_Offset,
-        GlobalFramebuffer.pointer,          // *SET TO 0*
-        GlobalFramebuffer.size             // *SET TO 0*
-    };
+    messageBuffer[0] = 1920;
+    messageBuffer[1] = 1080;
+    messageBuffer[2] = 1920;
+    messageBuffer[3] = 1080;
+    messageBuffer[4] = 0;
+    messageBuffer[5] = 16;
+    messageBuffer[6] = 0;
+    messageBuffer[7] = 0;
+    messageBuffer[8] = 0;
+    messageBuffer[9] = 0;
 
-    // Send the Message Buffer (4 attempts);
-    for (uint8_t attempts = 0; attempts < 4; attempts++) {
-        mailboxWrite((uintptr_t)&messageBuffer | VC_OFFSET, FRAMEBUFFER, sizeof(messageBuffer));
+    while (messageBuffer[8] == 0) {
+        mailboxWrite((uintptr_t)&messageBuffer | VC_OFFSET, FRAMEBUFFER);
         mailboxRead(FRAMEBUFFER);
-        if (messageBuffer[8] != 0) { break; }
     }
-
+    
     // Fills whatever VC sent back;
     GlobalFramebuffer.physicalWidth = (uint16_t)messageBuffer[0];
     GlobalFramebuffer.physicalHeight = (uint16_t)messageBuffer[1];
@@ -218,6 +214,6 @@ void BCMframebufferInit() {;
     GlobalFramebuffer.pointer = (uintptr_t)messageBuffer[8] & ARM_OFFSET;
     GlobalFramebuffer.size = (size_t)messageBuffer[9];
 
-// -------------------------- //
-
 }
+
+// -------------------------- //

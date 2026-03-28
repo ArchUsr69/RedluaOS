@@ -6,7 +6,6 @@
 #include <framebuffer.h>
 #include <console.h>
 #include <utils.h>
-#include <broadcom.h>
 
 void kernelMain() {
     gpioSetFunction(47, OUTPUT);
@@ -25,7 +24,7 @@ void kernelMain() {
         GlobalConsole.cursorY = 0;
 
         for (uint16_t i = 0; i < totalCharacters; i++) {
-            consoleWrite(Blue, Background, 70);
+            consoleWrite(Green, Background, 70);
         }
 
         GlobalConsole.cursorX = 0;

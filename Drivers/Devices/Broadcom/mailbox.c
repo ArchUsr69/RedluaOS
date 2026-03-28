@@ -91,14 +91,13 @@ enum mailboxTags {
 -> Property interface mailbox buffer structure (unused for now);
 -> size must be calculated;
 -> requestResponse must always be 0 initialized; VC will overwrite with 0x80000000 for success, 0x80000001 for fail;
--> only allocates 32 Words for tags; Try not to use so many tags at once;
 -> Unused for now;
 */
 
 struct mailboxBuffer {
     uint32_t size;
     uint32_t requestResponse;
-    uint32_t tags[32];
+    uint32_t tags[];
 };
 
 // ---------------------------- //

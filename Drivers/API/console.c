@@ -3,6 +3,7 @@
 #include <console.h>
 #include <framebuffer.h>
 #include <utils.h>
+#include <string.h>
 
 #define CHARACTER_WIDTH 8
 #define CHARACTER_HEIGHT 16
@@ -10,50 +11,27 @@
 /*
 -> The default colour Palette RedluaOS will use;
 -> Later on, i will make it possible to change the colours via user input;
--> Later, i might need to make this into a simple array for easier and safer access;
-   That might also remove this long declaration;
 */
 
-struct consolePalette {
-    uint16_t background;
-    uint16_t foreground;
-    uint16_t black;
-    uint16_t red;
-    uint16_t green;
-    uint16_t yellow;
-    uint16_t blue;
-    uint16_t magenta;
-    uint16_t cyan;
-    uint16_t white;
-    uint16_t brightBlack;
-    uint16_t brightRed;
-    uint16_t brightGreen;
-    uint16_t brightYellow;
-    uint16_t brightBlue;
-    uint16_t brightMagenta;
-    uint16_t brightCyan;
-    uint16_t brightWhite;
-};
-
-struct consolePalette OneDarker = {
-    .background = 0x0000,
-    .foreground = 0xFFFF,
-    .black = 0x2966,
-    .red = 0xDB6E,
-    .green = 0x7EED,
-    .yellow = 0xF7EC,
-    .blue = 0x4D9E,
-    .magenta = 0xFB3D,
-    .cyan = 0x55B8,
-    .white = 0xFFFF,
-    .brightBlack = 0xAD97,
-    .brightRed = 0xDB6E,
-    .brightGreen = 0x7EED,
-    .brightYellow = 0xF7EC,
-    .brightBlue = 0x4D9E,
-    .brightMagenta = 0xFB3D,
-    .brightCyan = 0x55B8,
-    .brightWhite = 0xFFFF
+static uint16_t consolePalette[18] = {
+    0x0000,
+    0xDEFB,
+    0x2966,
+    0xDB6E,
+    0x7EED,
+    0xF7EC,
+    0x4D9E,
+    0xFB3D,
+    0x55B8,
+    0xFFFF,
+    0xAD97,
+    0xDB6E,
+    0x7EED,
+    0xF7EC,
+    0x4D9E,
+    0xFB3D,
+    0x55B8,
+    0xFFFF
 };
 
 // --------------------- //
@@ -502,7 +480,7 @@ static uint8_t consoleFont[127][CHARACTER_HEIGHT] = {
      0x30,0x0C,0x02,0x42,0x3C,0x00,0x00,0x00},
 
     // t Visible Character 85
-    {0x00,0x00,0x00,0x00,0x00,0x20,0x20,0x78,
+    {0x00,0x00,0x00,0x20,0x20,0x20,0x78,0x20,
      0x20,0x20,0x20,0x22,0x1C,0x00,0x00,0x00},
 
     // u Visible Character 86
@@ -570,21 +548,20 @@ void consoleInit() {
 -> Writes 4 bytes at once to squeeze performance; yet it is still slow AF;
 */
 
-void consoleWrite(enum consoleColours foreground, enum consoleColours background, uint8_t character) {
+void consoleWriteCharacter(enum consoleColours foreground, enum consoleColours background, char character) {
+    uint16_t x = GlobalConsole.cursorX * (CHARACTER_WIDTH >> 1);
+    uint16_t y = GlobalConsole.cursorY * CHARACTER_HEIGHT;
+    REGISTER_32 *screen = (REGISTER_32 *)GlobalFramebuffer.pointer;
+    uint16_t Foreground = consolePalette[foreground];
+    uint16_t Background = consolePalette[background];
+
     if (GlobalConsole.cursorX >= GlobalConsole.columns) {
         GlobalConsole.cursorX = 0;
         GlobalConsole.cursorY++;
     }
 
     if (GlobalConsole.cursorY >= GlobalConsole.rows) return;
-
-    uint16_t x = GlobalConsole.cursorX * (CHARACTER_WIDTH >> 1);
-    uint16_t y = GlobalConsole.cursorY * CHARACTER_HEIGHT;
-    REGISTER_32 *screen = (REGISTER_32 *)GlobalFramebuffer.pointer;
-    uint16_t *suckmyass = (uint16_t *)&OneDarker;
-    uint16_t Foreground = suckmyass[foreground];
-    uint16_t Background = suckmyass[background];
-
+        
     for (uint8_t row = 0; row < CHARACTER_HEIGHT; row++) {
         uint8_t characterRow = consoleFont[character][row];
         uint32_t linearOffset = (y + row) * (GlobalFramebuffer.pitch >> 2);
@@ -600,12 +577,18 @@ void consoleWrite(enum consoleColours foreground, enum consoleColours background
         screen[(x + 2) + linearOffset] =
             (Background ^ (-( (characterRow >> 3) & 1U ) & Foreground)) |
             ((Background ^ (-( (characterRow >> 2) & 1U ) & Foreground)) << CHARACTER_HEIGHT);
-
+               
         screen[(x + 3) + linearOffset] =
             (Background ^ (-( (characterRow >> 1) & 1U ) & Foreground)) |
             ((Background ^ (-( (characterRow >> 0) & 1U ) & Foreground)) << CHARACTER_HEIGHT);
     }
     GlobalConsole.cursorX++;
+}
+
+void consoleWriteText(enum consoleColours foreground, enum consoleColours background, char *text, size_t length) {
+    for (uint32_t character = 0; character < length; character++) {
+        consoleWriteCharacter(foreground, background, text[character]);
+    }
 }
 
 // ------------------------------------------------ //

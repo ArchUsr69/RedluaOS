@@ -48,8 +48,7 @@ static const uint8_t BCMgpioFunctions[8] = {
 
 void BCMgpioSetFunction(uint8_t pin, enum gpioFunctions function) {
     if (pin > TOTAL_PINS) return;
-    uint8_t start = (pin % 10) * 3;
-    writeField32(GPIOFSELECT_BASE + (pin / 10), BCMgpioFunctions[function], start, 3);
+    GPIOFSELECT_BASE[pin / 10] &= BCMgpioFunctions[function] << ((pin % 10) * 3);
 }
 
 // ------------------------- //

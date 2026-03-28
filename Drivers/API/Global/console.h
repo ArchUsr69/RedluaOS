@@ -1,4 +1,5 @@
 #include <stdint.h>
+#include <string.h>
 
 #ifndef CONSOLE_H
 #define CONSOLE_H
@@ -42,6 +43,7 @@ extern struct consoleInfo GlobalConsole;
 // ------------------ //
 
 void consoleInit();
-void consoleWrite(enum consoleColours foreground, enum consoleColours background, uint8_t character);
+void consoleWriteCharacter(enum consoleColours foreground, enum consoleColours background, char character);
+void consoleWriteText(enum consoleColours foreground, enum consoleColours background, char *text, size_t length);
 
 #endif

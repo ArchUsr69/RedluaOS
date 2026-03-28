@@ -63,7 +63,9 @@ enum mailboxChannels {
     PROPERTY_TAGS
 };
 
+// Unused for now
 enum mailboxTags {
+    FIRMWARE_REVISION = 0x00000001,
     FRAMEBUFFER_ALLOCATE = 0x00040001,
     FRAMEBUFFER_RELEASE = 0x00048001,
     SCREEN_BLANK = 0x00040002,
@@ -90,6 +92,7 @@ enum mailboxTags {
 -> size must be calculated;
 -> requestResponse must always be 0 initialized; VC will overwrite with 0x80000000 for success, 0x80000001 for fail;
 -> only allocates 32 Words for tags; Try not to use so many tags at once;
+-> Unused for now;
 */
 
 struct mailboxBuffer {
@@ -99,43 +102,6 @@ struct mailboxBuffer {
 };
 
 // ---------------------------- //
-
-/*
--> functions that manage Cache;
--> without those, the mailbox interface wouldn't probably work;
--> don't try to understand much. It's magic. Even i don't understand this crap;
-*/
-
-static inline void flushCache(uintptr_t address, size_t size) {
-    uintptr_t start = address & ~31;
-    uintptr_t end = address + size;
-
-    for (uintptr_t i = start; i < end; i += 32) {
-        asm volatile (
-            "mcr p15, 0, %0, c7, c14, 1\n"
-            :
-            : "r" (i)
-            : "memory"
-        );
-    }
-}
-
-// (unused for now);
-static inline void invalidateCache(uintptr_t address, size_t size) {
-    uintptr_t start = address & ~31;
-    uintptr_t end = address + size;
-
-    for (uintptr_t i = start; i < end; i += 32) {
-        asm volatile (
-            "mcr p15, 0, %0, c7, c6, 1\n"
-            :
-            : "r" (i)
-            : "memory"
-        );
-    }
-}
-
-// ------------------------------ //
 
 /*
 -> sends a pointer of the message buffer to VideoCore;
@@ -150,9 +116,9 @@ good idea to have the channel and pointer in the same register;
    bit [3-0] -> channel;
 */
 
-volatile void mailboxWrite(uintptr_t pointer, enum mailboxChannels channel) {
+void mailboxWrite(uintptr_t pointer, enum mailboxChannels channel) {
     if (channel == UNDEFINED) return;
-    while (*MAILBOX_READ_STATUS & MAILBOX_FULL != 0) { /* spins */ }
+    while ((*MAILBOX_WRITE_STATUS & MAILBOX_FULL) != 0) { /* spins */ }
     *MAILBOX_WRITE = pointer | channel;
 }
 
@@ -165,14 +131,12 @@ volatile void mailboxWrite(uintptr_t pointer, enum mailboxChannels channel) {
 -> will return 0x80000002 if trying to read channel 7;
 */
 
-volatile uint32_t mailboxRead(enum mailboxChannels channel) {
+uint32_t mailboxRead(enum mailboxChannels channel) {
     if (channel == UNDEFINED) return UNDEFINED_CHANNEL_USAGE;
     while (true) {
-        while (*MAILBOX_READ_STATUS & MAILBOX_EMPTY != 0) { /* spins */ }
+        while ((*MAILBOX_READ_STATUS & MAILBOX_EMPTY) != 0) { /* Spins */ }
         uint32_t registerContents = *MAILBOX_READ;
-        if (registerContents & channel != 0) {
-            return registerContents >> 4;
-        }
+        if (registerContents & channel == channel) return registerContents >> 4;
     }
 }
 
@@ -191,21 +155,19 @@ volatile uint32_t __attribute__((aligned(16))) messageBuffer[10];
 void BCMframebufferInit() {;
     if (GlobalFramebuffer.pointer != 0) return;
 
-    messageBuffer[0] = 1920;
-    messageBuffer[1] = 1080;
-    messageBuffer[2] = 1920;
-    messageBuffer[3] = 1080;
-    messageBuffer[4] = 0;
-    messageBuffer[5] = 16;
-    messageBuffer[6] = 0;
-    messageBuffer[7] = 0;
-    messageBuffer[8] = 0;
-    messageBuffer[9] = 0;
+    messageBuffer[0] = GlobalFramebuffer.physicalWidth;
+    messageBuffer[1] = GlobalFramebuffer.physicalHeight;
+    messageBuffer[2] = GlobalFramebuffer.virtualWidth;
+    messageBuffer[3] = GlobalFramebuffer.virtualHeight;
+    messageBuffer[4] = GlobalFramebuffer.pitch;
+    messageBuffer[5] = GlobalFramebuffer.depth;
+    messageBuffer[6] = GlobalFramebuffer.virtual_X_Offset;
+    messageBuffer[7] = GlobalFramebuffer.virtual_Y_Offset;
+    messageBuffer[8] = GlobalFramebuffer.pointer;
+    messageBuffer[9] =  GlobalFramebuffer.size;
 
-    while (messageBuffer[8] == 0) {
-        mailboxWrite((uintptr_t)&messageBuffer | VC_OFFSET, FRAMEBUFFER);
-        mailboxRead(FRAMEBUFFER);
-    }
+    mailboxWrite((uintptr_t)messageBuffer | VC_OFFSET, FRAMEBUFFER);
+    mailboxRead(FRAMEBUFFER);
     
     // Fills whatever VC sent back;
     GlobalFramebuffer.physicalWidth = (uint16_t)messageBuffer[0];
@@ -213,7 +175,44 @@ void BCMframebufferInit() {;
     GlobalFramebuffer.pitch = (uint16_t)messageBuffer[4];
     GlobalFramebuffer.pointer = (uintptr_t)messageBuffer[8] & ARM_OFFSET;
     GlobalFramebuffer.size = (size_t)messageBuffer[9];
-
 }
 
 // -------------------------- //
+
+
+/*
+-> functions that manage Cache;
+-> without those, the mailbox interface wouldn't probably work;
+-> don't try to understand much. It's magic. Even i don't understand this crap;
+-> They are for now Unused;
+*/
+
+static inline void flushCache(uintptr_t address, size_t size) {
+    uintptr_t start = address & ~31;
+    uintptr_t end = address + size;
+
+    for (uintptr_t i = start; i < end; i += 32) {
+        asm volatile (
+            "mcr p15, 0, %0, c7, c14, 1\n"
+            :
+            : "r" (i)
+            : "memory"
+        );
+    }
+}
+
+static inline void invalidateCache(uintptr_t address, size_t size) {
+    uintptr_t start = address & ~31;
+    uintptr_t end = address + size;
+
+    for (uintptr_t i = start; i < end; i += 32) {
+        asm volatile (
+            "mcr p15, 0, %0, c7, c6, 1\n"
+            :
+            : "r" (i)
+            : "memory"
+        );
+    }
+}
+
+// ------------------------------ //

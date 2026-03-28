@@ -10,6 +10,8 @@
 /*
 -> The default colour Palette RedluaOS will use;
 -> Later on, i will make it possible to change the colours via user input;
+-> Later, i might need to make this into a simple array for easier and safer access;
+   That might also remove this long declaration;
 */
 
 struct consolePalette {
@@ -564,8 +566,8 @@ void consoleInit() {
 -> a mathematical monster basically;
 -> It is pretty fragile, so don't try to change much from the math;
 -> It assumes depth = 16, so make sure that it is, or else it won't work;
+-> It also assumes the Font is 8x16, in order to get more performance;
 -> Writes 4 bytes at once to squeeze performance; yet it is still slow AF;
--> I'm gonna try to make it more flexible in another time;
 */
 
 void consoleWrite(enum consoleColours foreground, enum consoleColours background, uint8_t character) {

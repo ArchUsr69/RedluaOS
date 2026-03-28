@@ -7,12 +7,9 @@
 #include <console.h>
 #include <utils.h>
 
-void kernelMain() {
-    gpioSetFunction(47, OUTPUT);
-    gpioSetFunction(35, OUTPUT);
-    gpioPinWrite(47, HIGH);
-    gpioPinWrite(35, LOW);
 
+// Fills the screen with F; Just try it out;
+void kernelMain() {
     uint16_t totalCharacters = GlobalConsole.columns * GlobalConsole.rows;
 
     while (true) {
@@ -24,7 +21,7 @@ void kernelMain() {
         GlobalConsole.cursorY = 0;
 
         for (uint16_t i = 0; i < totalCharacters; i++) {
-            consoleWrite(Green, Background, 70);
+            consoleWrite(Blue, Background, 70);
         }
 
         GlobalConsole.cursorX = 0;

@@ -5,7 +5,6 @@
 #include <framebuffer.h>
 #include <utils.h>
 #include <console.h>
-#include <broadcom.h>
 
 // Preprocessor bullshit
 #ifdef Broadcom
@@ -37,10 +36,6 @@ struct framebufferInfo GlobalFramebuffer = {
 struct consoleInfo GlobalConsole = {0};
 
 void armv6Init() {
-    gpioSetFunction(47, OUTPUT);
-    gpioSetFunction(35, OUTPUT);
-    gpioPinWrite(35, LOW);
-    gpioPinWrite(47, HIGH);
     framebufferInit();
     consoleInit();
     kernelMain();

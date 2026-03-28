@@ -188,20 +188,20 @@ static uint32_t mailboxRead(enum mailboxChannels channel) {
 */
 
 void BCMframebufferInit() {;
-    if (framebuffer.pointer != 0) return;
+    if (GlobalFramebuffer.pointer != 0) return;
 
     // The Ugly array that holds the information;
     volatile uint32_t __attribute__((aligned(16))) messageBuffer[10] = {
-        framebuffer.physicalWidth,
-        framebuffer.physicalHeight,
-        framebuffer.virtualWidth,
-        framebuffer.virtualHeight,
-        framebuffer.pitch,            // *SET TO 0*
-        framebuffer.depth,
-        framebuffer.virtual_X_Offset,
-        framebuffer.virtual_Y_Offset,
-        framebuffer.pointer,          // *SET TO 0*
-        framebuffer.size             // *SET TO 0*
+        GlobalFramebuffer.physicalWidth,
+        GlobalFramebuffer.physicalHeight,
+        GlobalFramebuffer.virtualWidth,
+        GlobalFramebuffer.virtualHeight,
+        GlobalFramebuffer.pitch,            // *SET TO 0*
+        GlobalFramebuffer.depth,
+        GlobalFramebuffer.virtual_X_Offset,
+        GlobalFramebuffer.virtual_Y_Offset,
+        GlobalFramebuffer.pointer,          // *SET TO 0*
+        GlobalFramebuffer.size             // *SET TO 0*
     };
 
     // Send the Message Buffer (4 attempts);
@@ -212,11 +212,11 @@ void BCMframebufferInit() {;
     }
 
     // Fills whatever VC sent back;
-    framebuffer.physicalWidth = (uint16_t)messageBuffer[0];
-    framebuffer.physicalHeight = (uint16_t)messageBuffer[1];
-    framebuffer.pitch = (uint16_t)messageBuffer[4];
-    framebuffer.pointer = (uintptr_t)messageBuffer[8] & ARM_OFFSET;
-    framebuffer.size = (size_t)messageBuffer[9];
+    GlobalFramebuffer.physicalWidth = (uint16_t)messageBuffer[0];
+    GlobalFramebuffer.physicalHeight = (uint16_t)messageBuffer[1];
+    GlobalFramebuffer.pitch = (uint16_t)messageBuffer[4];
+    GlobalFramebuffer.pointer = (uintptr_t)messageBuffer[8] & ARM_OFFSET;
+    GlobalFramebuffer.size = (size_t)messageBuffer[9];
 
 // -------------------------- //
 

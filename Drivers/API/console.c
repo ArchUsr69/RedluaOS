@@ -551,11 +551,11 @@ static uint8_t consoleFont[127][CHARACTER_HEIGHT] = {
 */
 
 void consoleInit() {
-    if (framebuffer.pointer == 0 || console.rows != 0) return;
-    console.rows = framebuffer.virtualHeight >> (CHARACTER_HEIGHT >> 2);
-    console.columns = framebuffer.virtualWidth >> (CHARACTER_WIDTH >> 2);
-    console.cursorX = 0;
-    console.cursorY = 0;
+    if (GlobalFramebuffer.pointer == 0 || GlobalConsole.rows != 0) return;
+    GlobalConsole.rows = GlobalFramebuffer.virtualHeight >> (CHARACTER_HEIGHT >> 2);
+    GlobalConsole.columns = GlobalFramebuffer.virtualWidth >> (CHARACTER_WIDTH >> 2);
+    GlobalConsole.cursorX = 0;
+    GlobalConsole.cursorY = 0;
 };
 
 // ---------------------- //
@@ -569,23 +569,23 @@ void consoleInit() {
 */
 
 void consoleWrite(enum consoleColours foreground, enum consoleColours background, uint8_t character) {
-    if (console.cursorX >= console.columns) {
-        console.cursorX = 0;
-        console.cursorY++;
+    if (GlobalConsole.cursorX >= GlobalConsole.columns) {
+        GlobalConsole.cursorX = 0;
+        GlobalConsole.cursorY++;
     }
 
-    if (console.cursorY >= console.rows) return;
+    if (GlobalConsole.cursorY >= GlobalConsole.rows) return;
 
-    uint16_t x = console.cursorX * ((framebuffer.depth >> 3) >> (CHARACTER_WIDTH >> 2));
-    uint16_t y = console.cursorY * CHARACTER_HEIGHT;
-    REGISTER_32 *screen = (REGISTER_32 *)framebuffer.pointer;
+    uint16_t x = GlobalConsole.cursorX * ((GlobalFramebuffer.depth >> 3) >> (CHARACTER_WIDTH >> 2));
+    uint16_t y = GlobalConsole.cursorY * CHARACTER_HEIGHT;
+    REGISTER_32 *screen = (REGISTER_32 *)GlobalFramebuffer.pointer;
     uint16_t *suckmyass = (uint16_t *)&OneDarker;
     uint16_t Foreground = suckmyass[foreground];
     uint16_t Background = suckmyass[background];
 
     for (uint8_t row = 0; row < CHARACTER_HEIGHT; row++) {
         uint8_t characterRow = consoleFont[character][row];
-        uint32_t linearOffset = (y + row) * (framebuffer.pitch >> 2);
+        uint32_t linearOffset = (y + row) * (GlobalFramebuffer.pitch >> 2);
 
         screen[(x + 0) + linearOffset] =
             (Background ^ (-( (characterRow >> 7) & 1U ) & Foreground)) |
@@ -603,7 +603,7 @@ void consoleWrite(enum consoleColours foreground, enum consoleColours background
             (Background ^ (-( (characterRow >> 1) & 1U ) & Foreground)) |
             ((Background ^ (-( (characterRow >> 0) & 1U ) & Foreground)) << CHARACTER_HEIGHT);
     }
-    console.cursorX++;
+    GlobalConsole.cursorX++;
 }
 
 // ------------------------------------------------ //

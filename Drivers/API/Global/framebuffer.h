@@ -38,7 +38,7 @@ extern struct framebufferTable GlobalFramebufferTable;
 
 // Wrapper functions
 static inline void framebufferInit() {
-    framebuffer.framebufferInit();
+    GlobalFramebufferTable.framebufferInit();
 }
 
 #endif

@@ -8,7 +8,7 @@
 #include <broadcom.h>
 
 // Preprocessor bullshit
-#ifdef BROADCOM
+#ifdef Broadcom
     #include <broadcom.h>
     
     struct gpioTable GlobalGpioTable = {
@@ -39,5 +39,7 @@ struct consoleInfo GlobalConsole = {0};
 void armv6Init() {
     framebufferInit();
     consoleInit();
+    gpioSetFunction(47, OUTPUT);
+    gpioPinWrite(47, HIGH);
     kernelMain();
 }

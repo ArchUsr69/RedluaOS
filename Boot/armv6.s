@@ -1,5 +1,5 @@
 .section .init
-.globl _boot
+.globl _start
 
 _start:
 

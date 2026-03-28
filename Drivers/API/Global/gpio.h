@@ -34,11 +34,11 @@ extern struct gpioTable GlobalGpioTable;
 
 // Wrapper functions
 static inline void gpioSetFunction(uint8_t pin, enum gpioFunctions function) {
-    gpio.setFunction(pin, function);
+    GlobalGpioTable.setFunction(pin, function);
 }
 
 static inline void gpioPinWrite(uint8_t pin, bool level) {
-    gpio.pinWrite(pin, level);
+    GlobalGpioTable.pinWrite(pin, level);
 }
 
 #endif

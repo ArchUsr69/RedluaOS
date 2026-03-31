@@ -1,23 +1,22 @@
-#include <stdint.h>
-#include <stddef.h>
-#include <stdbool.h>
-// ----------------- //
+#include <types.h>
+#include <utils.h>
+#include <string.h>
 #include <gpio.h>
 #include <framebuffer.h>
 #include <console.h>
-#include <utils.h>
 
 // Fills the screen with F; Just try it out;
 void kernelMain() {
-    gpioSetFunction(47, OUTPUT);
-    gpioPinWrite(47, HIGH);
+    string prompt = newString("> ", 0);
+    string message1 = newString("Welcome to RedluaOS", 0);
+    string message2 = newString("This is fun", 0);
 
-    consoleWriteText(Red, Background, "> ", 2);
-    consoleWriteText(Foreground, Background, "Welcome to Redlua OS", 20);
+    consoleWrite(Red, Background, &prompt);
+    consoleWrite(Foreground, Background, &message2);
 
     GlobalConsole.cursorY++;
     GlobalConsole.cursorX = 0;
 
-    consoleWriteText(Red, Background, "> ", 2); 
-    consoleWriteText(Foreground, Background, "This is fun", 11);
+    consoleWrite(Red, Background, &prompt); 
+    consoleWrite(Foreground, Background, &message1);
 }

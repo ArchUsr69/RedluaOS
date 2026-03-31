@@ -1,27 +1,24 @@
-#include <stdint.h>
-#include <stddef.h>
-#include <stdbool.h>
-// ------------------ //
-#include <broadcom.h>
+#include <types.h>
 #include <utils.h>
+#include <broadcom.h>
 #include <framebuffer.h>
 
 // for now Hardcoded; It should be PERIPHERAL_BASE + MAILBOX_BASE offset
 #define MAILBOX_BASE (PERIPHERAL_BASE + 0xB880)
 
 // Mailbox 0 Registers (*NEVER WRITE TO THESE REGISTERS*)
-#define MAILBOX_READ ((REGISTER_32 *)(MAILBOX_BASE + 0x00))
-#define MAILBOX_READ_PEEK ((REGISTER_32 *)(MAILBOX_BASE + 0x10))
-#define MAILBOX_READ_SENDER ((REGISTER_32 *)(MAILBOX_BASE + 0x14))
-#define MAILBOX_READ_STATUS ((REGISTER_32 *)(MAILBOX_BASE + 0x18))
-#define MAILBOX_READ_CONFIG ((REGISTER_32 *)(MAILBOX_BASE + 0x1C))
+#define MAILBOX_READ ((R_REGISTER_32)(MAILBOX_BASE + 0x00))
+#define MAILBOX_READ_PEEK ((R_REGISTER_32)(MAILBOX_BASE + 0x10))
+#define MAILBOX_READ_SENDER ((R_REGISTER_32)(MAILBOX_BASE + 0x14))
+#define MAILBOX_READ_STATUS ((R_REGISTER_32)(MAILBOX_BASE + 0x18))
+#define MAILBOX_READ_CONFIG ((R_REGISTER_32)(MAILBOX_BASE + 0x1C))
 
 // Mailbox 1 Registers (You shouldn't read these registers; not that you have to)
-#define MAILBOX_WRITE ((REGISTER_32 *)(MAILBOX_BASE + 0x20))
-#define MAILBOX_WRITE_PEEK ((REGISTER_32 *)(MAILBOX_BASE + 0x30))
-#define MAILBOX_WRITE_SENDER ((REGISTER_32 *)(MAILBOX_BASE + 0x34))
-#define MAILBOX_WRITE_STATUS ((REGISTER_32 *)(MAILBOX_BASE + 0x38))
-#define MAILBOX_WRITE_CONFIG ((REGISTER_32 *)(MAILBOX_BASE + 0x3C))
+#define MAILBOX_WRITE ((REGISTER_32)(MAILBOX_BASE + 0x20))
+#define MAILBOX_WRITE_PEEK ((REGISTER_32)(MAILBOX_BASE + 0x30))
+#define MAILBOX_WRITE_SENDER ((REGISTER_32)(MAILBOX_BASE + 0x34))
+#define MAILBOX_WRITE_STATUS ((REGISTER_32)(MAILBOX_BASE + 0x38))
+#define MAILBOX_WRITE_CONFIG ((REGISTER_32)(MAILBOX_BASE + 0x3C))
 
 // Mailbox Status Flags
 #define MAILBOX_FULL 0x80000000
@@ -95,9 +92,9 @@ enum mailboxTags {
 */
 
 struct mailboxBuffer {
-    uint32_t size;
-    uint32_t requestResponse;
-    uint32_t tags[];
+    uint32 size;
+    uint32 requestResponse;
+    uint32 tags[];
 };
 
 // ---------------------------- //
@@ -115,7 +112,7 @@ good idea to have the channel and pointer in the same register;
    bit [3-0] -> channel;
 */
 
-void mailboxWrite(uintptr_t pointer, enum mailboxChannels channel) {
+static void mailboxWrite(uintptr pointer, enum mailboxChannels channel) {
     if (channel == UNDEFINED) return;
     while ((*MAILBOX_WRITE_STATUS & MAILBOX_FULL) != 0) { /* spins */ }
     *MAILBOX_WRITE = pointer | channel;
@@ -130,11 +127,11 @@ void mailboxWrite(uintptr_t pointer, enum mailboxChannels channel) {
 -> will return 0x80000002 if trying to read channel 7;
 */
 
-uint32_t mailboxRead(enum mailboxChannels channel) {
+static uint32 mailboxRead(enum mailboxChannels channel) {
     if (channel == UNDEFINED) return UNDEFINED_CHANNEL_USAGE;
     while (true) {
         while ((*MAILBOX_READ_STATUS & MAILBOX_EMPTY) != 0) { /* Spins */ }
-        uint32_t registerContents = *MAILBOX_READ;
+        uint32 registerContents = *MAILBOX_READ;
         if (registerContents & channel == channel) return registerContents >> 4;
     }
 }
@@ -149,7 +146,7 @@ uint32_t mailboxRead(enum mailboxChannels channel) {
 -> every word must have 32 bits;
 */
 
-volatile uint32_t __attribute__((aligned(16))) messageBuffer[10];
+static volatile uint32 __attribute__((aligned(16))) messageBuffer[10];
 
 void BCMframebufferInit() {;
     if (GlobalFramebuffer.pointer != 0) return;
@@ -165,15 +162,15 @@ void BCMframebufferInit() {;
     messageBuffer[8] = GlobalFramebuffer.pointer;
     messageBuffer[9] =  GlobalFramebuffer.size;
 
-    mailboxWrite((uintptr_t)messageBuffer | VC_OFFSET, FRAMEBUFFER);
+    mailboxWrite((uintptr)messageBuffer | VC_OFFSET, FRAMEBUFFER);
     mailboxRead(FRAMEBUFFER);
     
     // Fills whatever VC sent back;
-    GlobalFramebuffer.physicalWidth = (uint16_t)messageBuffer[0];
-    GlobalFramebuffer.physicalHeight = (uint16_t)messageBuffer[1];
-    GlobalFramebuffer.pitch = (uint16_t)messageBuffer[4];
-    GlobalFramebuffer.pointer = (uintptr_t)messageBuffer[8] & ARM_OFFSET;
-    GlobalFramebuffer.size = (size_t)messageBuffer[9];
+    GlobalFramebuffer.physicalWidth = (uint16)messageBuffer[0];
+    GlobalFramebuffer.physicalHeight = (uint16)messageBuffer[1];
+    GlobalFramebuffer.pitch = (uint16)messageBuffer[4];
+    GlobalFramebuffer.pointer = (uintptr)messageBuffer[8] & ARM_OFFSET;
+    GlobalFramebuffer.size = (uint32)messageBuffer[9];
 }
 
 // -------------------------- //
@@ -186,11 +183,11 @@ void BCMframebufferInit() {;
 -> They are for now Unused;
 */
 
-static inline void flushCache(uintptr_t address, size_t size) {
-    uintptr_t start = address & ~31;
-    uintptr_t end = address + size;
+static inline void flushCache(uintptr address, uint32 size) {
+    uintptr start = address & ~31;
+    uintptr end = address + size;
 
-    for (uintptr_t i = start; i < end; i += 32) {
+    for (uintptr i = start; i < end; i += 32) {
         asm volatile (
             "mcr p15, 0, %0, c7, c14, 1\n"
             :
@@ -200,11 +197,11 @@ static inline void flushCache(uintptr_t address, size_t size) {
     }
 }
 
-static inline void invalidateCache(uintptr_t address, size_t size) {
-    uintptr_t start = address & ~31;
-    uintptr_t end = address + size;
+static inline void invalidateCache(uintptr address, uint32 size) {
+    uintptr start = address & ~31;
+    uintptr end = address + size;
 
-    for (uintptr_t i = start; i < end; i += 32) {
+    for (uintptr i = start; i < end; i += 32) {
         asm volatile (
             "mcr p15, 0, %0, c7, c6, 1\n"
             :

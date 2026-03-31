@@ -1,17 +1,18 @@
-#include <stdint.h>
-#include <stddef.h>
-// --------------- //
+#include <types.h>
 #include <utils.h>
 
-inline void memorySet(REGISTER_32 *target, uint32_t value, size_t length) {
-    for (uint32_t offset; offset < (length / 4); offset++) {
+inline void memorySet(uint32 *target, uint32 value, uint32 length) {
+    for (uint32 offset; offset < (length / 4); offset++) {
         target[offset] = value;
     }
 }
 
-inline void memoryCopy(REGISTER_32 *target, REGISTER_32 *origin, size_t length) {
-    for (uint32_t offset; offset < (length / 4); offset++) {
+inline void memoryCopy(uint32 *target, uint32 *origin, uint32 length) {
+    uintptr a = (uintptr)target;
+    uintptr b = (uintptr)origin;
+    uintptr difference = (a > b) ? (a - b) : (b - a);
+    if (difference > length) return;
+    for (uint32 offset; offset < (length / 4); offset++) {
         target[offset] = origin[offset];
     }
 }
-

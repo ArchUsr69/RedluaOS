@@ -1,19 +1,20 @@
-#include <stdint.h>
-#include <stdbool.h>
+#include <types.h>
 
 #ifndef UTILS_H
 #define UTILS_H
 
-#define HIGH 1U
-#define LOW 0
+typedef volatile uint8 *REGISTER_8;
+typedef volatile uint16 *REGISTER_16;
+typedef volatile uint32 *REGISTER_32;
 
-#define BYTE_SIZE 8
-#define WORD_SIZE 16
-#define DWORD_SIZE 32
+typedef const volatile uint8 *R_REGISTER_8;
+typedef const volatile uint16 *R_REGISTER_16;
+typedef const volatile uint32 *R_REGISTER_32;
 
-// Specially made for MMIO Registers, but can be used for normal RAM Usage;
-typedef volatile uint8_t REGISTER_8;
-typedef volatile uint16_t REGISTER_16;
-typedef volatile uint32_t REGISTER_32;
+#define alignas _Alignas
+#define alignof _Alignof
+
+#define HIGH true
+#define LOW false
 
 #endif

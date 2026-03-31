@@ -1,9 +1,7 @@
-#include <stdint.h>
-#include <stddef.h>
-// --------------- //
+#include <types.h>
+#include <utils.h>
 #include <gpio.h>
 #include <framebuffer.h>
-#include <utils.h>
 #include <console.h>
 
 // Preprocessor bullshit

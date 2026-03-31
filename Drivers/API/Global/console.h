@@ -1,4 +1,4 @@
-#include <stdint.h>
+#include <types.h>
 #include <string.h>
 
 #ifndef CONSOLE_H
@@ -32,10 +32,10 @@ enum consoleColours {
 */
 
 struct consoleInfo {
-    uint16_t rows;
-    uint16_t columns;
-    uint16_t cursorX;
-    uint16_t cursorY;
+    uint16 rows;
+    uint16 columns;
+    uint16 cursorX;
+    uint16 cursorY;
 };
 
 extern struct consoleInfo GlobalConsole;
@@ -43,7 +43,6 @@ extern struct consoleInfo GlobalConsole;
 // ------------------ //
 
 void consoleInit();
-void consoleWriteCharacter(enum consoleColours foreground, enum consoleColours background, char character);
-void consoleWriteText(enum consoleColours foreground, enum consoleColours background, char *text, size_t length);
+void consoleWrite(enum consoleColours foreground, enum consoleColours background, string *text);
 
 #endif

@@ -1,17 +1,15 @@
-#include <stdint.h>
-#include <stdbool.h>
-// --------------- //
+#include <types.h>
+#include <utils.h>
 #include <gpio.h>
 #include <framebuffer.h>
-#include <utils.h>
 
 #ifndef BROADCOM_H
 #define BROADCOM_H
 
 #define PERIPHERAL_BASE 0x20000000
 
-void BCMgpioSetFunction(uint8_t pin, enum gpioFunctions function);
-void BCMgpioPinWrite(uint8_t pin, bool level);
+void BCMgpioSetFunction(uint8 pin, enum gpioFunctions function);
+void BCMgpioPinWrite(uint8 pin, bool level);
 void BCMframebufferInit();
 
 #endif

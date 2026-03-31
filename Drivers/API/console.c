@@ -1,19 +1,18 @@
-#include <stdint.h>
-// ------------------ //
-#include <console.h>
-#include <framebuffer.h>
+#include <types.h>
 #include <utils.h>
 #include <string.h>
+#include <framebuffer.h>
+#include <console.h>
 
-#define CHARACTER_WIDTH 8
-#define CHARACTER_HEIGHT 16
+#define CHARACTER_WIDTH (8)
+#define CHARACTER_HEIGHT (16)
 
 /*
 -> The default colour Palette RedluaOS will use;
 -> Later on, i will make it possible to change the colours via user input;
 */
 
-static uint16_t consolePalette[18] = {
+static uint16 consolePalette[18] = {
     0x0000,
     0xDEFB,
     0x2966,
@@ -44,7 +43,7 @@ unless you don't want to touch grass for the next week;
 -> Seriously, making your own Bitmap is a pain in the ass; Tedious as fuck. Don't do it. I beg you
 */
 
-static uint8_t consoleFont[127][CHARACTER_HEIGHT] = {
+static uint8 consoleFont[INT8_MAX][CHARACTER_HEIGHT] = {
 
     // 32 Control Character;
     {0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
@@ -548,23 +547,24 @@ void consoleInit() {
 -> Writes 4 bytes at once to squeeze performance; yet it is still slow AF;
 */
 
-void consoleWriteCharacter(enum consoleColours foreground, enum consoleColours background, char character) {
-    uint16_t x = GlobalConsole.cursorX * (CHARACTER_WIDTH >> 1);
-    uint16_t y = GlobalConsole.cursorY * CHARACTER_HEIGHT;
-    REGISTER_32 *screen = (REGISTER_32 *)GlobalFramebuffer.pointer;
-    uint16_t Foreground = consolePalette[foreground];
-    uint16_t Background = consolePalette[background];
-
+static void consoleWriteCharacter(enum consoleColours foreground, enum consoleColours background, char character) {
     if (GlobalConsole.cursorX >= GlobalConsole.columns) {
         GlobalConsole.cursorX = 0;
         GlobalConsole.cursorY++;
     }
 
     if (GlobalConsole.cursorY >= GlobalConsole.rows) return;
+    
+    uint16 x = GlobalConsole.cursorX * (CHARACTER_WIDTH >> 1);
+    uint16 y = GlobalConsole.cursorY * CHARACTER_HEIGHT;
+    uint32 *screen = (uint32 *)GlobalFramebuffer.pointer;
+    uint16 Foreground = consolePalette[foreground];
+    uint16 Background = consolePalette[background];
+
         
-    for (uint8_t row = 0; row < CHARACTER_HEIGHT; row++) {
-        uint8_t characterRow = consoleFont[character][row];
-        uint32_t linearOffset = (y + row) * (GlobalFramebuffer.pitch >> 2);
+    for (uint8 row = 0; row < CHARACTER_HEIGHT; row++) {
+        uint8 characterRow = consoleFont[character][row];
+        uint32 linearOffset = (y + row) * (GlobalFramebuffer.pitch >> 2);
 
         screen[(x + 0) + linearOffset] =
             (Background ^ (-( (characterRow >> 7) & 1U ) & Foreground)) |
@@ -585,9 +585,9 @@ void consoleWriteCharacter(enum consoleColours foreground, enum consoleColours b
     GlobalConsole.cursorX++;
 }
 
-void consoleWriteText(enum consoleColours foreground, enum consoleColours background, char *text, size_t length) {
-    for (uint32_t character = 0; character < length; character++) {
-        consoleWriteCharacter(foreground, background, text[character]);
+void consoleWrite(enum consoleColours foreground, enum consoleColours background, string *text) {
+    for (uint32 character = 0; character < text->length; character++) {
+        consoleWriteCharacter(foreground, background, text->text[character]);
     }
 }
 

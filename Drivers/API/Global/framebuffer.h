@@ -1,5 +1,4 @@
-#include <stdint.h>
-#include <stdbool.h>
+#include <types.h>
 
 #ifndef FRAMEBUFFER_H
 #define FRAMEBUFFER_H
@@ -12,16 +11,16 @@
 */
 
 struct framebufferInfo {
-    uintptr_t pointer;
-    uint32_t size;
-    uint16_t virtualHeight;
-    uint16_t virtualWidth;
-    uint16_t physicalHeight;
-    uint16_t physicalWidth;
-    uint16_t virtual_X_Offset;
-    uint16_t virtual_Y_Offset;
-    uint16_t pitch;
-    uint16_t depth;
+    uintptr pointer;
+    uint32 size;
+    uint16 virtualHeight;
+    uint16 virtualWidth;
+    uint16 physicalHeight;
+    uint16 physicalWidth;
+    uint16 virtual_X_Offset;
+    uint16 virtual_Y_Offset;
+    uint16 pitch;
+    uint16 depth;
     bool pixelOrder;
 };
 

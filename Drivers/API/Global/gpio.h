@@ -1,5 +1,4 @@
-#include <stdint.h>
-#include <stdbool.h>
+#include <types.h>
 
 #ifndef GPIO_H
 #define GPIO_H
@@ -26,18 +25,18 @@ enum gpioFunctions {
 
 // Driver Table
 struct gpioTable {
-    void (*setFunction)(uint8_t pin, enum gpioFunctions function);
-    void (*pinWrite)(uint8_t pin, bool level);
+    void (*setFunction)(uint8 pin, enum gpioFunctions function);
+    void (*pinWrite)(uint8 pin, bool level);
 };
 
 extern struct gpioTable GlobalGpioTable;
 
 // Wrapper functions
-static inline void gpioSetFunction(uint8_t pin, enum gpioFunctions function) {
+static inline void gpioSetFunction(uint8 pin, enum gpioFunctions function) {
     GlobalGpioTable.setFunction(pin, function);
 }
 
-static inline void gpioPinWrite(uint8_t pin, bool level) {
+static inline void gpioPinWrite(uint8 pin, bool level) {
     GlobalGpioTable.pinWrite(pin, level);
 }
 

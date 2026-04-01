@@ -91,7 +91,7 @@ enum mailboxTags {
 -> Unused for now;
 */
 
-struct mailboxBuffer {
+struct PACKED ALIGNED(16) mailboxBuffer {
     uint32 size;
     uint32 requestResponse;
     uint32 tags[];
@@ -112,9 +112,9 @@ good idea to have the channel and pointer in the same register;
    bit [3-0] -> channel;
 */
 
-static void mailboxWrite(uintptr pointer, enum mailboxChannels channel) {
+void mailboxWrite(uintptr pointer, enum mailboxChannels channel) {
     if (channel == UNDEFINED) return;
-    while ((*MAILBOX_WRITE_STATUS & MAILBOX_FULL) != 0) { /* spins */ }
+    while ((*MAILBOX_WRITE_STATUS & MAILBOX_FULL) != 0) /* does nothing */
     *MAILBOX_WRITE = pointer | channel;
 }
 
@@ -127,10 +127,10 @@ static void mailboxWrite(uintptr pointer, enum mailboxChannels channel) {
 -> will return 0x80000002 if trying to read channel 7;
 */
 
-static uint32 mailboxRead(enum mailboxChannels channel) {
+uint32 mailboxRead(enum mailboxChannels channel) {
     if (channel == UNDEFINED) return UNDEFINED_CHANNEL_USAGE;
     while (true) {
-        while ((*MAILBOX_READ_STATUS & MAILBOX_EMPTY) != 0) { /* Spins */ }
+        while ((*MAILBOX_READ_STATUS & MAILBOX_EMPTY) != 0) /* does nothing */
         uint32 registerContents = *MAILBOX_READ;
         if (registerContents & channel == channel) return registerContents >> 4;
     }
@@ -146,7 +146,7 @@ static uint32 mailboxRead(enum mailboxChannels channel) {
 -> every word must have 32 bits;
 */
 
-static volatile uint32 __attribute__((aligned(16))) messageBuffer[10];
+uint32 ALIGNED(16) messageBuffer[10];
 
 void BCMframebufferInit() {;
     if (GlobalFramebuffer.pointer != 0) return;

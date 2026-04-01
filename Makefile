@@ -23,7 +23,7 @@ else
 endif
 
 # Sources
-SOURCE_DIRS = Kernel Libraries $(shell find -type d -name $(DEVICE)) Drivers/API $(INIT_SECTION)
+SOURCE_DIRS = Kernel Libraries  Drivers/API $(shell find -type d -name $(DEVICE)) $(INIT_SECTION)
 BUILD_DIR = Build
 
 # Finds sources

@@ -14,6 +14,10 @@ typedef const volatile uint32 *R_REGISTER_32;
 #define alignas _Alignas
 #define alignof _Alignof
 
+#define ALIGNED(x) __attribute__((aligned(x)))
+#define PACKED __attribute__((packed))
+#define OPTIMIZE(x) __attribute__((optimize(x)))
+
 #define HIGH true
 #define LOW false
 

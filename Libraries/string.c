@@ -2,17 +2,16 @@
 #include <string.h>
 
 string newString(char *literal, uint32 capacity) {
+    uint32 literalLength = stringLength(literal);
     return (string){
-        .length = stringLength(literal),
-        .capacity = (capacity == 0) ? stringLength(literal) : capacity,
+        .length = literalLength,
+        .capacity = (capacity == 0) ? literalLength : capacity,
         .text = literal
     };
 }
 
 uint32 stringLength(char *literal) {
-    uint32 counter = 0;
-    while  (literal[counter] != '\0') {
-        counter++;
-    }
-    return counter;
+    uint32 length = 0;
+    while (literal[length] != '\0') length++;
+    return length;
 }

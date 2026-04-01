@@ -1,13 +1,13 @@
 #include <types.h>
 #include <utils.h>
 
-inline void memorySet(uint32 *target, uint32 value, uint32 length) {
+void memorySet(uint32 *target, uint32 value, uint32 length) {
     for (uint32 offset; offset < (length / 4); offset++) {
         target[offset] = value;
     }
 }
 
-inline void memoryCopy(uint32 *target, uint32 *origin, uint32 length) {
+void memoryCopy(uint32 *target, uint32 *origin, uint32 length) {
     uintptr a = (uintptr)target;
     uintptr b = (uintptr)origin;
     uintptr difference = (a > b) ? (a - b) : (b - a);

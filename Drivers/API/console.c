@@ -544,7 +544,7 @@ void consoleInit() {
 -> It is pretty fragile, so don't try to change much from the math;
 -> It assumes depth = 16, so make sure that it is, or else it won't work;
 -> It also assumes the Font is 8x16, in order to get more performance;
--> Writes 4 bytes at once to squeeze performance; yet it is still slow AF;
+-> Writes 4 bytes at once to squeeze performance;
 */
 
 static void consoleWriteCharacter(enum consoleColours foreground, enum consoleColours background, char character) {

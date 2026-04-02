@@ -21,4 +21,6 @@ typedef const volatile uint32 *R_REGISTER_32;
 #define HIGH true
 #define LOW false
 
+#define NULL ((void *)0)
+
 #endif

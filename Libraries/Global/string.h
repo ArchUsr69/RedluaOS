@@ -9,7 +9,9 @@ typedef struct {
     char *text;
 } string;
 
-string newString(char *literal, uint32 capacity);
+string stringNew(char *literal, uint32 capacity);
 uint32 stringLength(char *literal);
+char *bin2string(uint32 number, uint8 length);
+char *hex2string(uint32 number, uint8 length);
 
 #endif

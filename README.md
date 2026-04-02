@@ -5,9 +5,9 @@
 
 As you can see, none of these goals have been achieved *yet*. Right now i’m only more than 1 Month into this project, so don’t expect much. 
 
-## ***IMPORTANT*
+## **IMPORTANT**
 
-- I’m currently working on 2 machines. Since i only have a cross compiler on 1, i cannot test the code the other machine. Untested commits are marked with (***UNTESTED***).
+- I’m currently working on 2 machines. Since i only have a cross compiler on 1, i cannot test the code the other machine. Untested commits are marked with (**UNTESTED**).
 - The project is far from done. Keep that in mind. A lot of sudden changes can happen quickly. Don’t expect everything to work flawlessly even if I’m still improving everything over time. I’m trying my best to keep the code as correct and readable as possible.
 - If you have suggestions, just put them directly inside ISSUES (I’ll manage issues later. I haven’t set them up yet). I will like any kind of attention i will get. Just a sign that someone sees my project is already a good validation for me.
 - But don’t go judging this project too much; I didn’t actually have any bare metal or C experience before, like, at all. I just had the balls to try this out and it somehow worked. But don’t think there wasn’t any pain experienced. There was plenty.

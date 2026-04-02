@@ -7,9 +7,9 @@
 
 // Fills the screen with F; Just try it out;
 void kernelMain() {
-    string prompt = newString("> ", 0);
-    string message1 = newString("Welcome to RedluaOS", 0);
-    string message2 = newString("This is fun", 0);
+    string prompt = stringNew("> ", 0);
+    string message1 = stringNew("Welcome to RedluaOS", 0);
+    string message2 = stringNew("This is fun", 0);
 
     consoleWrite(Red, Background, &prompt);
     consoleWrite(Foreground, Background, &message2);

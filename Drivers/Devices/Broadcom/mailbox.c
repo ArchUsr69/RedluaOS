@@ -114,7 +114,7 @@ good idea to have the channel and pointer in the same register;
 
 void mailboxWrite(uintptr pointer, enum mailboxChannels channel) {
     if (channel == UNDEFINED) return;
-    while ((*MAILBOX_WRITE_STATUS & MAILBOX_FULL) != 0) /* does nothing */
+    while ((*MAILBOX_WRITE_STATUS & MAILBOX_FULL) != 0) { /* does nothing */ }
     *MAILBOX_WRITE = pointer | channel;
 }
 
@@ -130,7 +130,7 @@ void mailboxWrite(uintptr pointer, enum mailboxChannels channel) {
 uint32 mailboxRead(enum mailboxChannels channel) {
     if (channel == UNDEFINED) return UNDEFINED_CHANNEL_USAGE;
     while (true) {
-        while ((*MAILBOX_READ_STATUS & MAILBOX_EMPTY) != 0) /* does nothing */
+        while ((*MAILBOX_READ_STATUS & MAILBOX_EMPTY) != 0) { /* does nothing */ }
         uint32 registerContents = *MAILBOX_READ;
         if (registerContents & channel == channel) return registerContents >> 4;
     }
@@ -164,7 +164,7 @@ void BCMframebufferInit() {;
 
     mailboxWrite((uintptr)messageBuffer | VC_OFFSET, FRAMEBUFFER);
     mailboxRead(FRAMEBUFFER);
-    
+
     // Fills whatever VC sent back;
     GlobalFramebuffer.physicalWidth = (uint16)messageBuffer[0];
     GlobalFramebuffer.physicalHeight = (uint16)messageBuffer[1];

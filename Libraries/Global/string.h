@@ -11,7 +11,7 @@ typedef struct {
 
 string stringNew(char *literal, uint32 capacity);
 uint32 stringLength(char *literal);
-char *bin2string(uint32 number, uint8 length);
-char *hex2string(uint32 number, uint8 length);
+char *bin2string(uint32 number);
+char *hex2string(uint32 number);
 
 #endif

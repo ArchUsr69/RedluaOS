@@ -38,14 +38,15 @@ uint32 stringLength(char *literal) {
 -> upon error will return NULL, keep that in mind;
 */
 
-char *bin2string(uint32 number, uint8 length) {
-    if (length == 0 || length > INT32_WIDTH) return NULL;
-    char *binNumber[length + 1];
-    for (uint8 offset = length; offset > 0; offset--) {
-        bool bit = ((number >> offset) & HIGH);
-        binNumber[offset] = bit ? '1' : '0';
+char *bin2string(uint32 number) {
+    static char binNumber[33];
+    for (uint8 offset = 2; offset < 32; offset++) {
+        bool bit = (number >> (31 - offset)) & HIGH;
+        binNumber[offset] = (bit) ? '1' : '0';
     }
-    binNumber[length + 1] = '\0';
+    binNumber[0] = '0';
+    binNumber[1] = 'b';
+    binNumber[32] = '\0';
     return binNumber;
 }
 
@@ -56,14 +57,15 @@ char *bin2string(uint32 number, uint8 length) {
 -> upon error will return NULL;
 */
 
-char *hex2string(uint32 number, uint8 length) {
-    if (length == 0 || length > (INT32_WIDTH / 4)) return NULL;
-    char *hexNumber[length];
-    for (uint8 offset = length; offset > 0; offset--) {
-        uint8 hex = ((number >> (offset * 4)) & 0xF);
-        hexNumber[offset] = (hex < 10) ? ('0' + hex) : ('A' + (hex % 10));
+char *hex2string(uint32 number) {
+    static char hexNumber[11];
+    for (uint8 offset = 2; offset < 10; offset++) {
+        uint8 hex = (number >> ((7 - offset) * 4)) & 0xF;
+        hexNumber[offset] = (hex < 10) ? ('0' + hex) : ('A' + (hex - 10));
     }
-    hexNumber[length + 1] = '\0';
+    hexNumber[0] = '0';
+    hexNumber[1] = 'x';
+    hexNumber[10] = '\0';
     return hexNumber;
 }
 

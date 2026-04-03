@@ -12,13 +12,10 @@ void kernelMain() {
     gpioPinWrite(35, LOW);
     gpioPinWrite(47, HIGH);
 
-    uint8 A = 255;
     string prompt = stringNew("> ", 0);
     string message1 = stringNew("Welcome to RedluaOS", 0);
-    string message2 = stringNew("Address of random variable A = ", 0);
-    string message3 = stringNew("Value of A in Binary = ", 0);
-    string value = stringNew(bin2string(A), 0);
-    string address = stringNew(hex2string((uintptr)&A), 0);
+    string message2 = stringNew("address of Framebuffer ", 0);
+    string value = stringNew(hex2string(GlobalFramebuffer.pointer), 0);
 
     consoleWrite(Red, Background, &prompt);
     consoleWrite(Foreground, Background, &message1);
@@ -28,12 +25,5 @@ void kernelMain() {
 
     consoleWrite(Red, Background, &prompt); 
     consoleWrite(Foreground, Background, &message2);
-    consoleWrite(Foreground, Background, &address);
-
-    GlobalConsole.cursorY++;
-    GlobalConsole.cursorX = 0;
-
-    consoleWrite(Red, Background, &prompt);
-    consoleWrite(Foreground, Background, &message3);
     consoleWrite(Foreground, Background, &value);
 }

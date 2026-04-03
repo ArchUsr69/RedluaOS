@@ -60,45 +60,6 @@ enum mailboxChannels {
     PROPERTY_TAGS
 };
 
-// Unused for now
-enum mailboxTags {
-    FIRMWARE_REVISION = 0x00000001,
-    FRAMEBUFFER_ALLOCATE = 0x00040001,
-    FRAMEBUFFER_RELEASE = 0x00048001,
-    SCREEN_BLANK = 0x00040002,
-    GET_PHYSICAL_SIZE = 0x00040003,
-    TEST_PHYSICAL_SIZE = 0x00044003,
-    SET_PHYSICAL_SIZE = 0x00048003,
-    GET_VIRTUAL_SIZE = 0x00040004,
-    TEST_VIRTUAL_SIZE = 0x00044004,
-    SET_VIRTUAL_SIZE = 0x00048004,
-    GET_DEPTH = 0x00040005,
-    TEST_DEPTH = 0x00044005,
-    SET_DEPTH = 0x00048005,
-    GET_PITCH = 0x00040008,
-    GET_VIRTUAL_OFFSET = 0x00040009,
-    TEST_VIRTUAL_OFFSET = 0x00044009,
-    SET_VIRTUAL_OFFSET = 0x00048009,
-    GET_PIXELORDER = 0x00040006,
-    TEST_PIXELORDER = 0x00044006,
-    SET_PIXELORDER = 0x00048006
-};
-
-/*
--> Property interface mailbox buffer structure (unused for now);
--> size must be calculated;
--> requestResponse must always be 0 initialized; VC will overwrite with 0x80000000 for success, 0x80000001 for fail;
--> Unused for now;
-*/
-
-struct PACKED ALIGNED(16) mailboxBuffer {
-    uint32 size;
-    uint32 requestResponse;
-    uint32 tags[];
-};
-
-// ---------------------------- //
-
 /*
 -> sends a pointer of the message buffer to VideoCore;
 -> the pointer *MUST* be 16 bytes aligned, since some genius decided it would be a
@@ -139,44 +100,6 @@ uint32 mailboxRead(enum mailboxChannels channel) {
 // -------------------------- //
 
 /*
--> takes a framebufferMetadata struct pointer where it writes all the information about the framebuffer;
--> All values must already be initialized; 
--> it is pretty messy, but it works pretty fine;
--> the order of the information can be found inside the array. *DO NOT CHANGE*
--> every word must have 32 bits;
-*/
-
-uint32 ALIGNED(16) messageBuffer[10];
-
-void BCMframebufferInit() {;
-    if (GlobalFramebuffer.pointer != 0) return;
-
-    messageBuffer[0] = GlobalFramebuffer.physicalWidth;
-    messageBuffer[1] = GlobalFramebuffer.physicalHeight;
-    messageBuffer[2] = GlobalFramebuffer.virtualWidth;
-    messageBuffer[3] = GlobalFramebuffer.virtualHeight;
-    messageBuffer[4] = GlobalFramebuffer.pitch;
-    messageBuffer[5] = GlobalFramebuffer.depth;
-    messageBuffer[6] = GlobalFramebuffer.virtual_X_Offset;
-    messageBuffer[7] = GlobalFramebuffer.virtual_Y_Offset;
-    messageBuffer[8] = GlobalFramebuffer.pointer;
-    messageBuffer[9] =  GlobalFramebuffer.size;
-
-    mailboxWrite((uintptr)messageBuffer | VC_OFFSET, FRAMEBUFFER);
-    mailboxRead(FRAMEBUFFER);
-
-    // Fills whatever VC sent back;
-    GlobalFramebuffer.physicalWidth = (uint16)messageBuffer[0];
-    GlobalFramebuffer.physicalHeight = (uint16)messageBuffer[1];
-    GlobalFramebuffer.pitch = (uint16)messageBuffer[4];
-    GlobalFramebuffer.pointer = (uintptr)messageBuffer[8] & ARM_OFFSET;
-    GlobalFramebuffer.size = (uint32)messageBuffer[9];
-}
-
-// -------------------------- //
-
-
-/*
 -> functions that manage Cache;
 -> without those, the mailbox interface wouldn't probably work;
 -> don't try to understand much. It's magic. Even i don't understand this crap;
@@ -212,3 +135,41 @@ static inline void invalidateCache(uintptr address, uint32 size) {
 }
 
 // ------------------------------ //
+
+/*
+-> takes a framebufferMetadata struct pointer where it writes all the information about the framebuffer;
+-> All values must already be initialized; 
+-> it is pretty messy, but it works pretty fine;
+-> the order of the information can be found inside the array. *DO NOT CHANGE*
+-> every word must have 32 bits;
+*/
+
+uint32 ALIGNED(16) messageBuffer[10];
+
+void BCMframebufferInit() {
+    if (GlobalFramebuffer.pointer != 0) return;
+
+    messageBuffer[0] = GlobalFramebuffer.physicalWidth;
+    messageBuffer[1] = GlobalFramebuffer.physicalHeight;
+    messageBuffer[2] = GlobalFramebuffer.virtualWidth;
+    messageBuffer[3] = GlobalFramebuffer.virtualHeight;
+    messageBuffer[4] = GlobalFramebuffer.pitch;
+    messageBuffer[5] = GlobalFramebuffer.depth;
+    messageBuffer[6] = GlobalFramebuffer.virtual_X_Offset;
+    messageBuffer[7] = GlobalFramebuffer.virtual_Y_Offset;
+    messageBuffer[8] = GlobalFramebuffer.pointer;
+    messageBuffer[9] =  GlobalFramebuffer.size;
+
+    mailboxWrite((uintptr)messageBuffer | VC_OFFSET, FRAMEBUFFER);
+    mailboxRead(FRAMEBUFFER);
+
+    // Fills whatever VC sent back;
+    GlobalFramebuffer.physicalWidth = (uint16)messageBuffer[0];
+    GlobalFramebuffer.physicalHeight = (uint16)messageBuffer[1];
+    GlobalFramebuffer.pitch = (uint16)messageBuffer[4];
+    GlobalFramebuffer.pointer = (uintptr)messageBuffer[8] & ARM_OFFSET;
+    GlobalFramebuffer.size = (uint32)messageBuffer[9];
+}
+
+// -------------------------- //
+

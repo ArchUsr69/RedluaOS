@@ -46,7 +46,8 @@ static const uint8 BCMgpioFunctions[8] = {
 
 void BCMgpioSetFunction(uint8 pin, enum gpioFunctions function) {
     if (pin > TOTAL_PINS) return;
-    GPIOFSELECT_BASE[pin / 10] = BCMgpioFunctions[function] << ((pin % 10) * 3);
+    GPIOFSELECT_BASE[pin / 10] &= ~(0b111 << ((pin % 10) * 3)); // mask;
+    GPIOFSELECT_BASE[pin / 10] |= BCMgpioFunctions[function] << ((pin % 10) * 3);
 }
 
 // ------------------------- //

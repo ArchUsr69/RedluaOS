@@ -8,12 +8,12 @@
 void kernelMain() {
     gpioSetFunction(47, OUTPUT);
     gpioSetFunction(35, OUTPUT);
-    if (GlobalFramebuffer.pointer = 0x80000001) gpioPinWrite(35, LOW);
+    gpioPinWrite(35, LOW);
     gpioPinWrite(47, HIGH);
 
     string prompt = stringNew("> ", 0);
-    string message1 = stringNew("Welcome to RedluaOS", 0);
-    string message2 = stringNew("response from VC = ", 0);
+    string message1 = stringNew("Welcome to RedluaOS!", 0);
+    string message2 = stringNew("address of framebufffer =  ", 0);
     string value = stringNew(hex2string(GlobalFramebuffer.pointer), 0);
 
     consoleWrite(Red, Background, prompt);

@@ -29,6 +29,11 @@
 #define REQUEST 0
 #define END_TAG 0
 
+/*
+-> All the property tags;
+-> in the future, the tags will have their own reference, so you know how to use them;
+*/
+
 enum propertyTags {
     FIRMWARE_REVISION = 0x00000001,
     BOARD_MODEL = 0x00010001,
@@ -54,8 +59,16 @@ enum propertyTags {
     FRAMEBUFFER_GET_OFFSET = 0x00040009,
     FRAMEBUFFER_TEST_OFFSET = 0x00044009,
     FRAMEBUFFER_SET_OFFSET = 0x00048009,
+
+    // ------------------------ //
     
 };
+
+/*
+-> a basic message layout;
+-> it is pretty basic, and it needs manual manipulation of tags;
+-> i will change that though;
+*/
 
 typedef struct {
     size_t size;
@@ -108,73 +121,76 @@ uint32 mailboxRead() {
 -> every word must have 32 bits;
 */
 
-uint32 ALIGNED(16) messageBuffer[10];
-
 void BCMframebufferInit() {
     if (GlobalFramebuffer.pointer != 0) return;
 
     static mailboxMessage ALIGNED(16) messageBuffer = {
-        .size = sizeof(messageBuffer) * INT32_BYTES,
+        .size = sizeof(messageBuffer) * 16,
         .request = REQUEST,
         .tags = {
-            FRAMEBUFFER_ALLOCATE,
-            8,
-            REQUEST,
-            16,
-            EMPTY,
-
-            // --------------------------- //
-        
-            FRAMEBUFFER_SET_PHYSICAL,
-            8,
-            REQUEST,
-            1920,
-            1080,
+            FRAMEBUFFER_SET_PHYSICAL,   // 0
+            8,                          // 1
+            REQUEST,                    // 2
+            1920,                       // 3
+            1080,                       // 4
 
             // ---------------------------- //
 
-            FRAMEBUFFER_SET_VIRTUAL,
-            8,
-            REQUEST,
-            1920,
-            1080,
+            FRAMEBUFFER_SET_VIRTUAL,    // 5
+            8,                          // 6
+            REQUEST,                    // 7
+            1920,                       // 8
+            1080,                       // 9
 
             // --------------------------- //
 
-            FRAMEBUFFER_PITCH,
-            4,
-            REQUEST,
-            EMPTY,
+            FRAMEBUFFER_SET_DEPTH,      // 10
+            4,                          // 11
+            REQUEST,                    // 12
+            16,                         // 13
 
             // --------------------------- //
 
-            FRAMEBUFFER_SET_DEPTH,
-            4,
-            REQUEST,
-            16,
-
-            // --------------------------- //
-
-            FRAMEBUFFER_SET_OFFSET,
-            8,
-            REQUEST,
-            0,
-            0,
+            FRAMEBUFFER_SET_OFFSET,     // 14
+            8,                          // 15
+            REQUEST,                    // 16
+            0,                          // 17
+            0,                          // 18
 
             // -------------------------- //
 
-            END_TAG
+            FRAMEBUFFER_ALLOCATE,       // 19
+            8,                          // 20
+            REQUEST,                    // 21
+            16,                         // 22
+            EMPTY,                      // 23
+
+            // ------------------------- //
+
+            FRAMEBUFFER_PITCH,          // 24
+            4,                          // 25
+            REQUEST,                    // 26
+            EMPTY,                      // 27
+
+            // ------------------------ //
+
+            FRAMEBUFFER_SET_PIXELORDER, // 28
+            4,                          // 29
+            REQUEST,                    // 30
+            1,                          // 31
+
+            END_TAG                     // 32
         }
     };
+
     
     mailboxWrite((uintptr)&messageBuffer);
     mailboxRead();
 
     // Fills whatever VC sent back;
-    GlobalFramebuffer.physicalWidth = (uint16)messageBuffer.tags[8];
-    GlobalFramebuffer.physicalHeight = (uint16)messageBuffer.tags[9];
-    GlobalFramebuffer.pitch = (uint16)messageBuffer.tags[18];
-    GlobalFramebuffer.pointer = (uintptr)messageBuffer.tags[3];
-    GlobalFramebuffer.size = (uint32)messageBuffer.tags[4];
-    if (messageBuffer.request == PARSE_FAILURE) GlobalFramebuffer.pointer = PARSE_FAILURE;
+    GlobalFramebuffer.physicalWidth = messageBuffer.tags[3];
+    GlobalFramebuffer.physicalHeight = messageBuffer.tags[4];
+    GlobalFramebuffer.pitch = messageBuffer.tags[27];
+    GlobalFramebuffer.pointer = messageBuffer.tags[22];
+    GlobalFramebuffer.size = messageBuffer.tags[23];
 }

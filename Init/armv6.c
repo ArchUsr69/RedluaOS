@@ -1,8 +1,8 @@
-#include <types.h>
-#include <utils.h>
 #include <gpio.h>
 #include <framebuffer.h>
 #include <console.h>
+
+void kernelMain();
 
 // Preprocessor bullshit
 #ifdef Broadcom
@@ -17,9 +17,6 @@
         .framebufferInit = BCMframebufferInit
     };
 #endif
-
-// It is declared here too so that it can call Main;
-void kernelMain();
 
 struct framebufferInfo GlobalFramebuffer = {
     .virtualHeight = 1080,

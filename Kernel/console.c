@@ -37,7 +37,6 @@ uint16 consolePalette[18] = {
 /*
 -> Initializes a console;
 -> MUST have the framebuffer initialized for it to work, or else it will just return;
--> it also returns if the console has already been initialized;
 */
 
 void consoleInit() {
@@ -96,11 +95,10 @@ void OPTIMIZE(3) consoleWriteCharacter(enum consoleColours foreground, enum cons
     GlobalConsole.cursorX++;
 }
 
-void OPTIMIZE(3) consoleWrite(enum consoleColours foreground, enum consoleColours background, string *text) {
-    for (uint32 character = 0; character < text->length; character++) {
-        consoleWriteCharacter(foreground, background, text->text[character]);
+void OPTIMIZE(3) consoleWrite(enum consoleColours foreground, enum consoleColours background, string text) {
+    for (size_t character = 0; character < text.length; character++) {
+        consoleWriteCharacter(foreground, background, text.text[character]);
     }
 }
 
 // ------------------------------------------------ //
-

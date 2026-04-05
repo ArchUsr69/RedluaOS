@@ -6,17 +6,16 @@
 #define GPIO_BASE (PERIPHERAL_BASE + 0x200000)
 
 // GPIO Pin Function selector registers
-#define GPIOFSELECT_BASE ((REGISTER_32)(GPIO_BASE + 0x00))
+#define GPIOFSELECT_BASE ((MMIO_32)(GPIO_BASE + 0x00))
 
 // Output set Registers
-#define GPIOSET0 ((REGISTER_32)(GPIO_BASE + 0x1C))
-#define GPIOSET1 ((REGISTER_32)(GPIO_BASE + 0x20))
+#define GPIOSET0 ((MMIO_32)(GPIO_BASE + 0x1C))
+#define GPIOSET1 ((MMIO_32)(GPIO_BASE + 0x20))
 
 // Output clear Registers
-#define GPIOCLEAR0 ((REGISTER_32)(GPIO_BASE + 0x28))
-#define GPIOCLEAR1 ((REGISTER_32)(GPIO_BASE + 0x2C))
-
-#define TOTAL_PINS 53
+#define GPIOCLEAR0 ((MMIO_32)(GPIO_BASE + 0x28))
+#define GPIOCLEAR1 ((MMIO_32)(GPIO_BASE + 0x2C))
+#define TOTAL_PINS (53)
 
 /*
 -> maps the standard gpio function numbers to the bcm2835 gpio function values;
@@ -24,7 +23,7 @@
 -> Those are the raw values that will be written to the Function Selet registers;
 */
 
-static const uint8 BCMgpioFunctions[8] = {
+const uint8 BCMgpioFunctions[8] = {
     0b000, // Input
     0b001, // Output
     0b100, // Alternative 0
@@ -42,11 +41,12 @@ static const uint8 BCMgpioFunctions[8] = {
 
    Essentially for each pin, there are 3 bits available for each pin;
    There are multiple Registers; so the offset must be calculated;
+   In order to not overwrite the other pins with 0, it creates a mask; feel free to analyze it;
 */
 
 void BCMgpioSetFunction(uint8 pin, enum gpioFunctions function) {
     if (pin > TOTAL_PINS) return;
-    GPIOFSELECT_BASE[pin / 10] &= ~(0b111 << ((pin % 10) * 3)); // mask;
+    GPIOFSELECT_BASE[pin / 10] &= ~(0b111 << ((pin % 10) * 3));
     GPIOFSELECT_BASE[pin / 10] |= BCMgpioFunctions[function] << ((pin % 10) * 3);
 }
 
@@ -63,10 +63,10 @@ void BCMgpioSetFunction(uint8 pin, enum gpioFunctions function) {
 void BCMgpioPinWrite(uint8 pin, bool level) {
     if (pin > TOTAL_PINS) return;
     if (level == HIGH) {
-        REGISTER_32 target = (pin <= INT32_WIDTH) ? GPIOSET0 : GPIOSET1;
+        MMIO_32 target = (pin <= INT32_WIDTH) ? GPIOSET0 : GPIOSET1;
         *target = (HIGH << (pin % INT32_WIDTH));
     } else {
-        REGISTER_32 target = (pin <= INT32_WIDTH) ? GPIOCLEAR0 : GPIOCLEAR1;
+        MMIO_32 target = (pin <= INT32_WIDTH) ? GPIOCLEAR0 : GPIOCLEAR1;
         *target = (HIGH << (pin % INT32_WIDTH));
     }
 }

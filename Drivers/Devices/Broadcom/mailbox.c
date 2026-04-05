@@ -3,62 +3,65 @@
 #include <broadcom.h>
 #include <framebuffer.h>
 
-// for now Hardcoded; It should be PERIPHERAL_BASE + MAILBOX_BASE offset
 #define MAILBOX_BASE (PERIPHERAL_BASE + 0xB880)
 
-// Mailbox 0 Registers (*NEVER WRITE TO THESE REGISTERS*)
-#define MAILBOX_READ ((R_REGISTER_32)(MAILBOX_BASE + 0x00))
-#define MAILBOX_READ_PEEK ((R_REGISTER_32)(MAILBOX_BASE + 0x10))
-#define MAILBOX_READ_SENDER ((R_REGISTER_32)(MAILBOX_BASE + 0x14))
-#define MAILBOX_READ_STATUS ((R_REGISTER_32)(MAILBOX_BASE + 0x18))
-#define MAILBOX_READ_CONFIG ((R_REGISTER_32)(MAILBOX_BASE + 0x1C))
+// Mailbox 0 Registers
+#define MAILBOX_READ ((RO_MMIO_32)(MAILBOX_BASE + 0x00))
+#define MAILBOX_READ_PEEK ((RO_MMIO_32)(MAILBOX_BASE + 0x10))
+#define MAILBOX_READ_SENDER ((RO_MMIO_32)(MAILBOX_BASE + 0x14))
+#define MAILBOX_READ_STATUS ((RO_MMIO_32)(MAILBOX_BASE + 0x18))
+#define MAILBOX_READ_CONFIG ((RO_MMIO_32)(MAILBOX_BASE + 0x1C))
 
-// Mailbox 1 Registers (You shouldn't read these registers; not that you have to)
-#define MAILBOX_WRITE ((REGISTER_32)(MAILBOX_BASE + 0x20))
-#define MAILBOX_WRITE_PEEK ((REGISTER_32)(MAILBOX_BASE + 0x30))
-#define MAILBOX_WRITE_SENDER ((REGISTER_32)(MAILBOX_BASE + 0x34))
-#define MAILBOX_WRITE_STATUS ((REGISTER_32)(MAILBOX_BASE + 0x38))
-#define MAILBOX_WRITE_CONFIG ((REGISTER_32)(MAILBOX_BASE + 0x3C))
+// Mailbox 1 Registers
+#define MAILBOX_WRITE ((MMIO_32)(MAILBOX_BASE + 0x20))
+#define MAILBOX_WRITE_PEEK ((MMIO_32)(MAILBOX_BASE + 0x30))
+#define MAILBOX_WRITE_SENDER ((MMIO_32)(MAILBOX_BASE + 0x34))
+#define MAILBOX_WRITE_STATUS ((MMIO_32)(MAILBOX_BASE + 0x38))
+#define MAILBOX_WRITE_CONFIG ((MMIO_32)(MAILBOX_BASE + 0x3C))
 
-// Mailbox Status Flags
 #define MAILBOX_FULL 0x80000000
 #define MAILBOX_EMPTY 0x40000000
 
-// Buffer status Flags
-#define BUFFER_PARSE_SUCCESS 0x80000000
-#define BUFFER_PARSE_FAILURE 0x80000001
+#define PARSE_SUCCESS 0x80000000
+#define PARSE_FAILURE 0x80000001
 
-/*
--> Returned when trying read from Channel 7; It is undefined / unused, so just don't use it;
--> unless you work for Broadcom and know what this channel does;
-*/
+#define EMPTY 0
+#define REQUEST 0
+#define END_TAG 0
 
-#define UNDEFINED_CHANNEL_USAGE 0x80000002
+enum propertyTags {
+    FIRMWARE_REVISION = 0x00000001,
+    BOARD_MODEL = 0x00010001,
 
-// ------------------- //
-
-/*
--> if ARM -> VC, bitwise OR the address (address | VC_OFFSET);
--> if VC -> ARM, bitwise AND the returned address (address & ARM_OFFSET);
--> Exception is when you use the property interface channel; then somehow VC speaks in physical addresses;
-*/
-
-#define VC_OFFSET 0x40000000
-#define ARM_OFFSET 0x3FFFFFFF
-
-// ------------------- //
-
-enum mailboxChannels {
-    POWER,
-    FRAMEBUFFER,
-    VIRTUAL_UART,
-    VCHIQ,
-    LED,
-    BUTTONS,
-    TOUCH_SCREEN,
-    UNDEFINED, // don't use this channel
-    PROPERTY_TAGS
+    // ---------------------- //
+    
+    FRAMEBUFFER_ALLOCATE = 0x00040001,
+    FRAMEBUFFER_RELEASE = 0x00048001,
+    FRAMEBUFFER_BLANK = 0x00040002,
+    FRAMEBUFFER_GET_PHYSICAL = 0x00040003,
+    FRAMEBUFFER_TEST_PHYSICAL = 0x00044003,
+    FRAMEBUFFER_SET_PHYSICAL = 0x00048003,
+    FRAMEBUFFER_GET_VIRTUAL = 0x00040004,
+    FRAMEBUFFER_TEST_VIRTUAL = 0x00044004,
+    FRAMEBUFFER_SET_VIRTUAL = 0x00048004,
+    FRAMEBUFFER_GET_DEPTH = 0x00040005,
+    FRAMEBUFFER_TEST_DEPTH = 0x00044005,
+    FRAMEBUFFER_SET_DEPTH = 0x00048005,
+    FRAMEBUFFER_GET_PIXELORDER = 0x00040006,
+    FRAMEBUFFER_TEST_PIXELORDER = 0x00044006,
+    FRAMEBUFFER_SET_PIXELORDER = 0x00048006,
+    FRAMEBUFFER_PITCH = 0x00040008,
+    FRAMEBUFFER_GET_OFFSET = 0x00040009,
+    FRAMEBUFFER_TEST_OFFSET = 0x00044009,
+    FRAMEBUFFER_SET_OFFSET = 0x00048009,
+    
 };
+
+typedef struct {
+    size_t size;
+    uint32 request;
+    uint32 tags[];
+} mailboxMessage;
 
 /*
 -> sends a pointer of the message buffer to VideoCore;
@@ -73,10 +76,9 @@ good idea to have the channel and pointer in the same register;
    bit [3-0] -> channel;
 */
 
-void mailboxWrite(uintptr pointer, enum mailboxChannels channel) {
-    if (channel == UNDEFINED) return;
+void mailboxWrite(uintptr pointer) {
     while ((*MAILBOX_WRITE_STATUS & MAILBOX_FULL) != 0) { /* does nothing */ }
-    *MAILBOX_WRITE = pointer | channel;
+    *MAILBOX_WRITE = (pointer | 8);
 }
 
 // ------------------------------ //
@@ -88,53 +90,15 @@ void mailboxWrite(uintptr pointer, enum mailboxChannels channel) {
 -> will return 0x80000002 if trying to read channel 7;
 */
 
-uint32 mailboxRead(enum mailboxChannels channel) {
-    if (channel == UNDEFINED) return UNDEFINED_CHANNEL_USAGE;
+uint32 mailboxRead() {
     while (true) {
         while ((*MAILBOX_READ_STATUS & MAILBOX_EMPTY) != 0) { /* does nothing */ }
         uint32 registerContents = *MAILBOX_READ;
-        if (registerContents & channel == channel) return registerContents >> 4;
+        if ((registerContents & 0xF) == 8) return registerContents >> 4;
     }
 }
 
 // -------------------------- //
-
-/*
--> functions that manage Cache;
--> without those, the mailbox interface wouldn't probably work;
--> don't try to understand much. It's magic. Even i don't understand this crap;
--> They are for now Unused;
-*/
-
-static inline void flushCache(uintptr address, uint32 size) {
-    uintptr start = address & ~31;
-    uintptr end = address + size;
-
-    for (uintptr i = start; i < end; i += 32) {
-        asm volatile (
-            "mcr p15, 0, %0, c7, c14, 1\n"
-            :
-            : "r" (i)
-            : "memory"
-        );
-    }
-}
-
-static inline void invalidateCache(uintptr address, uint32 size) {
-    uintptr start = address & ~31;
-    uintptr end = address + size;
-
-    for (uintptr i = start; i < end; i += 32) {
-        asm volatile (
-            "mcr p15, 0, %0, c7, c6, 1\n"
-            :
-            : "r" (i)
-            : "memory"
-        );
-    }
-}
-
-// ------------------------------ //
 
 /*
 -> takes a framebufferMetadata struct pointer where it writes all the information about the framebuffer;
@@ -149,27 +113,68 @@ uint32 ALIGNED(16) messageBuffer[10];
 void BCMframebufferInit() {
     if (GlobalFramebuffer.pointer != 0) return;
 
-    messageBuffer[0] = GlobalFramebuffer.physicalWidth;
-    messageBuffer[1] = GlobalFramebuffer.physicalHeight;
-    messageBuffer[2] = GlobalFramebuffer.virtualWidth;
-    messageBuffer[3] = GlobalFramebuffer.virtualHeight;
-    messageBuffer[4] = GlobalFramebuffer.pitch;
-    messageBuffer[5] = GlobalFramebuffer.depth;
-    messageBuffer[6] = GlobalFramebuffer.virtual_X_Offset;
-    messageBuffer[7] = GlobalFramebuffer.virtual_Y_Offset;
-    messageBuffer[8] = GlobalFramebuffer.pointer;
-    messageBuffer[9] =  GlobalFramebuffer.size;
+    static mailboxMessage ALIGNED(16) messageBuffer = {
+        .size = sizeof(messageBuffer) * INT32_BYTES,
+        .request = REQUEST,
+        .tags = {
+            FRAMEBUFFER_ALLOCATE,
+            8,
+            REQUEST,
+            16,
+            EMPTY,
 
-    mailboxWrite((uintptr)messageBuffer | VC_OFFSET, FRAMEBUFFER);
-    mailboxRead(FRAMEBUFFER);
+            // --------------------------- //
+        
+            FRAMEBUFFER_SET_PHYSICAL,
+            8,
+            REQUEST,
+            1920,
+            1080,
+
+            // ---------------------------- //
+
+            FRAMEBUFFER_SET_VIRTUAL,
+            8,
+            REQUEST,
+            1920,
+            1080,
+
+            // --------------------------- //
+
+            FRAMEBUFFER_PITCH,
+            4,
+            REQUEST,
+            EMPTY,
+
+            // --------------------------- //
+
+            FRAMEBUFFER_SET_DEPTH,
+            4,
+            REQUEST,
+            16,
+
+            // --------------------------- //
+
+            FRAMEBUFFER_SET_OFFSET,
+            8,
+            REQUEST,
+            0,
+            0,
+
+            // -------------------------- //
+
+            END_TAG
+        }
+    };
+    
+    mailboxWrite((uintptr)&messageBuffer);
+    mailboxRead();
 
     // Fills whatever VC sent back;
-    GlobalFramebuffer.physicalWidth = (uint16)messageBuffer[0];
-    GlobalFramebuffer.physicalHeight = (uint16)messageBuffer[1];
-    GlobalFramebuffer.pitch = (uint16)messageBuffer[4];
-    GlobalFramebuffer.pointer = (uintptr)messageBuffer[8] & ARM_OFFSET;
-    GlobalFramebuffer.size = (uint32)messageBuffer[9];
+    GlobalFramebuffer.physicalWidth = (uint16)messageBuffer.tags[8];
+    GlobalFramebuffer.physicalHeight = (uint16)messageBuffer.tags[9];
+    GlobalFramebuffer.pitch = (uint16)messageBuffer.tags[18];
+    GlobalFramebuffer.pointer = (uintptr)messageBuffer.tags[3];
+    GlobalFramebuffer.size = (uint32)messageBuffer.tags[4];
+    if (messageBuffer.request == PARSE_FAILURE) GlobalFramebuffer.pointer = PARSE_FAILURE;
 }
-
-// -------------------------- //
-

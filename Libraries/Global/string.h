@@ -4,13 +4,13 @@
 #define STRING_H
 
 typedef struct {
-    uint32 length;
-    uint32 capacity;
+    size_t length;
+    size_t capacity;
     char *text;
 } string;
 
-string stringNew(char *literal, uint32 capacity);
-uint32 stringLength(char *literal);
+string stringNew(char *literal, size_t capacity);
+size_t stringLength(char *literal);
 char *bin2string(uint32 number);
 char *hex2string(uint32 number);
 

@@ -43,6 +43,6 @@ extern struct consoleInfo GlobalConsole;
 // ------------------ //
 
 void consoleInit();
-void consoleWrite(enum consoleColours foreground, enum consoleColours background, string *text);
+void consoleWrite(enum consoleColours foreground, enum consoleColours background, string text);
 
 #endif

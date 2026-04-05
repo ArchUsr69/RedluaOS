@@ -1,0 +1,18 @@
+#include <types.h>
+#include <utils.h>
+#include <broadcom.h>
+
+#define UART_BASE (PERIPHERAL_BASE + 0x215000)
+
+#define UART_ENABLE ((MMIO_8)(UART_BASE + 0x04))
+#define UART_DATA ((MMIO_8)(UART_BASE + 0x40))
+#define UART_INTERUPT_ENABLE ((MMIO_8)(UART_BASE + 0x44))
+#define UART_INTERUPT_ID ((MMIO_8)(UART_BASE + 0x48))
+#define UART_LINE_CONTROL ((MMIO_8)(UART_BASE + 0x4C))
+#define UART_MODEM_CONTROL ((MMIO_8)(UART_BASE + 0x50))
+#define UART_LINE_STATUS ((MMIO_8)(UART_BASE + 0x54))
+#define UART_MODEM_STATUS ((MMIO_8)(UART_BASE + 0x58))
+#define UART_SCRATCH ((MMIO_8)(UART_BASE + 0x5C))
+#define UART_EXTRA_CONTROL ((MMIO_8)(UART_BASE + 0x60))
+#define UART_EXTRA_STATUS ((MMIO_32)(UART_BASE + 0x64))
+#define UART_BAUDRATE ((MMIO_16)(UART_BASE + 0x68))

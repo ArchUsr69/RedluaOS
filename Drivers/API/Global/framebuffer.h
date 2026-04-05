@@ -5,14 +5,14 @@
 
 /*
 -> very important global structure;
--> pointer is just an address. In order to draw, you must cast it (i recomend casting to 32bit);
 -> the system assumes that the depth will always be 16 (2 bytes per pixel);
 -> pixelOrder == 0: RGB; pixelOrder == 1: BGR; 
+-> filled by INIT;
 */
 
 struct framebufferInfo {
     uintptr pointer;
-    uint32 size;
+    size_t size;
     uint16 virtualHeight;
     uint16 virtualWidth;
     uint16 physicalHeight;

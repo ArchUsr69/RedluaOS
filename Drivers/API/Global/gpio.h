@@ -6,8 +6,6 @@
 /*
 -> GPIO Functions that the kernel can see;
 -> depending on physical Pin, the same function might do something different;
--> All GPIO Drivers must find a way to translate those functions locally;
--> for example see the bcm2835 gpio driver;
 */
 
 enum gpioFunctions {

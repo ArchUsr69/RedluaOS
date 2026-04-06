@@ -5,36 +5,38 @@
 
 #define MAILBOX_BASE (PERIPHERAL_BASE + 0xB880)
 
-// Mailbox 0 Registers
+// Mailbox 0 Registers (VC -> ARM);
 #define MAILBOX_READ ((RO_MMIO_32)(MAILBOX_BASE + 0x00))
 #define MAILBOX_READ_PEEK ((RO_MMIO_32)(MAILBOX_BASE + 0x10))
 #define MAILBOX_READ_SENDER ((RO_MMIO_32)(MAILBOX_BASE + 0x14))
 #define MAILBOX_READ_STATUS ((RO_MMIO_32)(MAILBOX_BASE + 0x18))
 #define MAILBOX_READ_CONFIG ((RO_MMIO_32)(MAILBOX_BASE + 0x1C))
 
-// Mailbox 1 Registers
+// Mailbox 1 Registers (ARM -> VC);
 #define MAILBOX_WRITE ((MMIO_32)(MAILBOX_BASE + 0x20))
 #define MAILBOX_WRITE_PEEK ((MMIO_32)(MAILBOX_BASE + 0x30))
 #define MAILBOX_WRITE_SENDER ((MMIO_32)(MAILBOX_BASE + 0x34))
 #define MAILBOX_WRITE_STATUS ((MMIO_32)(MAILBOX_BASE + 0x38))
 #define MAILBOX_WRITE_CONFIG ((MMIO_32)(MAILBOX_BASE + 0x3C))
 
+// just some status flags;
 #define MAILBOX_FULL 0x80000000
 #define MAILBOX_EMPTY 0x40000000
-
 #define PARSE_SUCCESS 0x80000000
 #define PARSE_FAILURE 0x80000001
 
+// for the property channel; deliver better readability;
 #define EMPTY 0
 #define REQUEST 0
 #define END_TAG 0
 
 /*
--> All the property tags;
+-> All the property tags identifiers;
 -> in the future, the tags will have their own reference, so you know how to use them;
+-> sorted after Branch;
 */
 
-enum propertyTags {
+enum tags {
     FIRMWARE_REVISION = 0x00000001,
     BOARD_MODEL = 0x00010001,
 
@@ -59,51 +61,85 @@ enum propertyTags {
     FRAMEBUFFER_GET_OFFSET = 0x00040009,
     FRAMEBUFFER_TEST_OFFSET = 0x00044009,
     FRAMEBUFFER_SET_OFFSET = 0x00048009,
-
-    // ------------------------ //
-    
 };
 
+// ----------------------------------- //
+
+
 /*
--> a basic message layout;
--> it is pretty basic, and it needs manual manipulation of tags;
--> i will change that though;
+-> the message Buffer that will be sent;
+-> structure of a BUFFER:
+
+  [BUFFER_SIZE]    // number of 32-bit numbers IN THE ENTIRE BUFFER
+  [REQUEST_CODE]   // always set to 0; VC will rewrite it;
+  [TAG]              
+  [TAG]
+  ....
+  [END_TAG]
+
+-> structre of a TAG:
+
+  [IDENTIFIER]
+  [VALUES_BYTE_COUNT]
+  [REQUEST_CODE]
+  [VALUE]
+  ......
+
+-> a Tag may have more than 1 value;
+-> some Values must be replaced by VC. You MUST allocate space for them inside the TAG in order to get a response;
 */
 
-typedef struct {
-    size_t size;
-    uint32 request;
-    uint32 tags[];
-} mailboxMessage;
+uint32 ALIGNED(16) Buffer[64];
+uint32 wordOffset = 0;
+
+void mailboxBufferNew() {
+    memorySet(&Buffer, 0, sizeof(Buffer));
+    Buffer[1] = REQUEST;
+    wordOffset = 2;
+}
+
+void mailboxTagNew(enum tags identifier, size_t valueCount, uint32 *values) {
+    Buffer[wordOffset++] = identifier;
+    Buffer[wordOffset++] = (valueCount * 4);
+    Buffer[wordOffset++] = REQUEST;
+    for (uint8 valueOffset = 0; valueOffset < valueCount; valueOffset++) {
+        Buffer[wordOffset++] = values[valueOffset];
+    }
+}
+
+void mailboxBufferEnd() {
+    Buffer[0] = wordOffset;
+    Buffer[wordOffset] = END_TAG;
+}
+
+uint32 mailboxTagRead(enum tags identifier, size_t valueIndex) {
+    uint8 offset = 0;
+    while (Buffer[offset] != identifier) {
+        if (offset++ > 64) return 0;
+    }
+    if ((valueIndex * 4) > Buffer[offset + 1]) return 0;
+    return Buffer[(offset + 3) + valueIndex];
+}
+
+// -------------------------------- //
 
 /*
 -> sends a pointer of the message buffer to VideoCore;
 -> the pointer *MUST* be 16 bytes aligned, since some genius decided it would be a
 good idea to have the channel and pointer in the same register;
 -> the function must wait until the register is ready to be written to;
--> Buffer size must be calculated so that the cache can be flushed accordingly;
 
    What the register expects:
 
    bit [31-4] -> pointer;
    bit [3-0] -> channel;
+
+-> after sending, it immediately reads back to get a response;
 */
 
-void mailboxWrite(uintptr pointer) {
+uint32 mailboxSendMsg() {
     while ((*MAILBOX_WRITE_STATUS & MAILBOX_FULL) != 0) { /* does nothing */ }
-    *MAILBOX_WRITE = (pointer | 8);
-}
-
-// ------------------------------ //
-
-/*
--> reads what VideoCore sent us back;
--> Function only returns the upper 28 bits from the register downshifted;
--> must be called so that VC responds to the sent message;
--> will return 0x80000002 if trying to read channel 7;
-*/
-
-uint32 mailboxRead() {
+    *MAILBOX_WRITE = ((uintptr)&Buffer | 8);
     while (true) {
         while ((*MAILBOX_READ_STATUS & MAILBOX_EMPTY) != 0) { /* does nothing */ }
         uint32 registerContents = *MAILBOX_READ;
@@ -123,74 +159,22 @@ uint32 mailboxRead() {
 
 void BCMframebufferInit() {
     if (GlobalFramebuffer.pointer != 0) return;
-
-    static mailboxMessage ALIGNED(16) messageBuffer = {
-        .size = sizeof(messageBuffer) * 16,
-        .request = REQUEST,
-        .tags = {
-            FRAMEBUFFER_SET_PHYSICAL,   // 0
-            8,                          // 1
-            REQUEST,                    // 2
-            1920,                       // 3
-            1080,                       // 4
-
-            // ---------------------------- //
-
-            FRAMEBUFFER_SET_VIRTUAL,    // 5
-            8,                          // 6
-            REQUEST,                    // 7
-            1920,                       // 8
-            1080,                       // 9
-
-            // --------------------------- //
-
-            FRAMEBUFFER_SET_DEPTH,      // 10
-            4,                          // 11
-            REQUEST,                    // 12
-            16,                         // 13
-
-            // --------------------------- //
-
-            FRAMEBUFFER_SET_OFFSET,     // 14
-            8,                          // 15
-            REQUEST,                    // 16
-            0,                          // 17
-            0,                          // 18
-
-            // -------------------------- //
-
-            FRAMEBUFFER_ALLOCATE,       // 19
-            8,                          // 20
-            REQUEST,                    // 21
-            16,                         // 22
-            EMPTY,                      // 23
-
-            // ------------------------- //
-
-            FRAMEBUFFER_PITCH,          // 24
-            4,                          // 25
-            REQUEST,                    // 26
-            EMPTY,                      // 27
-
-            // ------------------------ //
-
-            FRAMEBUFFER_SET_PIXELORDER, // 28
-            4,                          // 29
-            REQUEST,                    // 30
-            1,                          // 31
-
-            END_TAG                     // 32
-        }
-    };
-
     
-    mailboxWrite((uintptr)&messageBuffer);
-    mailboxRead();
+    mailboxBufferNew();
+    mailboxTagNew(FRAMEBUFFER_ALLOCATE, 2, (uint32[]){16, EMPTY});
+    mailboxTagNew(FRAMEBUFFER_SET_PHYSICAL, 2, (uint32[]){GlobalFramebuffer.physicalWidth, GlobalFramebuffer.physicalHeight});
+    mailboxTagNew(FRAMEBUFFER_SET_VIRTUAL, 2, (uint32[]){GlobalFramebuffer.virtualWidth, GlobalFramebuffer.virtualHeight});
+    mailboxTagNew(FRAMEBUFFER_SET_DEPTH, 1, (uint32[]){GlobalFramebuffer.depth});
+    mailboxTagNew(FRAMEBUFFER_PITCH, 1, (uint32[]){EMPTY});
+    mailboxTagNew(FRAMEBUFFER_SET_OFFSET, 2, (uint32[]){GlobalFramebuffer.virtual_X_Offset, GlobalFramebuffer.virtual_Y_Offset});
+    mailboxTagNew(FRAMEBUFFER_SET_PIXELORDER, 1, (uint32[]){GlobalFramebuffer.pixelOrder});
+    mailboxBufferEnd();
+    mailboxSendMsg();
 
     // Fills whatever VC sent back;
-    GlobalFramebuffer.physicalWidth = messageBuffer.tags[3];
-    GlobalFramebuffer.physicalHeight = messageBuffer.tags[4];
-    GlobalFramebuffer.pitch = messageBuffer.tags[27];
-    GlobalFramebuffer.pointer = messageBuffer.tags[22];
-    GlobalFramebuffer.size = messageBuffer.tags[23];
+    GlobalFramebuffer.physicalWidth = mailboxTagRead(FRAMEBUFFER_SET_PHYSICAL, 1);
+    GlobalFramebuffer.physicalHeight = mailboxTagRead(FRAMEBUFFER_SET_PHYSICAL, 2);
+    GlobalFramebuffer.pitch = mailboxTagRead(FRAMEBUFFER_PITCH, 1);
+    GlobalFramebuffer.pointer = mailboxTagRead(FRAMEBUFFER_ALLOCATE, 1);
+    GlobalFramebuffer.size = mailboxTagRead(FRAMEBUFFER_ALLOCATE, 2);
 }

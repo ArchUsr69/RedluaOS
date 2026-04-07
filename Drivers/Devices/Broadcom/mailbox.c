@@ -25,10 +25,20 @@
 #define PARSE_SUCCESS 0x80000000
 #define PARSE_FAILURE 0x80000001
 
-// for the property channel; deliver better readability;
+// this is the only channel in use;
+#define CHANNEL 8
+
+/*
+-> EMPTY : waits for a response from VC;
+-> REQUEST : tells VC it's a request;
+-> END_TAG : kinda like a null-termination for the message buffer;
+*/
+
 #define EMPTY 0
 #define REQUEST 0
 #define END_TAG 0
+
+// --------------------- //
 
 /*
 -> All the property tags identifiers;
@@ -36,7 +46,7 @@
 -> sorted after Branch;
 */
 
-enum tags {
+enum Tag {
     FIRMWARE_REVISION = 0x00000001,
     BOARD_MODEL = 0x00010001,
 
@@ -63,7 +73,7 @@ enum tags {
     FRAMEBUFFER_SET_OFFSET = 0x00048009,
 };
 
-// ----------------------------------- //
+// ---------------------- //
 
 
 /*
@@ -85,49 +95,58 @@ enum tags {
   [VALUE]
   ......
 
+   *IMPORTANT*
 -> a Tag may have more than 1 value;
--> some Values must be replaced by VC. You MUST allocate space for them inside the TAG in order to get a response;
+-> some Values must be replaced by VC. You MUST allocate space for them inside the TAG using EMPTY;
+-> valueCount starts at 1;
+-> valueIndex starts with 1;
+
+-> You may ask yourself; "Why must i multiply the wordcount with 16??" I have no fucking idea.
+-> Just know, it wouldn't work if it wasn't multipllied by 16, so just consider it a "magic number"
 */
 
 uint32 ALIGNED(16) Buffer[64];
-uint32 wordOffset = 0;
+uint32 WordCount = 0;
 
 void mailboxBufferNew() {
-    memorySet(&Buffer, 0, sizeof(Buffer));
+    memorySet(Buffer, 0, sizeof(Buffer));
     Buffer[1] = REQUEST;
-    wordOffset = 2;
+    WordCount = 2;
 }
 
-void mailboxTagNew(enum tags identifier, size_t valueCount, uint32 *values) {
-    Buffer[wordOffset++] = identifier;
-    Buffer[wordOffset++] = (valueCount * 4);
-    Buffer[wordOffset++] = REQUEST;
-    for (uint8 valueOffset = 0; valueOffset < valueCount; valueOffset++) {
-        Buffer[wordOffset++] = values[valueOffset];
+void mailboxTagNew(enum Tag identifier, size_t valueCount, uint32 *values) {
+    if (values == 0 || valueCount > 4 || (WordCount + 3) >= (sizeof(Buffer) - valueCount)) return;
+    Buffer[WordCount++] = identifier;
+    Buffer[WordCount++] = valueCount * INT32_BYTES;
+    Buffer[WordCount++] = REQUEST;
+    for (size_t valueOffset = 0; valueOffset < valueCount; valueOffset++) {
+        Buffer[WordCount++] = values[valueOffset];
     }
 }
 
 void mailboxBufferEnd() {
-    Buffer[0] = wordOffset;
-    Buffer[wordOffset] = END_TAG;
+    if (WordCount >= (sizeof(Buffer) - 1)) return;
+    Buffer[0] = (WordCount * 16);
+    Buffer[WordCount] = END_TAG;
 }
 
-uint32 mailboxTagRead(enum tags identifier, size_t valueIndex) {
-    uint8 offset = 0;
-    while (Buffer[offset] != identifier) {
-        if (offset++ > 64) return 0;
+uint32 mailboxTagRead(enum Tag identifier, size_t valueIndex) {
+    if (valueIndex == 0 || valueIndex > 4) return 0;
+    size_t offset = 2;
+    while (offset < WordCount) {
+        if (Buffer[offset] != identifier) {
+            size_t tagOffset = 3 + (Buffer[offset + 1] / 4);
+            offset += tagOffset;
+        } else if (Buffer[offset] == identifier) return Buffer[(offset + 2) + valueIndex];
     }
-    if ((valueIndex * 4) > Buffer[offset + 1]) return 0;
-    return Buffer[(offset + 3) + valueIndex];
 }
 
-// -------------------------------- //
+// -------------------------- //
 
 /*
 -> sends a pointer of the message buffer to VideoCore;
 -> the pointer *MUST* be 16 bytes aligned, since some genius decided it would be a
 good idea to have the channel and pointer in the same register;
--> the function must wait until the register is ready to be written to;
 
    What the register expects:
 
@@ -139,27 +158,24 @@ good idea to have the channel and pointer in the same register;
 
 uint32 mailboxSendMsg() {
     while ((*MAILBOX_WRITE_STATUS & MAILBOX_FULL) != 0) { /* does nothing */ }
-    *MAILBOX_WRITE = ((uintptr)&Buffer | 8);
+    *MAILBOX_WRITE = ((uintptr)Buffer | CHANNEL);
     while (true) {
         while ((*MAILBOX_READ_STATUS & MAILBOX_EMPTY) != 0) { /* does nothing */ }
         uint32 registerContents = *MAILBOX_READ;
-        if ((registerContents & 0xF) == 8) return registerContents >> 4;
+        if ((registerContents & CHANNEL) == CHANNEL) return Buffer[1];
     }
 }
 
 // -------------------------- //
 
 /*
--> takes a framebufferMetadata struct pointer where it writes all the information about the framebuffer;
--> All values must already be initialized; 
--> it is pretty messy, but it works pretty fine;
--> the order of the information can be found inside the array. *DO NOT CHANGE*
--> every word must have 32 bits;
+-> All values must already be initialized;
+-> look down to see what values must be initialised;
 */
 
 void BCMframebufferInit() {
     if (GlobalFramebuffer.pointer != 0) return;
-    
+
     mailboxBufferNew();
     mailboxTagNew(FRAMEBUFFER_ALLOCATE, 2, (uint32[]){16, EMPTY});
     mailboxTagNew(FRAMEBUFFER_SET_PHYSICAL, 2, (uint32[]){GlobalFramebuffer.physicalWidth, GlobalFramebuffer.physicalHeight});
@@ -178,3 +194,5 @@ void BCMframebufferInit() {
     GlobalFramebuffer.pointer = mailboxTagRead(FRAMEBUFFER_ALLOCATE, 1);
     GlobalFramebuffer.size = mailboxTagRead(FRAMEBUFFER_ALLOCATE, 2);
 }
+
+// ------------------------- //

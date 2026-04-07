@@ -97,7 +97,11 @@ void OPTIMIZE(3) consoleWriteCharacter(enum consoleColours foreground, enum cons
 
 void OPTIMIZE(3) consoleWrite(enum consoleColours foreground, enum consoleColours background, string text) {
     for (size_t character = 0; character < text.length; character++) {
-        consoleWriteCharacter(foreground, background, text.text[character]);
+        consoleWriteCharacter(foreground, background, text.text[character]);      
+        if (text.text[character] == '\n') {
+            GlobalConsole.cursorX = 0;
+            GlobalConsole.cursorY++;
+        }
     }
 }
 

@@ -26,7 +26,7 @@ struct framebufferInfo {
 
 extern struct framebufferInfo GlobalFramebuffer;
 
-// --------------------------------- //
+// --------------------- //
 
 // Driver table
 struct framebufferTable {

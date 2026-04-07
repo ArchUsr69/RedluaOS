@@ -15,6 +15,7 @@
 // Output clear Registers
 #define GPIOCLEAR0 ((MMIO_32)(GPIO_BASE + 0x28))
 #define GPIOCLEAR1 ((MMIO_32)(GPIO_BASE + 0x2C))
+
 #define TOTAL_PINS (53)
 
 /*

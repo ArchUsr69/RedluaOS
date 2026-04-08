@@ -41,6 +41,7 @@ uint16 consolePalette[18] = {
 
 void consoleInit() {
     if (GlobalFramebuffer.pointer == 0 || GlobalConsole.rows != 0) return;
+
     GlobalConsole.rows = GlobalFramebuffer.virtualHeight >> (CHARACTER_HEIGHT >> 2);
     GlobalConsole.columns = GlobalFramebuffer.virtualWidth >> 3;
     GlobalConsole.cursorX = 0;

@@ -68,9 +68,11 @@ void mailboxBufferNew() {
 
 void mailboxTagNew(enum Tag identifier, size_t valueCount, uint32 *values) {
     if (values == 0 || valueCount > 4 || (WordCount + 3) >= (sizeof(Buffer) - valueCount)) return;
+
     Buffer[WordCount++] = identifier;
     Buffer[WordCount++] = valueCount * INT32_BYTES;
     Buffer[WordCount++] = REQUEST;
+
     for (size_t valueOffset = 0; valueOffset < valueCount; valueOffset++) {
         Buffer[WordCount++] = values[valueOffset];
     }
@@ -78,6 +80,7 @@ void mailboxTagNew(enum Tag identifier, size_t valueCount, uint32 *values) {
 
 void mailboxBufferEnd() {
     if (WordCount >= (sizeof(Buffer) - 1)) return;
+
     Buffer[0] = (WordCount * 16);
     Buffer[WordCount] = END_TAG;
 }
@@ -85,6 +88,7 @@ void mailboxBufferEnd() {
 uint32 mailboxTagRead(enum Tag identifier, size_t valueIndex) {
     if (valueIndex == 0 || valueIndex > 4) return 0;
     size_t offset = 2;
+
     while (offset < WordCount) {
         if (Buffer[offset] != identifier) {
             size_t tagOffset = 3 + (Buffer[offset + 1] / 4);
@@ -111,6 +115,7 @@ good idea to have the channel and pointer in the same register;
 uint32 mailboxSendMsg() {
     while ((*MAILBOX_WRITE_STATUS & MAILBOX_FULL) != 0) { /* does nothing */ }
     *MAILBOX_WRITE = ((uintptr)Buffer | CHANNEL);
+
     while (true) {
         while ((*MAILBOX_READ_STATUS & MAILBOX_EMPTY) != 0) { /* does nothing */ }
         uint32 registerContents = *MAILBOX_READ;

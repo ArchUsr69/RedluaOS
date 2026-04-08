@@ -31,7 +31,7 @@ typedef unsigned int uint32;
 #define UINT16_MAX (65535)
 #define UINT32_MAX (4294967295)
 
-// integer type for pointer values and sizes; 
+// integer type for pointer values and sizes;
 typedef uint32 uintptr;
 typedef uint32 size_t;
 

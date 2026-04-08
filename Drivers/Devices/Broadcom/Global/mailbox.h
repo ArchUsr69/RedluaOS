@@ -74,7 +74,7 @@ enum Tag {
     EDID_BLOCK = 0x30020,
 
     // ---------------------- //
-    
+
     FRAMEBUFFER_ALLOCATE = 0x40001,
     FRAMEBUFFER_RELEASE = 0x48001,
     FRAMEBUFFER_BLANK = 0x40002,

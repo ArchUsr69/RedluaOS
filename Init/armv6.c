@@ -26,7 +26,7 @@ struct framebufferInfo GlobalFramebuffer = {
     .virtual_X_Offset = 0,
     .virtual_Y_Offset = 0,
     .depth = 16,
-    .pixelOrder = 0
+    .pixelOrder = 1
 };
 
 struct consoleInfo GlobalConsole = {0};

@@ -9,9 +9,12 @@ typedef struct {
     char *text;
 } string;
 
-string stringNew(char *literal, size_t capacity);
-size_t stringLength(char *literal);
-char *bin2string(uint32 number);
-char *hex2string(uint32 number);
+string stringNew(char *text, size_t capacity);
+size_t textLength(char *text);
+void stringCopy(string *target, string source, size_t length);
+string stringCombine(string source1, string source2);
+
+char *bin2text(uint32 number);
+char *hex2text(uint32 number);
 
 #endif

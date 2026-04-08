@@ -13,8 +13,8 @@ void kernelMain() {
 
     string prompt = stringNew("> ", 0);
     string message1 = stringNew("Welcome to RedluaOS!\n", 0);
-    string message2 = stringNew("address of framebufffer = ", 0);
-    string value = stringNew(hex2string(GlobalFramebuffer.pointer), 0);
+    string message2 = stringNew("test message = ", 0);
+    string value = stringCombine(message1, message2);
 
     consoleWrite(Red, Background, prompt);
     consoleWrite(Foreground, Background, message1);

@@ -19,10 +19,10 @@ void kernelMain();
 #endif
 
 struct framebufferInfo GlobalFramebuffer = {
-    .virtualHeight = 1080,
-    .virtualWidth = 1920,
-    .physicalHeight = 1080,
-    .physicalWidth = 1920,
+    .virtualHeight = 720,
+    .virtualWidth = 1280,
+    .physicalHeight = 720,
+    .physicalWidth = 1280,
     .virtual_X_Offset = 0,
     .virtual_Y_Offset = 0,
     .depth = 16,

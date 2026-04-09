@@ -11,15 +11,22 @@ void kernelMain() {
     gpioPinWrite(35, LOW);
     gpioPinWrite(47, HIGH);
 
-    string prompt = stringNew("> ", 0);
-    string message1 = stringNew("Welcome to RedluaOS!\n", 0);
-    string message2 = stringNew("test message = ", 0);
-    string value = stringCombine(message1, message2);
+    string prompt = stringNew(">", 0);
+    uint16 totalCharacters = GlobalConsole.rows * GlobalConsole.columns;
 
-    consoleWrite(Red, Background, prompt);
-    consoleWrite(Foreground, Background, message1);
-    
-    consoleWrite(Red, Background, prompt); 
-    consoleWrite(Foreground, Background, message2);
-    consoleWrite(Foreground, Background, value);
+    while (true) {
+        for (size_t i = 0; i < totalCharacters; i++) {
+            consoleWrite(Blue, Background, prompt);
+        }
+
+        GlobalConsole.cursorY = 0;
+        GlobalConsole.cursorX = 0;
+
+        for (size_t i = 0; i < totalCharacters; i++) {
+            consoleWrite(Red, Background, prompt);
+        }
+
+        GlobalConsole.cursorY = 0;
+        GlobalConsole.cursorX = 0;
+    }
 }

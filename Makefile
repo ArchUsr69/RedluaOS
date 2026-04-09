@@ -88,7 +88,7 @@ clean:
 .PHONY: all clean
 
 # for me only; you can ignore this. I didn't like typing those commands all the time;
-copy_image:
+cp:
 	sudo mount /dev/mmcblk0p1 /mnt/SDCard
 	sudo rm /mnt/SDCard/kernel.img
 	sudo cp $(IMAGE) /mnt/SDCard

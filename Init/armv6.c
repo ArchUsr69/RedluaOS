@@ -1,5 +1,6 @@
 #include <gpio.h>
 #include <framebuffer.h>
+#include <uart.h>
 #include <console.h>
 
 void kernelMain();
@@ -15,6 +16,13 @@ void kernelMain();
 
     struct framebufferTable GlobalFramebufferTable = {
         .framebufferInit = BCMframebufferInit
+    };
+
+    struct uartTable GlobalUartTable = {
+        .uartInit = BCMuartInit,
+        .uartWriteByte = BCMuartWriteByte,
+        .uartReadByte = BCMuartReadByte,
+        .uartWriteText = BCMuartWriteText
     };
 #endif
 
@@ -32,6 +40,7 @@ struct framebufferInfo GlobalFramebuffer = {
 struct consoleInfo GlobalConsole = {0};
 
 void armv6Init() {
+    uartInit();
     framebufferInit();
     consoleInit();
     kernelMain();

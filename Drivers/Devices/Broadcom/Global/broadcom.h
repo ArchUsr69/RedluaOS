@@ -12,6 +12,12 @@
 
 void BCMgpioSetFunction(uint8 pin, enum gpioFunctions function);
 void BCMgpioPinWrite(uint8 pin, bool level);
+
 void BCMframebufferInit();
+
+void BCMuartInit();
+void BCMuartWriteByte(char byte);
+char BCMuartReadByte();
+void BCMuartWriteText(string string);
 
 #endif

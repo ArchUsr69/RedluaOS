@@ -28,6 +28,13 @@ void BCMframebufferInit() {
     GlobalFramebuffer.pitch = mailboxTagRead(FRAMEBUFFER_PITCH | GET, 1);
     GlobalFramebuffer.pointer = mailboxTagRead(FRAMEBUFFER_ALLOCATE, 1);
     GlobalFramebuffer.size = mailboxTagRead(FRAMEBUFFER_ALLOCATE, 2);
+
+    mailboxBufferNew();
+    mailboxTagNew(CLOCK_RATE | GET, 2, (uint32[]){4, EMPTY});
+    mailboxBufferEnd();
+    mailboxSendMsg();
+
+    GlobalFramebuffer.virtual_X_Offset = mailboxTagRead(CLOCK_RATE | GET, 2);
 }
 
 // ------------------------- //

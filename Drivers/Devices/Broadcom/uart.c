@@ -4,18 +4,19 @@
 #include <gpio.h>
 #include <broadcom.h>
 
-#define UART_BASE (PERIPHERAL_BASE + 0x215000)
+#define AUX_BASE (PERIPHERAL_BASE + 0x215000)
+#define AUX_ENABLE ((MMIO_8)(PERIPHERAL_BASE + 0x04))
 
-#define UART_ENABLE ((MMIO_8)(PERIPHERAL_BASE + 0x04))
-#define UART_DATA ((MMIO_8)(PERIPHERAL_BASE + 0x40))
-#define UART_INTERUPT ((MMIO_8)(PERIPHERAL_BASE + 0x44))
-#define UART_INTERUPT_ID ((MMIO_8)(PERIPHERAL_BASE + 0x48))
-#define UART_MODEM_CONTROL ((MMIO_32)(PERIPHERAL_BASE + 0x50))
-#define UART_LINE_STATUS ((MMIO_8)(PERIPHERAL_BASE + 0x54))
-#define UART_LINE_CONTROL ((MMIO_8)(PERIPHERAL_BASE + 0x4C))
-#define UART_BAUD ((MMIO_16)(PERIPHERAL_BASE + 0x68))
-#define UART_EXTRA_STATUS ((MMIO_32)(PERIPHERAL_BASE + 0x64))
-#define UART_EXTRA_CONTROL ((MMIO_8)(PERIPHERAL_BASE + 0x60))
+#define AUX_UART_IO ((MMIO_32)(PERIPHERAL_BASE + 0x40))
+#define AUX_UART_INTERUPT ((MMIO_32)(PERIPHERAL_BASE + 0x44))
+#define AUX_UART_INTERUPT_ID ((MMIO_32)(PERIPHERAL_BASE + 0x48))
+#define AUX_UART_LINE_CONTROL ((MMIO_32)(PERIPHERAL_BASE + 0x4C))
+#define AUX_UART_MODEM_CONTROL ((MMIO_32)(PERIPHERAL_BASE + 0x50))
+#define AUX_UART_LINE_STATUS ((MMIO_32)(PERIPHERAL_BASE + 0x54))
+#define AUX_UART_EXTRA_CONTROL ((MMIO_32)(PERIPHERAL_BASE + 0x60))
+#define AUX_UART_EXTRA_STATUS ((MMIO_32)(PERIPHERAL_BASE + 0x64))
+#define AUX_UART_BAUD ((MMIO_32)(PERIPHERAL_BASE + 0x68))
+
 
 #define GPIO_BASE (PERIPHERAL_BASE + 0x200000)
 #define GPIO_PULL_CONTROL ((MMIO_32)(GPIO_BASE + 0x94))
@@ -28,16 +29,13 @@ static inline void delayCycles(uint32 cycles) {
 }
 
 void BCMuartInit() {
-    *UART_ENABLE |= 1;
-    *UART_EXTRA_CONTROL = 0;
-    *UART_LINE_CONTROL = 3;
-    *UART_MODEM_CONTROL = 0;
-    *UART_INTERUPT = 0;
-    *UART_INTERUPT_ID = 0xC6;
-    *UART_BAUD = 9113;
+    *AUX_ENABLE |= 1;
+    *AUX_UART_LINE_CONTROL = 0x81;
+    *AUX_UART_BAUD = 270;
+    *AUX_UART_LINE_CONTROL = 0x01;
     
-    gpioSetFunction(14, ALTERNATIVE0);
-    gpioSetFunction(15, ALTERNATIVE0);
+    gpioSetFunction(14, ALTERNATIVE5);
+    gpioSetFunction(15, ALTERNATIVE5);
 
     *GPIO_PULL_CONTROL = 0;
     delayCycles(150);
@@ -49,13 +47,13 @@ void BCMuartInit() {
 }
 
 void BCMuartWriteByte(char byte) {
-    while ((*UART_LINE_STATUS & 0x20) == 0) { /* waits */ }
-    *UART_DATA = byte;
+    while((*AUX_UART_LINE_STATUS & 0x20) == 0) {}
+    *AUX_UART_IO = byte;
 }
 
 char BCMuartReadByte() {
-    while ((*UART_LINE_STATUS & 0x01) == 0)  { /* waits */ }
-    return *UART_DATA;
+    while ((*AUX_UART_LINE_STATUS & 1U) == 0)  { /* waits */ }
+    return *AUX_UART_IO;
 }
 
 void BCMuartWriteText(string string) {

@@ -1,6 +1,7 @@
 #include <types.h>
 #include <utils.h>
 #include <gpio.h>
+#include <string.h>
 #include <framebuffer.h>
 
 #ifndef BROADCOM_H

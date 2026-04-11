@@ -56,8 +56,10 @@ void consoleInit() {
 -> It also uses the default Font Bitmap;
 */
 
-static inline void OPTIMIZE(3) renderCharacter(uint16 foreground, uint16 background, char character, uint16 x, uint16 y) {
+static inline void OPTIMIZE(3) renderCharacter(uint16 foreground, uint16 background, char character) {
     uint32 *screen = (uint32 *)GlobalFramebuffer.pointer;
+    uint32 x = GlobalConsole.cursorX * (CHARACTER_WIDTH / 2);
+    uint32 y = GlobalConsole.cursorY * CHARACTER_HEIGHT;
 
     for (uint8 row = 0; row < CHARACTER_HEIGHT; row++) {
         uint8 characterRow = consoleFont[character][row];
@@ -90,26 +92,20 @@ static inline void OPTIMIZE(3) renderCharacter(uint16 foreground, uint16 backgro
 */
 
 void OPTIMIZE(3) consoleWrite(enum consoleColours foreground, enum consoleColours background, string text) {
-    uint16 x = GlobalConsole.cursorX * CHARACTER_WIDTH;
-    uint16 y = GlobalConsole.cursorY * CHARACTER_HEIGHT;
-
     uint16 Foreground = consolePalette[foreground];
     uint16 Background = consolePalette[background];
 
     for (size_t character = 0; character < text.length; character++) {
-        if (GlobalConsole.cursorX > GlobalConsole.columns || text.text[character] == '\n') {
-            x = 0;
-            y += CHARACTER_HEIGHT;
+        if (GlobalConsole.cursorX > GlobalConsole.columns) {
+            GlobalConsole.cursorX = 0;
+            GlobalConsole.cursorY++;
         }
 
         if (GlobalConsole.cursorY > GlobalConsole.rows) return;
 
-        renderCharacter(Foreground, Background, text.text[character], x, y);
-
-        x += CHARACTER_WIDTH;
+        renderCharacter(Foreground, Background, text.text[character]);
+        GlobalConsole.cursorX++;
     }
-    GlobalConsole.cursorX = x / CHARACTER_WIDTH;
-    GlobalConsole.cursorY = y / CHARACTER_HEIGHT;
 }
 
 // ------------------------------------------------ //

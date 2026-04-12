@@ -13,7 +13,7 @@
 -> Later on, i will make it possible to change the colours via user input;
 */
 
-uint16 consolePalette[18] = {
+static uint16 ConsolePalette[18] = {
     0x0000,
     0xDEFB,
     0x2966,
@@ -40,12 +40,12 @@ uint16 consolePalette[18] = {
 */
 
 void consoleInit() {
-    if (GlobalFramebuffer.pointer == 0 || GlobalConsole.rows != 0) return;
+    if (Framebuffer.pointer == 0 || Console.rows != 0) return;
 
-    GlobalConsole.rows = GlobalFramebuffer.virtualHeight / CHARACTER_HEIGHT;
-    GlobalConsole.columns = GlobalFramebuffer.virtualWidth / CHARACTER_WIDTH;
-    GlobalConsole.cursorX = 0;
-    GlobalConsole.cursorY = 0;
+    Console.rows = Framebuffer.virtualHeight / CHARACTER_HEIGHT;
+    Console.columns = Framebuffer.virtualWidth / CHARACTER_WIDTH;
+    Console.cursorX = 0;
+    Console.cursorY = 0;
 };
 
 // ---------------------- //
@@ -57,13 +57,13 @@ void consoleInit() {
 */
 
 static inline void OPTIMIZE(3) renderCharacter(uint16 foreground, uint16 background, char character) {
-    uint32 *screen = (uint32 *)GlobalFramebuffer.pointer;
-    uint32 x = GlobalConsole.cursorX * (CHARACTER_WIDTH / 2);
-    uint32 y = GlobalConsole.cursorY * CHARACTER_HEIGHT;
+    uint32 *screen = (uint32 *)Framebuffer.pointer;
+    uint32 x = Console.cursorX * (CHARACTER_WIDTH / 2);
+    uint32 y = Console.cursorY * CHARACTER_HEIGHT;
 
-    for (uint8 row = 0; row < CHARACTER_HEIGHT; row++) {
-        uint8 characterRow = consoleFont[character][row];
-        uint32 linearOffset = (y + row) * (GlobalFramebuffer.pitch >> 2);
+    for (size_t row = 0; row < CHARACTER_HEIGHT; row++) {
+        uint8 characterRow = ConsoleFont[character][row];
+        uint32 linearOffset = (y + row) * (Framebuffer.pitch >> 2);
 
         screen[(x + 0) + linearOffset] =
             (background ^ (-((characterRow >> 7) & 1U ) & (foreground ^ background))) |
@@ -92,19 +92,19 @@ static inline void OPTIMIZE(3) renderCharacter(uint16 foreground, uint16 backgro
 */
 
 void OPTIMIZE(3) consoleWrite(enum consoleColours foreground, enum consoleColours background, string text) {
-    uint16 Foreground = consolePalette[foreground];
-    uint16 Background = consolePalette[background];
+    uint16 Foreground = ConsolePalette[foreground];
+    uint16 Background = ConsolePalette[background];
 
     for (size_t character = 0; character < text.length; character++) {
-        if (GlobalConsole.cursorX > GlobalConsole.columns) {
-            GlobalConsole.cursorX = 0;
-            GlobalConsole.cursorY++;
+        if (Console.cursorX > Console.columns) {
+            Console.cursorX = 0;
+            Console.cursorY++;
         }
 
-        if (GlobalConsole.cursorY > GlobalConsole.rows) return;
+        if (Console.cursorY > Console.rows) return;
 
         renderCharacter(Foreground, Background, text.text[character]);
-        GlobalConsole.cursorX++;
+        Console.cursorX++;
     }
 }
 

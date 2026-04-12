@@ -24,7 +24,7 @@
 -> Those are the raw values that will be written to the Function Selet registers;
 */
 
-const uint8 BCMgpioFunctions[8] = {
+static const uint8 BCMgpioFunctions[8] = {
     0b000, // Input
     0b001, // Output
     0b100, // Alternative 0

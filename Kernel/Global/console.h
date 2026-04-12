@@ -38,7 +38,7 @@ struct consoleInfo {
     uint16 cursorY;
 };
 
-extern struct consoleInfo GlobalConsole;
+extern struct consoleInfo Console;
 
 // ------------------ //
 

@@ -24,20 +24,20 @@ struct framebufferInfo {
     bool pixelOrder;
 };
 
-extern struct framebufferInfo GlobalFramebuffer;
+extern struct framebufferInfo Framebuffer;
 
 // --------------------- //
 
-// Driver table
+// Driver table;
 struct framebufferTable {
     void (*framebufferInit)();
 };
 
-extern struct framebufferTable GlobalFramebufferTable;
+extern struct framebufferTable FramebufferTable;
 
-// Wrapper functions
+// Wrapper functions;
 static inline void framebufferInit() {
-    GlobalFramebufferTable.framebufferInit();
+    FramebufferTable.framebufferInit();
 }
 
 #endif

@@ -1,8 +1,6 @@
 #include <types.h>
-#include <utils.h>
 #include <gpio.h>
 #include <string.h>
-#include <framebuffer.h>
 
 #ifndef BROADCOM_H
 #define BROADCOM_H
@@ -11,11 +9,14 @@
     #define PERIPHERAL_BASE 0x20000000
 #endif
 
+// GPIO functions;
 void BCMgpioSetFunction(uint8 pin, enum gpioFunctions function);
 void BCMgpioPinWrite(uint8 pin, bool level);
 
+// framebuffer functions;
 void BCMframebufferInit();
 
+// UART functions;
 void BCMuartInit();
 void BCMuartWriteByte(char byte);
 char BCMuartReadByte();

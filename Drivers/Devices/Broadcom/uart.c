@@ -4,6 +4,7 @@
 #include <gpio.h>
 #include <broadcom.h>
 
+// These registers actually control more than mini UART
 #define AUX_BASE (PERIPHERAL_BASE + 0x215000)
 #define AUX_ENABLE ((MMIO_8)(AUX_BASE + 0x04))
 
@@ -17,7 +18,7 @@
 #define AUX_UART_EXTRA_STATUS ((MMIO_32)(AUX_BASE + 0x64))
 #define AUX_UART_BAUD ((MMIO_32)(AUX_BASE + 0x68))
 
-
+// GPIO Registers; they will be soon integrated inside the GPIO driver;
 #define GPIO_BASE (PERIPHERAL_BASE + 0x200000)
 #define GPIO_PULL_CONTROL ((MMIO_32)(GPIO_BASE + 0x94))
 #define GPIO_PULL_CLOCK_0 ((MMIO_32)(GPIO_BASE + 0x98))

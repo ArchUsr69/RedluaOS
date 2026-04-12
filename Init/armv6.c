@@ -9,16 +9,16 @@ void kernelMain();
 #ifdef Broadcom
     #include <broadcom.h>
     
-    struct gpioTable GlobalGpioTable = {
+    struct gpioTable GpioTable = {
         .setFunction = BCMgpioSetFunction,
         .pinWrite = BCMgpioPinWrite
     };
 
-    struct framebufferTable GlobalFramebufferTable = {
+    struct framebufferTable FramebufferTable = {
         .framebufferInit = BCMframebufferInit
     };
 
-    struct uartTable GlobalUartTable = {
+    struct uartTable UartTable = {
         .uartInit = BCMuartInit,
         .uartWriteByte = BCMuartWriteByte,
         .uartReadByte = BCMuartReadByte,
@@ -26,7 +26,7 @@ void kernelMain();
     };
 #endif
 
-struct framebufferInfo GlobalFramebuffer = {
+struct framebufferInfo Framebuffer = {
     .virtualHeight = 720,
     .virtualWidth = 1280,
     .physicalHeight = 720,
@@ -37,7 +37,7 @@ struct framebufferInfo GlobalFramebuffer = {
     .pixelOrder = 1
 };
 
-struct consoleInfo GlobalConsole = {0};
+struct consoleInfo Console = {0};
 
 void armv6Init() {
     uartInit();

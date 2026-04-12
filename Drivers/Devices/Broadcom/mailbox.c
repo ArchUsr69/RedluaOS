@@ -57,8 +57,8 @@
 -> Just know, it wouldn't work if it wasn't multipllied by 16, so just consider it a "magic number"
 */
 
-uint32 ALIGNED(16) Buffer[64];
-uint32 WordCount = 0;
+static uint32 ALIGNED(16) Buffer[64];
+static uint32 WordCount = 0;
 
 void mailboxBufferNew() {
     memorySet(Buffer, 0, sizeof(Buffer));

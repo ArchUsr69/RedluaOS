@@ -4,6 +4,7 @@
 #ifndef UART_H
 #define UART_H
 
+// Driver Table;
 struct uartTable {
     void (*uartInit)();
     void (*uartWriteByte)(char byte);
@@ -11,22 +12,23 @@ struct uartTable {
     void (*uartWriteText)(string string);
 };
 
-extern struct uartTable GlobalUartTable;
+extern struct uartTable UartTable;
 
+// Wrapper functions;
 static inline void uartInit() {
-    GlobalUartTable.uartInit();
+    UartTable.uartInit();
 }
 
 static inline void uartWriteByte(char byte) {
-    GlobalUartTable.uartWriteByte(byte);
+    UartTable.uartWriteByte(byte);
 }
 
 static inline char uartReadByte() {
-    return GlobalUartTable.uartReadByte();
+    return UartTable.uartReadByte();
 }
 
 static inline void uartWriteText(string string) {
-    GlobalUartTable.uartWriteText(string);
+    UartTable.uartWriteText(string);
 }
 
 #endif

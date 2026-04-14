@@ -21,7 +21,7 @@ void kernelMain();
     struct uartTable UartTable = {
         .uartInit = BCMuartInit,
         .uartWriteByte = BCMuartWriteByte,
-        .uartReadByte = BCMuartReadByte,
+        .uartReadByte = BCMuartReadByte_NI,
         .uartWriteText = BCMuartWriteText
     };
 #endif

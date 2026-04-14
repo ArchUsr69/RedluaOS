@@ -56,10 +56,10 @@ void consoleInit() {
 -> It also uses the default Font Bitmap;
 */
 
-static inline void OPTIMIZE(3) renderCharacter(uint16 foreground, uint16 background, char character) {
+void OPTIMIZE(3) renderCharacter(uint16 foreground, uint16 background, char character, uint16 Console_x, uint16 Console_y) {
     uint32 *screen = (uint32 *)Framebuffer.pointer;
-    uint32 x = Console.cursorX * (CHARACTER_WIDTH / 2);
-    uint32 y = Console.cursorY * CHARACTER_HEIGHT;
+    uint32 x = Console_x * (CHARACTER_WIDTH / 2);
+    uint32 y = Console_y * CHARACTER_HEIGHT;
 
     for (size_t row = 0; row < CHARACTER_HEIGHT; row++) {
         uint8 characterRow = ConsoleFont[character][row];
@@ -90,22 +90,45 @@ static inline void OPTIMIZE(3) renderCharacter(uint16 foreground, uint16 backgro
 -> contains newline detection and coordinate calculation, stuff like that;
 -> it must keep checking if the characters might be out of bounds, so performance might drop;
 */
-
-void OPTIMIZE(3) consoleWrite(enum consoleColours foreground, enum consoleColours background, string text) {
+void OPTIMIZE(3) consoleWriteChar(enum consoleColours foreground, enum consoleColours background, char letter) {
     uint16 Foreground = ConsolePalette[foreground];
     uint16 Background = ConsolePalette[background];
 
-    for (size_t character = 0; character < text.length; character++) {
-        if (Console.cursorX > Console.columns) {
-            Console.cursorX = 0;
-            Console.cursorY++;
-        }
+    if (letter < 32 || Console.cursorY >= Console.rows) return;
 
-        if (Console.cursorY > Console.rows) return;
+    if (Console.cursorX >= Console.columns) {
+        Console.cursorX = 0;
+        Console.cursorY++;
+    }
 
-        renderCharacter(Foreground, Background, text.text[character]);
-        Console.cursorX++;
+    renderCharacter(Foreground, Background, letter, Console.cursorX, Console.cursorY);
+    Console.cursorX++;
+}
+
+void OPTIMIZE(3) consoleWriteCharXY(enum consoleColours foreground, enum consoleColours background, char letter, uint16 x, uint16 y) {
+    uint16 Foreground = ConsolePalette[foreground];
+    uint16 Background = ConsolePalette[background];
+
+    if (letter < 32 || y >= Console.rows) return;
+
+    if (x >= Console.columns) {
+        x = 0;
+        y++;
+    }
+
+    renderCharacter(Foreground, Background, letter, x, y);
+}
+
+void OPTIMIZE(3) consoleWrite(enum consoleColours foreground, enum consoleColours background, string text) {
+    for (size_t index = 0; index < text.length; index++) {
+        consoleWriteChar(foreground, background, text.text[index]);
     }
 }
 
+void OPTIMIZE(3) consoleWriteXY(enum consoleColours foreground, enum consoleColours background, string text, uint16 x, uint16 y) {
+    for (size_t index = 0; index < text.length; index++) {
+        consoleWriteCharXY(foreground, background, text.text[index], x, y);
+        x++;
+    }
+}
 // ------------------------------------------------ //

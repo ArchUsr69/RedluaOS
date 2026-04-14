@@ -23,7 +23,7 @@ else
 endif
 
 # Sources
-SOURCE_DIRS = Kernel Libraries  Drivers/API $(shell find -type d -name $(DEVICE)) $(INIT_SECTION)
+SOURCE_DIRS = Userspace Kernel Libraries  Drivers/API $(shell find -type d -name $(DEVICE)) $(INIT_SECTION)
 BUILD_DIR = Build
 
 # Finds sources
@@ -90,6 +90,5 @@ clean:
 # for me only; you can ignore this. I didn't like typing those commands all the time;
 cp:
 	sudo mount /dev/mmcblk0p1 /mnt/SDCard
-	sudo rm /mnt/SDCard/kernel.img
 	sudo cp $(IMAGE) /mnt/SDCard
 	sudo umount /mnt/SDCard

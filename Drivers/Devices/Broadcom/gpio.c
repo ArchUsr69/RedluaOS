@@ -16,6 +16,10 @@
 #define GPIOCLEAR0 ((MMIO_32)(GPIO_BASE + 0x28))
 #define GPIOCLEAR1 ((MMIO_32)(GPIO_BASE + 0x2C))
 
+// Pull-up/down controller
+#define GPIO_PULL_CONTROL ((MMIO_32)(GPIO_BASE + 0x94))
+#define GPIO_PULL_CLOCK_0 ((MMIO_32)(GPIO_BASE + 98))
+
 #define TOTAL_PINS (53)
 
 /*
@@ -36,6 +40,13 @@ static const uint8 BCMgpioFunctions[8] = {
 };
 
 // ------------------------- //
+
+// small blocking timer;
+static inline void delayCycles(size_t cycles) {
+    while (cycles--) {
+        asm volatile("nop");
+    }
+}
 
 /*
 -> basically just like the Arduino version of pinMode();
@@ -70,6 +81,26 @@ void BCMgpioPinWrite(uint8 pin, bool level) {
         MMIO_32 target = (pin <= INT32_WIDTH) ? GPIOCLEAR0 : GPIOCLEAR1;
         *target = (HIGH << (pin % INT32_WIDTH));
     }
+}
+
+// ------------------------- //
+
+/*
+-> disables pull up on the pin;
+-> needed by UART;
+-> later it's gonna have more possibilities;
+*/
+
+void BCMgpioDisablePullup(uint8 pin) {
+    if (pin > TOTAL_PINS) return;
+
+    *GPIO_PULL_CONTROL = 0;
+    delayCycles(150);
+
+    *GPIO_PULL_CLOCK_0 = (HIGH << pin);
+    delayCycles(150);
+
+    *GPIO_PULL_CLOCK_0;
 }
 
 // ------------------------- //

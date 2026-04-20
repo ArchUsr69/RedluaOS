@@ -5,10 +5,10 @@
 void RedConsole();
 
 void kernelMain() {
-    gpioSetFunction(47, OUTPUT);
-    gpioSetFunction(35, OUTPUT);
-    gpioPinWrite(35, LOW);
-    gpioPinWrite(47, HIGH);
+    Gpio.setFunction(47, OUTPUT);
+    Gpio.setFunction(35, OUTPUT);
+    Gpio.pinWrite(35, LOW);
+    Gpio.pinWrite(47, HIGH);
 
     RedConsole();
 }

@@ -4,65 +4,66 @@
 #include <console.h>
 #include <uart.h>
 
-char buffer[50];
-size_t index = 0;
-
-char waitForInput() {
-    for (size_t cycles = 35000; cycles > 0; cycles--) {
-        char value = uartReadByte();
-        if (value != 0) return value;
-
-        consoleWriteCharXY(Foreground, Background, '_', Console.cursorX, Console.cursorY);
-    }
-    for (size_t cycles = 35000; cycles > 0; cycles--) {
-        char value = uartReadByte();
-        if (value != 0) return value;
-
-        consoleWriteCharXY(Background, Background, '_', Console.cursorX, Console.cursorY);
-    }
-}
+char InputBuffer[40];
+size_t Index = 0;
 
 void newLine() {
+    Index = 0;
+    memorySet(InputBuffer, 0, sizeof(InputBuffer));
+
     Console.cursorX = 0;
     Console.cursorY++;
 }
 
-void commandParser() {
-    index = 0;
-    string echo = stringNew(buffer, 0);
-    consoleWrite(Foreground, Background, echo);
-    memorySet(buffer, 0, sizeof(buffer));
-    newLine();
+/*
+-> a non blocking way to check for input;
+-> looks pretty cool with the blinking cursor;
+-> blinking speed depends on cycles and clock speed;
+*/
+
+char waitForInput() {
+    for (size_t cycles = 18000; cycles > 0; cycles--) {
+        char input = Uart.readByte();
+        if (input != 0) {
+            consoleWriteCharXY(Background, Background, '_', Console.cursorX, Console.cursorY);
+            return input;
+        }
+
+        consoleWriteCharXY(Foreground, Background, '_', Console.cursorX, Console.cursorY);
+    }
+
+    for (size_t cycles = 18000; cycles > 0; cycles--) {
+        char input = Uart.readByte();
+        if (input != 0) return input;
+        
+        consoleWriteCharXY(Background, Background, '_', Console.cursorX, Console.cursorY);
+    }
 }
+
+// ------------------------------ //
 
 void RedConsole() {
     string prompt = stringNew("$ ", 0);
-    memorySet(buffer, 0, sizeof(buffer));
-
     consoleWrite(Red, Background, prompt);
 
-    while (1) {
+    while (true) {
         char input = waitForInput();
 
         if (input == '\r') {
-            consoleWriteChar(Background, Background, ' ');
             newLine();
-            commandParser();
-
             consoleWrite(Red, Background, prompt);
         }
 
         if (input == '\b' && Console.cursorX > prompt.length) {
-            buffer[--index] = 0;
-            consoleWriteCharXY(Background, Background, ' ', Console.cursorX, Console.cursorY);
+            InputBuffer[--Index] = 0;
 
             Console.cursorX--;
             consoleWriteCharXY(Background, Background, ' ', Console.cursorX, Console.cursorY);
 
-        } else if ((input > 32 || input == ' ') && index < sizeof(buffer)) {
+        } else if ((input > 32 || input == ' ') && Index < sizeof(InputBuffer)) {
 
             consoleWriteChar(Foreground, Background, input);
-            buffer[index++] = input;
+            InputBuffer[Index++] = input;
         }
     }
 }

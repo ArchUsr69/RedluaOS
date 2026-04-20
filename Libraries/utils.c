@@ -3,25 +3,26 @@
 
 void memorySet(void *target, uint8 value, size_t length) {
     uint8 *pointer = target;
-    for (uint32 offset = 0; offset < length; offset++) {
+    for (size_t offset = 0; offset < length; offset++) {
         pointer[offset] = value;
     }
 }
 
 /*
 -> IMPORTANT: it checks if both sources overlap;
--> why need memcpy and memmove if both do the same thing, but one is just unsafe?
 */
 
 void memoryCopy(void *target, void *source, size_t length) {
     uintptr a = (uintptr)target;
     uintptr b = (uintptr)source;
+
     uintptr difference = (a > b) ? (a - b) : (b - a);
     if (difference > length) return;
 
     uint8 *pointerTarget = target;
     uint8 *pointerOrigin = source;
-    for (uint32 offset = 0; offset < length; offset++) {
+
+    for (size_t offset = 0; offset < length; offset++) {
         pointerTarget[offset] = pointerOrigin[offset];
     }
 }
@@ -38,12 +39,13 @@ int memoryCompare(void *source1, void *source2, size_t length) {
     uint8 *pointerSource1 = source1;
     uint8 *pointerSource2 = source2;
     
-    for (uint32 offset = 0; offset < length; offset++) {
+    for (size_t offset = 0; offset < length; offset++) {
         if (pointerSource1[offset] != pointerSource2[offset]) {
             if (pointerSource1[offset] > pointerSource2[offset]) return 1;
             else return -1;
         }
     }
+
     return 0;
 }
 
@@ -52,8 +54,9 @@ int memoryCompare(void *source1, void *source2, size_t length) {
 void *memorySearch(void *source, uint8 value, size_t length) {
     uint8 *pointer = source;
 
-    for (uint32 offset = 0; offset < length; offset++) {
+    for (size_t offset = 0; offset < length; offset++) {
         if (pointer[offset] == value) return (pointer + offset);
     }
+
     return NULL;
 }

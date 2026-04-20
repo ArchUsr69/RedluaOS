@@ -8,9 +8,11 @@
 -> the system assumes that the depth will always be 16 (2 bytes per pixel);
 -> pixelOrder == 0: RGB; pixelOrder == 1: BGR; 
 -> filled by INIT;
+-> size is in Bytes;
 */
 
-struct framebufferInfo {
+struct framebuffer {
+    void (*init)();
     uintptr pointer;
     size_t size;
     uint16 virtualHeight;
@@ -24,20 +26,8 @@ struct framebufferInfo {
     bool pixelOrder;
 };
 
-extern struct framebufferInfo Framebuffer;
+extern struct framebuffer Framebuffer;
 
 // --------------------- //
-
-// Driver table;
-struct framebufferTable {
-    void (*framebufferInit)();
-};
-
-extern struct framebufferTable FramebufferTable;
-
-// Wrapper functions;
-static inline void framebufferInit() {
-    FramebufferTable.framebufferInit();
-}
 
 #endif

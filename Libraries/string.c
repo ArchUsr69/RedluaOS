@@ -85,6 +85,16 @@ string stringCombine(string source1, string source2) {
 
 // ------------------------ //
 
+bool stringCompare(string source1, string source2, size_t length) {
+    if (length > source1.length) length = source1.length;
+    if (length > source2.length) length = source2.length;
+
+    for (size_t offset = 0; offset < length; offset++) {
+        if (source1.text[offset] != source2.text[offset]) return true;
+    }
+    return false;
+}
+
 /*
 -> translate interpreted numbers into fixed sized string literals;
 -> they translate a 32-bit number;

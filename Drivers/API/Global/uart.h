@@ -5,30 +5,13 @@
 #define UART_H
 
 // Driver Table;
-struct uartTable {
-    void (*uartInit)();
-    void (*uartWriteByte)(char byte);
-    char (*uartReadByte)();
-    void (*uartWriteText)(string string);
+struct uart {
+    void (*init)();
+    void (*writeByte)(char byte);
+    char (*readByte)();
+    void (*writeText)(string string);
 };
 
-extern struct uartTable UartTable;
-
-// Wrapper functions;
-static inline void uartInit() {
-    UartTable.uartInit();
-}
-
-static inline void uartWriteByte(char byte) {
-    UartTable.uartWriteByte(byte);
-}
-
-static inline char uartReadByte() {
-    return UartTable.uartReadByte();
-}
-
-static inline void uartWriteText(string string) {
-    UartTable.uartWriteText(string);
-}
+extern struct uart Uart;
 
 #endif

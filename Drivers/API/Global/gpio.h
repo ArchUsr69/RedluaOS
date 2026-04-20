@@ -21,21 +21,12 @@ enum gpioFunctions {
 
 // ------------------------- //
 
-// Driver Table;
-struct gpioTable {
+struct gpio {
     void (*setFunction)(uint8 pin, enum gpioFunctions function);
     void (*pinWrite)(uint8 pin, bool level);
+    size_t TotalPins;
 };
 
-extern struct gpioTable GpioTable;
-
-// Wrapper functions;
-static inline void gpioSetFunction(uint8 pin, enum gpioFunctions function) {
-    GpioTable.setFunction(pin, function);
-}
-
-static inline void gpioPinWrite(uint8 pin, bool level) {
-    GpioTable.pinWrite(pin, level);
-}
+extern struct gpio Gpio;
 
 #endif

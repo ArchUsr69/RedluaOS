@@ -5,9 +5,6 @@
 #include <console.h>
 #include <font.h>
 
-#define CHARACTER_WIDTH (8)
-#define CHARACTER_HEIGHT (16)
-
 /*
 -> The default colour Palette RedluaOS will use;
 -> Later on, i will make it possible to change the colours via user input;
@@ -51,17 +48,18 @@ void consoleInit() {
 // ---------------------- //
 
 /*
--> manages the rendering of characters;
+-> manages the rendering of Bitmaps;
 -> It assumes depth = 16, so make sure that it is, or else it won't work;
 -> It also uses the default Font Bitmap;
+-> for now it's a little hardwritten, as its only task is to render 8x16 characters, but i'll work on making it more standard;
 */
 
-void OPTIMIZE(3) renderCharacter(uint16 foreground, uint16 background, char character, uint16 Console_x, uint16 Console_y) {
+void OPTIMIZE(3) renderBitmap(uint16 foreground, uint16 background, char character, uint8 bitmap_width, uint8 bitmap_height, uint16 bitmap_x, uint16 bitmap_y) {
     uint32 *screen = (uint32 *)Framebuffer.pointer;
-    uint32 x = Console_x * (CHARACTER_WIDTH / 2);
-    uint32 y = Console_y * CHARACTER_HEIGHT;
+    uint32 x = bitmap_x * (bitmap_width / 2);
+    uint32 y = bitmap_y * bitmap_height;
 
-    for (size_t row = 0; row < CHARACTER_HEIGHT; row++) {
+    for (size_t row = 0; row < bitmap_height; row++) {
         uint8 characterRow = ConsoleFont[character][row];
         uint32 linearOffset = (y + row) * (Framebuffer.pitch >> 2);
 
@@ -90,7 +88,8 @@ void OPTIMIZE(3) renderCharacter(uint16 foreground, uint16 background, char char
 -> contains newline detection and coordinate calculation, stuff like that;
 -> it must keep checking if the characters might be out of bounds, so performance might drop;
 */
-void OPTIMIZE(3) consoleWriteChar(enum consoleColours foreground, enum consoleColours background, char letter) {
+
+void consoleWriteChar(enum consoleColours foreground, enum consoleColours background, char letter) {
     uint16 Foreground = ConsolePalette[foreground];
     uint16 Background = ConsolePalette[background];
 
@@ -101,11 +100,11 @@ void OPTIMIZE(3) consoleWriteChar(enum consoleColours foreground, enum consoleCo
         Console.cursorY++;
     }
 
-    renderCharacter(Foreground, Background, letter, Console.cursorX, Console.cursorY);
+    renderBitmap(Foreground, Background, letter, CHARACTER_WIDTH, CHARACTER_HEIGHT, Console.cursorX, Console.cursorY);
     Console.cursorX++;
 }
 
-void OPTIMIZE(3) consoleWriteCharXY(enum consoleColours foreground, enum consoleColours background, char letter, uint16 x, uint16 y) {
+void consoleWriteCharXY(enum consoleColours foreground, enum consoleColours background, char letter, uint16 x, uint16 y) {
     uint16 Foreground = ConsolePalette[foreground];
     uint16 Background = ConsolePalette[background];
 
@@ -116,19 +115,20 @@ void OPTIMIZE(3) consoleWriteCharXY(enum consoleColours foreground, enum console
         y++;
     }
 
-    renderCharacter(Foreground, Background, letter, x, y);
+    renderBitmap(Foreground, Background, letter, CHARACTER_WIDTH, CHARACTER_HEIGHT, x, y);
 }
 
-void OPTIMIZE(3) consoleWrite(enum consoleColours foreground, enum consoleColours background, string text) {
+void consoleWrite(enum consoleColours foreground, enum consoleColours background, string text) {
     for (size_t index = 0; index < text.length; index++) {
         consoleWriteChar(foreground, background, text.text[index]);
     }
 }
 
-void OPTIMIZE(3) consoleWriteXY(enum consoleColours foreground, enum consoleColours background, string text, uint16 x, uint16 y) {
+void consoleWriteXY(enum consoleColours foreground, enum consoleColours background, string text, uint16 x, uint16 y) {
     for (size_t index = 0; index < text.length; index++) {
         consoleWriteCharXY(foreground, background, text.text[index], x, y);
         x++;
     }
 }
+
 // ------------------------------------------------ //

@@ -5,43 +5,40 @@
 
 void kernelMain();
 
-// Preprocessor bullshit
 #ifdef Broadcom
     #include <broadcom.h>
     
-    struct gpioTable GpioTable = {
+    struct gpio Gpio = {
         .setFunction = BCMgpioSetFunction,
         .pinWrite = BCMgpioPinWrite
     };
 
-    struct framebufferTable FramebufferTable = {
-        .framebufferInit = BCMframebufferInit
+    struct framebuffer Framebuffer = {
+        .init = BCMframebufferInit,
+        .virtualHeight = 720,
+        .virtualWidth = 1280,
+        .physicalHeight = 720,
+        .physicalWidth = 1280,
+        .virtual_X_Offset = 0,
+        .virtual_Y_Offset = 0,
+        .depth = 16,
+        .pixelOrder = 1
     };
 
-    struct uartTable UartTable = {
-        .uartInit = BCMuartInit,
-        .uartWriteByte = BCMuartWriteByte,
-        .uartReadByte = BCMuartReadByte_NI,
-        .uartWriteText = BCMuartWriteText
+    struct uart Uart = {
+        .init = BCMuartInit,
+        .writeByte = BCMuartWriteByte,
+        .readByte = BCMuartReadByte_NI,
+        .writeText = BCMuartWriteText
     };
+
+    struct console Console = {0};
+
 #endif
 
-struct framebufferInfo Framebuffer = {
-    .virtualHeight = 720,
-    .virtualWidth = 1280,
-    .physicalHeight = 720,
-    .physicalWidth = 1280,
-    .virtual_X_Offset = 0,
-    .virtual_Y_Offset = 0,
-    .depth = 16,
-    .pixelOrder = 1
-};
-
-struct consoleInfo Console = {0};
-
 void armv6Init() {
-    uartInit();
-    framebufferInit();
+    Uart.init();
+    Framebuffer.init();
     consoleInit();
     kernelMain();
 }

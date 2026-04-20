@@ -31,14 +31,14 @@ enum consoleColours {
 -> just holds basic information that helps with text rendering;
 */
 
-struct consoleInfo {
+struct console {
     uint16 rows;
     uint16 columns;
     uint16 cursorX;
     uint16 cursorY;
 };
 
-extern struct consoleInfo Console;
+extern struct console Console;
 
 // ------------------ //
 

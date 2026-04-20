@@ -46,8 +46,7 @@ void BCMuartInit() {
 // ------------------------ //
 
 /*
--> writes to the outside world;
--> WriteByte doesn't care if the char is actually \0; and it also doesn't translate \n to \r;
+-> writes to the outside worl actually \0; and it also doesn't translate \n to \r;
 -> are blocking;
 */
 
@@ -71,8 +70,7 @@ void BCMuartWriteText(string string) {
 */
 
 char BCMuartReadByte_NI() {
-    if ((*AUX_UART_LINE_STATUS & RX_FIFO_EMPTY) == 0) return 0;
-    else return *AUX_UART_IO;
+    return *AUX_UART_IO;
 }
 
 char BCMuartReadByte() {

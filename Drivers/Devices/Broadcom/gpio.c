@@ -3,7 +3,7 @@
 #include <broadcom.h>
 #include <gpio.h>
 
-#ifdef (BCM2712)
+#ifdef BCM2712
 
     #define GPIO_BASE (RP1_BASE + 0xD0000)
 
@@ -35,7 +35,7 @@
 #endif
 
 
-#ifdef (BCM2712)
+#ifdef BCM2712
 
 static const uint8 BCMgpioFunctions[9] = {
     0b00000,
@@ -139,5 +139,5 @@ void BCMgpioDisablePullup(uint8 pin) {
 
 // ------------------------- //
 
-#ifdef
+#endif
 

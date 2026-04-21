@@ -10,7 +10,6 @@ MODEL ?= BCM2835
 # Architecture selection;
 
 ifeq ($(ARCH),armv6)
-	# ------ Toolchain ------ #
 	C_COMPILER = arm-none-eabi-gcc
 	ASSEMBLER  = arm-none-eabi-as
 	LINKER     = arm-none-eabi-ld
@@ -18,6 +17,15 @@ ifeq ($(ARCH),armv6)
 
 	BOOT_SECTION = Boot/armv6.s
 	INIT_SECTION = Init/armv6.c
+
+else ifeq ($(ARCH), armv8)
+	C_COMPILER = gcc
+	ASSEMBLER = as
+	LINKER = ld
+	OBJCOPY = objcopy
+
+	BOOT_SECTION = Boot/armv8.s
+	INIT_SECTION = Init/armv8.c
 else
 	$(error Unsuported architecture: $(ARCH))
 endif
@@ -33,7 +41,7 @@ HEADER_SOURCE := $(shell find $(SOURCE_DIRS) -type d -name Global)
 
 # Flags
 INCLUDE_FLAG := $(foreach dir,$(HEADER_SOURCE),-I$(dir))
-C_FLAGS = -ffreestanding -nostdlib -march=$(ARCH) $(INCLUDE_FLAG) -D$(DEVICE) -D$(MODEL)
+C_FLAGS = -ffreestanding -nostdlib $(INCLUDE_FLAG) -D$(DEVICE) -D$(MODEL)
 LD_FLAGS = -T linker.ld
 
 # Generated intermediate assembly from C

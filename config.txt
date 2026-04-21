@@ -1,0 +1,4 @@
+disable_overscan=1
+core_freq=250
+enable_uart=1
+kernel=kernel.img

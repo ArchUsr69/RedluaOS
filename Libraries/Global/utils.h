@@ -6,10 +6,12 @@
 typedef volatile uint8 *MMIO_8;
 typedef volatile uint16 *MMIO_16;
 typedef volatile uint32 *MMIO_32;
+typedef volatile uint64 *MMIO_64;
 
 typedef const volatile uint8 *RO_MMIO_8;
 typedef const volatile uint16 *RO_MMIO_16;
 typedef const volatile uint32 *RO_MMIO_32;
+typedef const volatile uint64 *RO_MMIO_64;
 
 #define alignas _Alignas
 #define alignof _Alignof

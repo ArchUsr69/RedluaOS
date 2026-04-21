@@ -30,6 +30,8 @@
 -> I'll document it better some other time;
 */
 
+#ifdef BCM2835
+
 void BCMuartInit() {
     *AUX_ENABLE = HIGH;
     *AUX_UART_LINE_CONTROL = 0x81;
@@ -79,3 +81,5 @@ char BCMuartReadByte() {
 }
 
 // ----------------------- //
+
+#endif

@@ -40,13 +40,9 @@ typedef unsigned long long uint64;
 
 // integer type for pointer values and sizes;
 
-#ifdef __arch64__
-    typedef uint64 uintptr;
-    typedef uint64 size_t;
-#else 
-    typedef uint32 uintptr;
-    typedef uint32 size_t;
-#endif
+typedef uint64 uintptr;
+typedef uint64 size_t;
+typedef _Bool bool;
 
 // boolean types
 #define true ((bool)(1))

@@ -8,7 +8,7 @@
 #ifdef BCM2835
     #define PERIPHERAL_BASE 0x20000000
 #elif defined(BCM2712)
-    #define PERIPHERAL_BASE 0x107C000000
+    #define PERIPHERAL_BASE 0x7C000000
     #define RP1_BASE 0x1F00000000
 #endif
 

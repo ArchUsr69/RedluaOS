@@ -3,7 +3,11 @@
 #include <broadcom.h>
 #include <mailbox.h>
 
-#define MAILBOX_BASE (PERIPHERAL_BASE + 0xB880)
+#ifdef BCM2712
+    #define MAILBOX_BASE (PERIPHERAL_BASE + 0x13880)
+#else
+    #define MAILBOX_BASE (PERIPHERAL_BASE + 0xB880)
+#endif
 
 // Mailbox 0 Registers (VC -> ARM);
 #define MAILBOX_READ ((RO_MMIO_32)(MAILBOX_BASE + 0x00))
@@ -34,7 +38,7 @@
 
   [BUFFER_SIZE]    // number of 32-bit numbers IN THE ENTIRE BUFFER
   [REQUEST_CODE]   // always set to 0; VC will rewrite it;
-  [TAG]              
+  [TAG]
   [TAG]
   ....
   [END_TAG]

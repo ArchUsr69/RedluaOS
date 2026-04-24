@@ -6,7 +6,7 @@
 _start:
 
     /* Set up stack pointer */
-    mov sp, #0x80000
+    mov sp, #0x8000
 
     /* Clears .bss */
     ldr x0, =__bss_start

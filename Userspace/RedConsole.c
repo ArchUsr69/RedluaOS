@@ -22,11 +22,11 @@ void newLine() {
 */
 
 char waitForInput() {
-    for (size_t cycles = 180000; cycles > 0; cycles--) {
+    for (size_t cycles = 18000; cycles > 0; cycles--) {
         consoleWriteCharXY(Foreground, Background, '_', Console.cursorX, Console.cursorY);
     }
 
-    for (size_t cycles = 180000; cycles > 0; cycles--) {
+    for (size_t cycles = 18000; cycles > 0; cycles--) {
         consoleWriteCharXY(Background, Background, '_', Console.cursorX, Console.cursorY);
     }
 }

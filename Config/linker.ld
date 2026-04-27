@@ -2,6 +2,7 @@ ENTRY(_start)
 
 SECTIONS {
 
+    __STACK = .;
     .init 0x8000 : {
         *(.init)
     }
@@ -19,11 +20,11 @@ SECTIONS {
     }
 
     . = ALIGN(16);
-    __bss_start = .;
+    __BSS_START = .;
     .bss : { 
         *(.bss) 
         *(COMMON)
     }
     . = ALIGN(16);
-    __bss_end = .;
+    __BSS_END = .;
 }

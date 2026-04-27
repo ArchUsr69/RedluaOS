@@ -1,16 +1,18 @@
 .section .init
 .globl _start
-.extern __bss_start
-.extern __bss_end
+
+.extern __STACK
+.extern __BSS_START
+.extern __BSS_END
 
 _start:
 
     /* Set up stack pointer */
-    mov sp, #0x8000
+    mov sp, =__STACK
 
     /* Clears .bss */
-    ldr r0, =__bss_start
-    ldr r1, =__bss_end
+    ldr r0, =__BSS_START
+    ldr r1, =__BSS_END
     mov r2, #0
 
 clearBss:

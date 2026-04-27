@@ -5,56 +5,35 @@
 
 #ifdef BCM2712
 
-    #define GPIO_BASE (RP1_BASE + 0xD0000)
-
-    #define GPIO_REGISTER_BASE ((MMIO_64)(GPIO_BASE + 0x0))
-
-    #define TOTAL_PINS (28)
-
-#else
-
-    #define GPIO_BASE (PERIPHERAL_BASE + 0x200000)
-
-    // GPIO Pin Function selector registers
-    #define GPIOFSELECT_BASE ((MMIO_32)(GPIO_BASE + 0x00))
-
-    // Output set Registers
-    #define GPIOSET0 ((MMIO_32)(GPIO_BASE + 0x1C))
-    #define GPIOSET1 ((MMIO_32)(GPIO_BASE + 0x20))
-
-    // Output clear Registers
-    #define GPIOCLEAR0 ((MMIO_32)(GPIO_BASE + 0x28))
-    #define GPIOCLEAR1 ((MMIO_32)(GPIO_BASE + 0x2C))
-
-    // Pull-up/down controller
-    #define GPIO_PULL_CONTROL ((MMIO_32)(GPIO_BASE + 0x94))
-    #define GPIO_PULL_CLOCK_0 ((MMIO_32)(GPIO_BASE + 98))
-
-    #define TOTAL_PINS (53)
-
-#endif
-
-
-#ifdef BCM2712
-
-static const uint8 BCMgpioFunctions[9] = {
-    0b00000,
-    0b00001,
-    0b00010,
-    0b00011,
-    0b00100,
-    0b00101,
-    0b00110,
-    0b00111,
-    0b01000,
-};
+#define GPIO_BASE (RP1_BASE + 0xD0000)
+#define GPIO_REGISTER_BASE ((MMIO_32)(GPIO_BASE + 0x0))
+#define TOTAL_PINS (28)
 
 void BCMgpioSetFunction(uint8 pin, enum gpioFunctions function) {
-    GPIO_REGISTER_BASE[pin] &= ~((0b11 << 62) & (0b11111 << 32));
-    GPIO_REGISTER_BASE[pin] |= (BCMgpioFunctions[function] << 32);
+    GPIO_REGISTER_BASE[(pin * 2) + 1] &= ~(0x1F);
+    GPIO_REGISTER_BASE[(pin * 2) + 1] |= (function & 0x1F);
 }
 
 #else
+
+#define GPIO_BASE (PERIPHERAL_BASE + 0x200000)
+
+// GPIO Pin Function selector registers
+#define GPIOFSELECT_BASE ((MMIO_32)(GPIO_BASE + 0x00))
+
+// Output set Registers
+#define GPIOSET0 ((MMIO_32)(GPIO_BASE + 0x1C))
+#define GPIOSET1 ((MMIO_32)(GPIO_BASE + 0x20))
+
+// Output clear Registers
+#define GPIOCLEAR0 ((MMIO_32)(GPIO_BASE + 0x28))
+#define GPIOCLEAR1 ((MMIO_32)(GPIO_BASE + 0x2C))
+
+// Pull-up/down controller
+#define GPIO_PULL_CONTROL ((MMIO_32)(GPIO_BASE + 0x94))
+#define GPIO_PULL_CLOCK_0 ((MMIO_32)(GPIO_BASE + 98))
+
+#define TOTAL_PINS (53)
 
 /*
 -> maps the standard gpio function numbers to the bcm2835 gpio function values;

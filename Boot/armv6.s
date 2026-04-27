@@ -13,15 +13,11 @@ _start:
     ldr r1, =__bss_end
     mov r2, #0
 
-bss_clear:
+clearBss:
     cmp r0, r1
-    bge bss_cleared
+    bge armv6Init
     str r2, [r0], #4
-    b bss_clear
-
-bss_cleared:
-    /* Calls Init */
-    bl armv6Init
+    b clearBss
 
 hang:
     b hang

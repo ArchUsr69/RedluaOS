@@ -1,18 +1,48 @@
-include Config/platform.mk
+# ARCH and DEVICE variables are used to pick the correct files;
+# MODEL Variable is sent to Init section to select the correct data;
 
-# Source directories
-SOURCE_DIRS := Drivers/API Kernel Libraries Userspace $(DEVICE_DIR)
-BUILD_DIR := Build
+# NOTE: DEVICE and ARCH variables are case sensitive;
 
-# Finds source files
-C_SOURCE  := $(shell find $(SOURCE_DIRS) -name '*.c') $(INIT_SECTION)
+ARCH ?= armv6
+DEVICE ?= Broadcom
+MODEL ?= BCM2835
+
+# Architecture selection;
+
+ifeq ($(ARCH),armv6)
+	C_COMPILER = arm-none-eabi-gcc
+	ASSEMBLER  = arm-none-eabi-as
+	LINKER     = arm-none-eabi-ld
+	OBJCOPY    = arm-none-eabi-objcopy
+
+	BOOT_SECTION = Boot/armv6.s
+	INIT_SECTION = Init/armv6.c
+
+else ifeq ($(ARCH), armv8)
+	C_COMPILER = gcc
+	ASSEMBLER = as
+	LINKER = ld
+	OBJCOPY = objcopy
+
+	BOOT_SECTION = Boot/armv8.s
+	INIT_SECTION = Init/armv8.c
+else
+	$(error Unsuported architecture: $(ARCH))
+endif
+
+# Sources
+SOURCE_DIRS = Userspace Kernel Libraries  Drivers/API $(shell find -type d -name $(DEVICE)) $(INIT_SECTION)
+BUILD_DIR = Build
+
+# Finds sources
+C_SOURCE  := $(shell find $(SOURCE_DIRS) -name '*.c')
 ASM_SOURCE := $(BOOT_SECTION)
 HEADER_SOURCE := $(shell find $(SOURCE_DIRS) -type d -name Global)
 
 # Flags
 INCLUDE_FLAG := $(foreach dir,$(HEADER_SOURCE),-I$(dir))
-C_FLAGS := -ffreestanding -nostdlib $(INCLUDE_FLAG) -D$(DEVICE) -D$(MODEL)
-LD_FLAGS := -T Config/linker.ld
+C_FLAGS = -ffreestanding -nostdlib $(INCLUDE_FLAG) -D$(DEVICE) -D$(MODEL)
+LD_FLAGS = -T linker.ld
 
 # Generated intermediate assembly from C
 C_ASM := $(patsubst %.c,$(BUILD_DIR)/%.s,$(C_SOURCE))
@@ -22,8 +52,8 @@ C_OBJECTS  := $(patsubst %.c,$(BUILD_DIR)/%.o,$(C_SOURCE))
 ASM_OBJECTS := $(patsubst %.s,$(BUILD_DIR)/%.o,$(ASM_SOURCE))
 OBJECTS := $(C_OBJECTS) $(ASM_OBJECTS)
 
-ELF   := Image/kernel.elf
-IMAGE := Image/kernel.bin
+ELF   = Image/kernel.elf
+IMAGE = Image/kernel.img
 
 # Default target
 all: $(IMAGE)

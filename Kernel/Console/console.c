@@ -39,7 +39,7 @@ static uint16 ConsolePalette[18] = {
 void consoleInit() {
     if (Framebuffer.pointer == 0 || Console.rows != 0) return;
 
-    Console.rows = Framebuffer.virtualHeight / CHARACTER_HEIGHT;
+    Console.rows = (Framebuffer.virtualHeight / CHARACTER_HEIGHT) + 1;
     Console.columns = Framebuffer.virtualWidth / CHARACTER_WIDTH;
     Console.cursorX = 0;
     Console.cursorY = 0;

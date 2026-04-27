@@ -5,7 +5,7 @@ ifndef ARCH
 	$(error Unspecified Architecture)
 else ifndef DEVICE
 	$(error Unspecified Device family)
-else ifndef MODEL 
+else ifndef MODEL
 	$(error Unspecified Device Model)
 endif
 

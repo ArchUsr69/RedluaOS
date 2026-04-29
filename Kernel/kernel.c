@@ -7,5 +7,5 @@
 void RedConsole();
 
 void kernelMain(){
-
+    RedConsole();
 }

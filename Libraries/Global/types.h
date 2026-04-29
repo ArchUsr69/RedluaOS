@@ -42,7 +42,8 @@ typedef unsigned long long uint64;
 
 typedef uint64 uintptr;
 typedef uint64 size_t;
-typedef _Bool bool;
+
+#define bool _Bool
 
 // boolean types
 #define true ((bool)(1))

@@ -1,5 +1,6 @@
 SUPPORTED_ARCH := armv6 armv8
-SUPPORTED_DEVICE := Broadcom
+
+ifdef ARCH
 
 ifndef ARCH
 	$(error Unspecified Architecture)
@@ -34,4 +35,6 @@ else
 		LINKER := ld
 		OBJCOPY := objcopy
 	endif
+endif
+
 endif

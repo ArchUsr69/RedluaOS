@@ -1,13 +1,13 @@
-ENTRY(_start)
+ENTRY(BOOT)
 
 SECTIONS {
 
     . = 0x8000;
 
-    __STACK = .;
+    STACK = .;
 
     .text : {
-        *(.text.boot)
+        *(.boot)
         *(.text*)
     }
 
@@ -20,13 +20,12 @@ SECTIONS {
     }
 
     . = ALIGN(16);
-    __BSS_START = .;
+    BSS_START = .;
 
     .bss : { 
         *(.bss) 
-        *(COMMON)
     }
 
     . = ALIGN(16);
-    __BSS_END = .;
+    BSS_END = .;
 }

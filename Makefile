@@ -1,8 +1,13 @@
-include Config/platform.mk
+include Config/config.mk
+
+BUILD_DIR = Build
+ELF = Image/kernel.elf
+IMAGE = Image/kernel.bin
+
+ifdef ARCH
 
 # Source directories
 SOURCE_DIRS := Drivers/API Kernel Libraries Userspace $(DEVICE_DIR)
-BUILD_DIR := Build
 
 # Finds source files
 C_SOURCE  := $(shell find $(SOURCE_DIRS) -name '*.c') $(INIT_SECTION)
@@ -22,10 +27,8 @@ C_OBJECTS  := $(patsubst %.c,$(BUILD_DIR)/%.o,$(C_SOURCE))
 ASM_OBJECTS := $(patsubst %.s,$(BUILD_DIR)/%.o,$(ASM_SOURCE))
 OBJECTS := $(C_OBJECTS) $(ASM_OBJECTS)
 
-ELF   := Image/kernel.elf
-IMAGE := Image/kernel.bin
+endif
 
-# Default target
 all: $(IMAGE)
 
 # Ensures build root exists
@@ -62,8 +65,6 @@ $(IMAGE): $(ELF)
 # Cleanup
 clean:
 	rm -rf $(BUILD_DIR) $(IMAGE) $(ELF)
-
-.PHONY: all clean
 
 # for me only; you can ignore this. I didn't like typing those commands all the time;
 cp:

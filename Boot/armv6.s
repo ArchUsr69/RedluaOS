@@ -1,4 +1,4 @@
-.section .init
+.section .text.boot
 .globl _start
 
 .extern __STACK
@@ -8,12 +8,11 @@
 _start:
 
     /* Set up stack pointer */
-    mov sp, =__STACK
+    ldr r0, =__STACK
+    mov sp, r0
 
-    /* Clears .bss */
     ldr r0, =__BSS_START
     ldr r1, =__BSS_END
-    mov r2, #0
 
 clearBss:
     cmp r0, r1

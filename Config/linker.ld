@@ -2,12 +2,12 @@ ENTRY(_start)
 
 SECTIONS {
 
+    . = 0x8000;
+
     __STACK = .;
-    .init 0x8000 : {
-        *(.init)
-    }
 
     .text : {
+        *(.text.boot)
         *(.text*)
     }
 
@@ -21,10 +21,12 @@ SECTIONS {
 
     . = ALIGN(16);
     __BSS_START = .;
+
     .bss : { 
         *(.bss) 
         *(COMMON)
     }
+
     . = ALIGN(16);
     __BSS_END = .;
 }

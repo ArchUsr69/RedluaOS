@@ -5,5 +5,3 @@ kernel=kernel.bin
 kernel_address=0x8000
 
 disable_overscan=1
-hdmi_group=1
-hdmi_mode=4

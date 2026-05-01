@@ -118,7 +118,7 @@ good idea to have the channel and pointer in the same register;
 
 uint32 mailboxSendMsg() {
     while ((*MAILBOX_WRITE_STATUS & MAILBOX_FULL) != 0) { /* does nothing */ }
-    *MAILBOX_WRITE = ((uintptr)Buffer | CHANNEL);
+    *MAILBOX_WRITE = ((uint32)Buffer | CHANNEL);
 
     while (true) {
         while ((*MAILBOX_READ_STATUS & MAILBOX_EMPTY) != 0) { /* does nothing */ }

@@ -4,6 +4,10 @@
 #include <gpio.h>
 #include <broadcom.h>
 
+#ifdef BCM2712
+
+#else
+
 // These registers actually control more than mini UART
 #define AUX_BASE (PERIPHERAL_BASE + 0x215000)
 #define AUX_ENABLE ((MMIO_8)(AUX_BASE + 0x04))
@@ -29,8 +33,6 @@
 
 -> I'll document it better some other time;
 */
-
-#ifdef BCM2835
 
 void BCMuartInit() {
     *AUX_ENABLE = HIGH;

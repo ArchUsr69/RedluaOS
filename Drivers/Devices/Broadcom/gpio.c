@@ -69,7 +69,7 @@ static inline void delayCycles(size_t cycles) {
    In order to not overwrite the other pins with 0, it creates a mask; feel free to analyze it;
 */
 
-void BCMgpioSetFunction(uint8 pin, enum gpioFunctions function) {
+void BCMgpioSetFunction(uint16 pin, enum gpioFunctions function) {
     if (pin > TOTAL_PINS) return;
     GPIOFSELECT_BASE[pin / 10] &= ~(0b111 << ((pin % 10) * 3));
     GPIOFSELECT_BASE[pin / 10] |= BCMgpioFunctions[function] << ((pin % 10) * 3);
@@ -85,7 +85,7 @@ void BCMgpioSetFunction(uint8 pin, enum gpioFunctions function) {
    writing LOW to the SET/CLEAR registers won't do anything;
 */
 
-void BCMgpioPinWrite(uint8 pin, bool level) {
+void BCMgpioPinWrite(uint16 pin, bool level) {
     if (pin > TOTAL_PINS) return;
     if (level == HIGH) {
         MMIO_32 target = (pin <= INT32_WIDTH) ? GPIOSET0 : GPIOSET1;
@@ -104,7 +104,7 @@ void BCMgpioPinWrite(uint8 pin, bool level) {
 -> later it's gonna have more possibilities;
 */
 
-void BCMgpioDisablePullup(uint8 pin) {
+void BCMgpioDisablePullup(uint16 pin) {
     if (pin > TOTAL_PINS) return;
 
     *GPIO_PULL_CONTROL = 0;

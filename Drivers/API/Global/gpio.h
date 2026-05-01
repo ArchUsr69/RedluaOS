@@ -22,9 +22,9 @@ enum gpioFunctions {
 // ------------------------- //
 
 struct gpio {
-    void (*setFunction)(uint8 pin, enum gpioFunctions function);
-    void (*pinWrite)(uint8 pin, bool level);
-    size_t TotalPins;
+    void (*setFunction)(uint16 pin, enum gpioFunctions function);
+    void (*pinWrite)(uint16 pin, bool level);
+    uint16 totalPins;
 };
 
 extern struct gpio Gpio;

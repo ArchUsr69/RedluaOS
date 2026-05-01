@@ -10,6 +10,7 @@ struct uart {
     void (*writeByte)(char byte);
     char (*readByte)();
     void (*writeText)(string string);
+    uint32 baudrate;
 };
 
 extern struct uart Uart;

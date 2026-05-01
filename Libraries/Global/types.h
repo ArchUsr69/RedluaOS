@@ -39,9 +39,8 @@ typedef unsigned long long uint64;
 #define UINT64_MAX (18446744073709551615)
 
 // integer type for pointer values and sizes;
-
-typedef uint64 uintptr;
-typedef uint64 size_t;
+typedef unsigned long uintptr;
+typedef unsigned long size_t;
 
 #define bool _Bool
 

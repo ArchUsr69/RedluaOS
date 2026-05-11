@@ -10,15 +10,15 @@
    so you basically don't reserve extra space;
 */
 
-string stringNew(char *text, size_t capacity) {
-    size_t length = textLength(text);
+text textNew(string text, size_t capacity) {
+    size_t length = stringLength(text);
     capacity = (capacity == 0 || capacity < length) ? length : capacity;
 
-    for (uint32 offset = length + 1; offset < capacity; offset++) {
+    for (size_t offset = length + 1; offset < capacity; offset++) {
         text[offset] = 0;
     }
     
-    return (string){
+    return (text){
         .length = length,
         .capacity = capacity,
         .text = text
@@ -33,7 +33,7 @@ string stringNew(char *text, size_t capacity) {
 -> but if you have to manipulate strings by yourself, then feel free to use it.
 */
 
-size_t textLength(char *text) {
+size_t stringLength(string text) {
     size_t length = 0;
     while (text[length] != '\0') length++;
     return length;
@@ -47,14 +47,9 @@ size_t textLength(char *text) {
 */
 
 void stringCopy(string *target, string source, size_t length) {
-    target->length = 0;
-
-    for (uint32 offset = 0; offset < length && offset < target->capacity; offset++) {
-        target->text[offset] = source.text[offset];
-        target->length++;
+    for (size_t offset = 0; offset < stringLength(*target) && offset < length; offset++) {
+        target[offset] = source[offset];
     }
-
-    target->text[(target->length + 1)] = '\0';
 }
 
 // ------------------------- //
@@ -64,36 +59,23 @@ void stringCopy(string *target, string source, size_t length) {
 */
 
 string stringCombine(string source1, string source2) {
-    char text[(source1.capacity + source2.capacity)];
-    uint32 textOffset = 0;
+    char combinedString[stringLength(source1) + stringLength(source2)];
+
+    size_t stringOffset = 0;
 
     for (size_t offset = 0; offset < source1.length; offset++) {
-        text[textOffset++] = source1.text[offset];
+        combinedString[stringOffset++] = source1[offset];
     }
 
     for (size_t offset = 0; offset < source2.length; offset++) {
-        text[textOffset++] = source2.text[offset];
+        combinedString[stringOffset++] = source2[offset];
     }
     
-    text[textOffset + 1] = '\0';
-    return (string){
-        .length = source1.length + source2.length,
-        .capacity = sizeof(text),
-        .text = text
-    };
+    combinedString[stringOffset + 1] = '\0';
+    return combinedString;
 }
 
 // ------------------------ //
-
-bool stringCompare(string source1, string source2, size_t length) {
-    if (length > source1.length) length = source1.length;
-    if (length > source2.length) length = source2.length;
-
-    for (size_t offset = 0; offset < length; offset++) {
-        if (source1.text[offset] != source2.text[offset]) return true;
-    }
-    return false;
-}
 
 /*
 -> translate interpreted numbers into fixed sized string literals;

@@ -4,17 +4,21 @@
 #define STRING_H
 
 typedef struct {
-    size_t length;
-    size_t capacity;
     char *text;
 } string;
 
-string stringNew(char *text, size_t capacity);
-size_t textLength(char *text);
+typedef struct {
+    size_t length;
+    size_t capacity;
+    string text;
+} text;
+
+text textNew(string text, size_t capacity);
+size_t stringLength(string text);
 void stringCopy(string *target, string source, size_t length);
 string stringCombine(string source1, string source2);
 
-char *bin2text(uint32 number);
-char *hex2text(uint32 number);
+string bin2text(uint32 number);
+string hex2text(uint32 number);
 
 #endif

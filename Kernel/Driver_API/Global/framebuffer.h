@@ -30,6 +30,6 @@ extern struct framebuffer Framebuffer;
 
 // --------------------- //
 
-void renderBitmap(uint16 foreground, uint16 background, char character, uint8 bitmap_width, uint8 bitmap_height, uint16 bitmap_x, uint16 bitmap_y)
+void renderBitmap(uint16 foreground, uint16 background, char character, uint8 bitmap_width, uint8 bitmap_height, uint16 bitmap_x, uint16 bitmap_y);
 
 #endif

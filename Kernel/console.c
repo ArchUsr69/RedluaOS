@@ -83,14 +83,14 @@ void consoleWriteCharXY(enum consoleColours foreground, enum consoleColours back
 }
 
 void consoleWrite(enum consoleColours foreground, enum consoleColours background, string text) {
-    for (size_t index = 0; index < text.length; index++) {
-        consoleWriteChar(foreground, background, text.text[index]);
+    for (size_t index = 0; index < stringLength(text); index++) {
+        consoleWriteChar(foreground, background, text[index]);
     }
 }
 
 void consoleWriteXY(enum consoleColours foreground, enum consoleColours background, string text, uint16 x, uint16 y) {
-    for (size_t index = 0; index < text.length; index++) {
-        consoleWriteCharXY(foreground, background, text.text[index], x, y);
+    for (size_t index = 0; index < stringLength(text); index++) {
+        consoleWriteCharXY(foreground, background, text[index], x, y);
         x++;
     }
 }

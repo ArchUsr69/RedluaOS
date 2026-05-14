@@ -60,8 +60,8 @@ void BCMuartWriteByte(char byte) {
 }
 
 void BCMuartWriteText(string string) {
-    for (size_t index = 0;index < string.length; index++) {
-        BCMuartWriteByte(string.text[index]);
+    for (size_t index = 0; index < stringLength(string); index++) {
+        BCMuartWriteByte(string[index]);
     }
 }
 

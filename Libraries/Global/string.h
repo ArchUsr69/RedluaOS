@@ -3,22 +3,16 @@
 #ifndef STRING_H
 #define STRING_H
 
-typedef struct {
-    char *text;
-} string;
+typedef char *string;
 
 typedef struct {
-    size_t length;
-    size_t capacity;
-    string text;
-} text;
+    char string[40];
+} wrappedString;
 
-text textNew(string text, size_t capacity);
 size_t stringLength(string text);
-void stringCopy(string *target, string source, size_t length);
-string stringCombine(string source1, string source2);
+wrappedString stringCombine(const string source1, const string source2);
 
-string bin2text(uint32 number);
-string hex2text(uint32 number);
+wrappedString bin2text(uint32 number);
+wrappedString hex2text(uint32 number);
 
 #endif

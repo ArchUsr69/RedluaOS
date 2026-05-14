@@ -1,6 +1,7 @@
 #include <types.h>
 #include <utils.h>
 #include <framebuffer.h>
+#include <font.h>
 
 /*
 -> manages the rendering of Bitmaps;

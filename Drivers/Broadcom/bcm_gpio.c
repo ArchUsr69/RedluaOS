@@ -9,7 +9,7 @@
 #define GPIO_REGISTER_BASE ((MMIO_32)(GPIO_BASE + 0x0))
 #define TOTAL_PINS (28)
 
-void BCMgpioSetFunction(uint8 pin, enum gpioFunctions function) {
+void BCMgpioSetFunction(uint16 pin, enum gpioFunctions function) {
     GPIO_REGISTER_BASE[(pin * 2) + 1] &= ~(0x1F);
     GPIO_REGISTER_BASE[(pin * 2) + 1] |= (function & 0x1F);
 }

@@ -34,18 +34,17 @@ char waitForInput() {
 // ------------------------------ //
 
 void RedConsole() {
-    string prompt = stringNew("$ ", 0);
-    consoleWrite(Red, Background, prompt);
+    consoleWrite(Red, Background, "$ ");
 
     while (true) {
         char input = waitForInput();
 
         if (input == '\r') {
             newLine();
-            consoleWrite(Red, Background, prompt);
+            consoleWrite(Red, Background, "$ ");
         }
 
-        if (input == '\b' && Console.cursorX > prompt.length) {
+        if (input == '\b' && Console.cursorX > stringLength("$ ")) {
             InputBuffer[--Index] = 0;
 
             Console.cursorX--;

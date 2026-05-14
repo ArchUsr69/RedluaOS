@@ -3,7 +3,7 @@
 > RedluaOS is an Operating with the goal of being properly documented and also trying to remove the Gatekeeping that the OS development community keeps holding, for some unknown reason.
 >
 
-As you can see, none of these goals have been achieved *yet*. Right now i’m only more than 1 Month into this project, so don’t expect much. 
+As you can see, none of these goals have been achieved *yet*. Right now i’m only more than 3 Months into this project, so don’t expect much. 
 
 ## **IMPORTANT**
 
@@ -24,13 +24,11 @@ As you can see, none of these goals have been achieved *yet*. Right now i’m on
 
 `/Config` contains configuration files (duuhhh) like the linker script, and the config.txt for the raspberry pi firmware
 
-`/Drivers` contains all the **specific Hardware code,** as well as **Generic API’**s for the kernel to communicate with the drivers. 
+`/Drivers` contains all the **specific Hardware code,**
 
 `/Image` contains the `.img` and `.elf` files. You can flash the img file and/or inspect the elf executable.
 
-`/Init` is a subsystem that contains **Hardcoded Driver selections** (chosen at compile time) for each Architecture and Device supported.
-
-`/Kernel` contains all of the Kernel logic code.
+`/Kernel` contains all of the Kernel logic code. Contains a Driver API to be able to use the Drivers.
 
 `/Libraries` are well, Libraries. Take a look for yourself at the contents. 
 
@@ -40,7 +38,7 @@ As you can see, none of these goals have been achieved *yet*. Right now i’m on
 
 - Folders start with Capital letters, files start with lowercase letters.
 - Every `.h` file lives inside a **Global** folder. Everything visible to other TU’s must live inside a header file.
-- The Drivers are **Device** oriented. That means that you search after the wished device family, not Architecture. Only Init and Boot are Architecture oriented. This makes for an easier Build system.
+- The Drivers are **Device** oriented. That means that you search after the wished device family, not Architecture. Only Boot is Architecture oriented. This makes for an easier Build system.
 
 ## How to build:
 

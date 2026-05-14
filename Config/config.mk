@@ -21,7 +21,6 @@ ifeq ($(filter $(ARCH), $(SUPPORTED_ARCH)),)
 else
 
 	BOOT_SECTION := Boot/$(ARCH).s
-	INIT_SECTION := Init/$(ARCH).c
 
 	ifeq ($(ARCH), armv6)
 		C_COMPILER := arm-none-eabi-gcc

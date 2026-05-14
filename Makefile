@@ -10,7 +10,7 @@ ifdef ARCH
 SOURCE_DIRS := Kernel Libraries Userspace $(DEVICE_DIR)
 
 # Finds source files
-C_SOURCE  := $(shell find $(SOURCE_DIRS) -name '*.c') $(INIT_SECTION)
+C_SOURCE  := $(shell find $(SOURCE_DIRS) -name '*.c')
 ASM_SOURCE := $(BOOT_SECTION)
 HEADER_SOURCE := $(shell find $(SOURCE_DIRS) -type d -name Global)
 

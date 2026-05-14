@@ -25,7 +25,6 @@ enum consoleColours {
     brightWhite
 };
 
-
 /*
 -> The main console struct;
 -> just holds basic information that helps with text rendering;

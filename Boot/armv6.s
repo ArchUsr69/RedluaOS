@@ -15,7 +15,7 @@ BOOT:
 
 clearBss:
     cmp r0, r1
-    bge armv6Init
+    bge kernelMain
     str r2, [r0], #4
     b clearBss
 

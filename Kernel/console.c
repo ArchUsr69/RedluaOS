@@ -3,7 +3,9 @@
 #include <string.h>
 #include <framebuffer.h>
 #include <console.h>
-#include <font.h>
+
+#define CHARACTER_HEIGHT (16)
+#define CHARACTER_WIDTH (8)
 
 /*
 -> The default colour Palette RedluaOS will use;

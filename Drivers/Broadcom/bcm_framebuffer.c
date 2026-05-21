@@ -1,5 +1,4 @@
 #include <redlib.h>
-
 #include <Drivers/mailbox.h>
 #include <Kernel/framebuffer.h>
 

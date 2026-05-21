@@ -1,5 +1,4 @@
 #include <redlib.h>
-
 #include <Drivers/broadcom.h>
 
 #ifndef MAILBOX_H

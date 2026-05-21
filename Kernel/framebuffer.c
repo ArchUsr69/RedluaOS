@@ -1,7 +1,6 @@
 #include <redlib.h>
-
 #include <Kernel/framebuffer.h>
-#include <Global/font.h>
+#include <Kernel/font.h>
 
 /*
 -> manages the rendering of Bitmaps;

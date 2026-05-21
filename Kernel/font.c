@@ -1,12 +1,5 @@
-#include <Global/types.h>
-
-#ifndef FONT_H
-#define FONT_H
-
-#define CHARACTER_WIDTH (8)
-#define CHARACTER_HEIGHT (16)
-
-// --------------------- //
+#include <redlib.h>
+#include <Kernel/font.h>
 
 /*
 -> This is the Default Font the Kernel will use;
@@ -16,7 +9,7 @@ unless you don't want to touch grass for the next week;
 -> Seriously, making your own Bitmap is a pain in the ass; Tedious as fuck. Don't do it. I beg you
 */
 
-const uint8 ConsoleFont[INT8_MAX][16] = {
+const uint8 ConsoleFont[INT8_MAX][CHARACTER_HEIGHT] = {
 
     // 32 Control Character;
     {0x00,0x00,0x00,0x00,0x00,0x00,0x00,0x00,
@@ -495,5 +488,3 @@ const uint8 ConsoleFont[INT8_MAX][16] = {
     {0x00,0x00,0x00,0x00,0x00,0x00,0x31,0x49,
      0x46,0x00,0x00,0x00,0x00,0x00,0x00,0x00}
 };
-
-#endif

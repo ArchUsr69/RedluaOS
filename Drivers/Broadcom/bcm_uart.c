@@ -1,5 +1,4 @@
 #include <redlib.h>
-
 #include <Kernel/gpio.h>
 #include <Drivers/broadcom.h>
 

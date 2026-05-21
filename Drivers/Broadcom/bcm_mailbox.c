@@ -1,7 +1,7 @@
-#include <types.h>
-#include <utils.h>
-#include <broadcom.h>
-#include <mailbox.h>
+#include <redlib.h>
+
+#include <Drivers/mailbox.h>
+#include <Drivers/broadcom.h>
 
 #ifdef BCM2712
     #define MAILBOX_BASE (PERIPHERAL_BASE + 0x13880)

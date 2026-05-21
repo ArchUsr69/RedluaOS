@@ -1,6 +1,5 @@
-#include <types.h>
-#include <gpio.h>
-#include <string.h>
+#include <redlib.h>
+#include <Kernel/gpio.h>
 
 #ifndef BROADCOM_H
 #define BROADCOM_H

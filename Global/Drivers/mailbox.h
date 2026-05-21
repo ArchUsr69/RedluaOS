@@ -1,6 +1,6 @@
-#include <types.h>
-#include <utils.h>
-#include <broadcom.h>
+#include <redlib.h>
+
+#include <Drivers/broadcom.h>
 
 #ifndef MAILBOX_H
 #define MAILBOX_H

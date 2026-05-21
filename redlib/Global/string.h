@@ -1,4 +1,4 @@
-#include <types.h>
+#include <Global/types.h>
 
 #ifndef STRING_H
 #define STRING_H

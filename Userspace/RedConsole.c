@@ -1,8 +1,7 @@
-#include <types.h>
-#include <utils.h>
-#include <string.h>
-#include <console.h>
-#include <uart.h>
+#include <redlib.h>
+
+#include <Kernel/console.h>
+#include <Kernel/uart.h>
 
 char InputBuffer[40];
 size_t Index = 0;

@@ -1,12 +1,12 @@
-#include <types.h>
-#include <utils.h>
-#include <gpio.h>
-#include <framebuffer.h>
-#include <uart.h>
-#include <console.h>
+#include <redlib.h>
+
+#include <Kernel/gpio.h>
+#include <Kernel/framebuffer.h>
+#include <Kernel/uart.h>
+#include <Kernel/console.h>
 
 #ifdef Broadcom
-    #include <broadcom.h>
+    #include <Drivers/broadcom.h>
 
     struct framebuffer Framebuffer = {
         .init = BCMframebufferInit,

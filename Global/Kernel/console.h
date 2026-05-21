@@ -1,5 +1,4 @@
-#include <types.h>
-#include <string.h>
+#include <redlib.h>
 
 #ifndef CONSOLE_H
 #define CONSOLE_H

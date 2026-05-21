@@ -1,7 +1,7 @@
-#include <types.h>
-#include <utils.h>
-#include <broadcom.h>
-#include <gpio.h>
+#include <redlib.h>
+
+#include <Drivers/broadcom.h>
+#include <Kernel/gpio.h>
 
 #ifdef BCM2712
 

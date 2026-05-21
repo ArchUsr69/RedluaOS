@@ -1,4 +1,4 @@
-#include <types.h>
+#include <redlib.h>
 
 #ifndef FRAMEBUFFER_H
 #define FRAMEBUFFER_H

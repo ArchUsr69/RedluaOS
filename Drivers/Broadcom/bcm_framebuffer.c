@@ -1,7 +1,7 @@
-#include <types.h>
-#include <utils.h>
-#include <mailbox.h>
-#include <framebuffer.h>
+#include <redlib.h>
+
+#include <Drivers/mailbox.h>
+#include <Kernel/framebuffer.h>
 
 /*
 -> All values must already be initialized;

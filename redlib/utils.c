@@ -1,5 +1,4 @@
-#include <types.h>
-#include <utils.h>
+#include <redlib.h>
 
 void memorySet(void *target, uint8 value, size_t length) {
     uint8 *pointer = target;

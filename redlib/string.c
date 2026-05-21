@@ -1,6 +1,4 @@
-#include <types.h>
-#include <string.h>
-#include <utils.h>
+#include <redlib.h>
 
 /*
 -> calculates the length of a string;

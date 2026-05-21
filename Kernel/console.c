@@ -1,8 +1,7 @@
-#include <types.h>
-#include <utils.h>
-#include <string.h>
-#include <framebuffer.h>
-#include <console.h>
+#include <redlib.h>
+
+#include <Kernel/console.h>
+#include <Kernel/framebuffer.h>
 
 #define CHARACTER_HEIGHT (16)
 #define CHARACTER_WIDTH (8)
@@ -13,24 +12,8 @@
 */
 
 static uint16 ConsolePalette[18] = {
-    0x0000,
-    0xDEFB,
-    0x2966,
-    0xDB6E,
-    0x7EED,
-    0xF7EC,
-    0x4D9E,
-    0xFB3D,
-    0x55B8,
-    0xFFFF,
-    0xAD97,
-    0xDB6E,
-    0x7EED,
-    0xF7EC,
-    0x4D9E,
-    0xFB3D,
-    0x55B8,
-    0xFFFF
+    0x0000, 0xDEFB, 0x2966, 0xDB6E, 0x7EED, 0xF7EC, 0x4D9E, 0xFB3D, 0x55B8,
+    0xFFFF, 0xAD97, 0xDB6E, 0x7EED, 0xF7EC, 0x4D9E, 0xFB3D, 0x55B8, 0xFFFF
 };
 
 /*

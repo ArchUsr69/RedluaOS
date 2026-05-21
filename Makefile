@@ -7,12 +7,12 @@ IMAGE = Image/kernel.bin
 ifdef ARCH
 
 # Source directories
-SOURCE_DIRS := Kernel Libraries Userspace $(DEVICE_DIR)
+SOURCE_DIRS := Kernel redlib Userspace $(DEVICE_DIR)
 
 # Finds source files
 C_SOURCE  := $(shell find $(SOURCE_DIRS) -name '*.c')
 ASM_SOURCE := $(BOOT_SECTION)
-HEADER_SOURCE := $(shell find $(SOURCE_DIRS) -type d -name Global)
+HEADER_SOURCE := Global redlib
 
 # Flags
 INCLUDE_FLAG := $(foreach dir,$(HEADER_SOURCE),-I$(dir))

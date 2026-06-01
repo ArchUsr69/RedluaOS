@@ -68,6 +68,6 @@ clean:
 
 # for me only; you can ignore this. I didn't like typing those commands all the time;
 cp:
-	sudo mount /dev/mmcblk0p1 /mnt/SDCard
-	sudo cp $(IMAGE) /mnt/SDCard
-	sudo umount /mnt/SDCard
+	sudo mount /dev/mmcblk0p1 /mnt
+	sudo cp $(IMAGE) /mnt
+	sudo umount /mnt

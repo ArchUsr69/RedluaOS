@@ -1,9 +1,9 @@
 #include <redlib.h>
 #include <Kernel/console.h>
 #include <Kernel/framebuffer.h>
+#include <Kernel/font.h>
 
-#define CHARACTER_HEIGHT (16)
-#define CHARACTER_WIDTH (8)
+struct console Console = {0};
 
 /*
 -> The default colour Palette RedluaOS will use;

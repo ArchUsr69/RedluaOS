@@ -3,15 +3,27 @@
 #include <Kernel/console.h>
 #include <Kernel/uart.h>
 
+void snake();
+
 char InputBuffer[40];
 size_t Index = 0;
 
-void newLine() {
+void new_line() {
     Index = 0;
     memorySet(InputBuffer, 0, sizeof(InputBuffer));
 
     Console.cursorX = 0;
     Console.cursorY++;
+}
+
+void parseCommand() {
+    if (memoryCompare(InputBuffer, "snake", 5) == 0) {
+        snake();
+    } else {
+        new_line();
+        consoleWrite(Foreground, Background, "This command doesn't exist. Check for typos");
+        return;
+    }
 }
 
 /*
@@ -32,14 +44,15 @@ char waitForInput() {
 
 // ------------------------------ //
 
-void RedConsole() {
+void redConsole() {
     consoleWrite(Red, Background, "$ ");
 
     while (true) {
         char input = waitForInput();
 
         if (input == '\r') {
-            newLine();
+            parseCommand();
+            new_line();
             consoleWrite(Red, Background, "$ ");
         }
 
@@ -56,3 +69,4 @@ void RedConsole() {
         }
     }
 }
+

@@ -2,6 +2,24 @@
 #include <Kernel/framebuffer.h>
 #include <Kernel/font.h>
 
+#ifdef Broadcom
+
+#include <Drivers/broadcom.h>
+
+struct framebuffer Framebuffer = {
+    .init = BCMframebufferInit,
+    .virtualHeight = 1080,
+    .virtualWidth = 1920,
+    .physicalHeight = 1080,
+    .physicalWidth = 1920,
+    .virtual_X_Offset = 0,
+    .virtual_Y_Offset = 0,
+    .depth = 16,
+    .pixelOrder = 1
+};
+
+#endif
+
 /*
 -> manages the rendering of Bitmaps;
 -> It assumes depth = 16, so make sure that it is, or else it won't work;

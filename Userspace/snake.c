@@ -4,13 +4,14 @@
 #include <Kernel/uart.h>
 
 /*
- -> Simple Snake Game for RedluaOS
- -> Uses the entire screen with white space characters
- -> Features:
- - Tick-based movement and input handling
- - Random apple spawning
- - Collision detection (walls and self)
- - Score tracking
+ * Simple Snake Game for RedluaOS
+ * Uses the entire screen with white space characters
+ * Features:
+ * - Tick-based movement and input handling
+ * - Random apple spawning
+ * - Collision detection (walls and self)
+ * - Score tracking
+ * - Optimized rendering (only updates changed tiles)
  */
 
 #define SNAKE_MAX_LENGTH 1024
@@ -36,15 +37,15 @@ typedef struct {
 
 static Snake snake;
 static Apple apple;
+static Apple lastApple;
 static size_t score = 0;
 static size_t tickCounter = 0;
-static const size_t TICK_RATE = 500; 
+static const size_t TICK_RATE = 5000;  // Cycles per movement
 
 /*
--> Simple pseudo-random number generator
-->Uses a basic LCG algorithm
+ * Simple pseudo-random number generator
+ * Uses a basic LCG algorithm
  */
-
 static uint32 seed = 12345;
 
 uint32 random() {
@@ -58,10 +59,10 @@ uint16 randomRange(uint16 min, uint16 max) {
 }
 
 /*
--> Initialize the snake game
+ * Initialize the snake game
  */
-
 void snakeInit() {
+    // Initialize snake in the middle
     snake.length = 3;
     snake.body[0].x = Console.columns / 2;
     snake.body[0].y = Console.rows / 2;
@@ -76,6 +77,7 @@ void snakeInit() {
     snake.nextDirY = 0;
 
     apple.spawned = 0;
+    lastApple.spawned = 0;
     score = 0;
     tickCounter = 0;
 
@@ -84,9 +86,33 @@ void snakeInit() {
 }
 
 /*
--> Spawn a new apple at a random location
+ * Draw borders once at game start
  */
+void drawBorders() {
+    for (uint16 x = 0; x < Console.columns; x++) {
+        consoleWriteCharXY(Background, White, ' ', x, 0);
+        consoleWriteCharXY(Background, White, ' ', x, Console.rows - 1);
+    }
+    for (uint16 y = 1; y < Console.rows - 1; y++) {
+        consoleWriteCharXY(Background, White, ' ', 0, y);
+        consoleWriteCharXY(Background, White, ' ', Console.columns - 1, y);
+    }
+}
 
+/*
+ * Clear the screen (fill with spaces)
+ */
+void clearScreen() {
+    for (uint16 y = 1; y < Console.rows - 1; y++) {
+        for (uint16 x = 1; x < Console.columns - 1; x++) {
+            consoleWriteCharXY(Background, Background, ' ', x, y);
+        }
+    }
+}
+
+/*
+ * Spawn a new apple at a random location
+ */
 void spawnApple() {
     Position newPos;
     char collision;
@@ -110,54 +136,24 @@ void spawnApple() {
 }
 
 /*
--> Draw the entire game state
+ * Draw only the apple (called when apple changes)
  */
-
-void drawGame() {
-    // Clear screen by drawing spaces
-    for (uint16 y = 0; y < Console.rows; y++) {
-        for (uint16 x = 0; x < Console.columns; x++) {
-            consoleWriteCharXY(Background, Background, ' ', x, y);
-        }
+void updateApple() {
+    // Erase old apple if it existed
+    if (lastApple.spawned) {
+        consoleWriteCharXY(Background, Background, ' ', lastApple.pos.x, lastApple.pos.y);
     }
 
-    // Draw borders
-    for (uint16 x = 0; x < Console.columns; x++) {
-        consoleWriteCharXY(White, Background, ' ', x, 0);
-        consoleWriteCharXY(White, Background, ' ', x, Console.rows - 1);
-    }
-    for (uint16 y = 0; y < Console.rows; y++) {
-        consoleWriteCharXY(White, Background, ' ', 0, y);
-        consoleWriteCharXY(White, Background, ' ', Console.columns - 1, y);
-    }
-
-    // Draw snake
-    for (size_t i = 0; i < snake.length; i++) {
-        consoleWriteCharXY(White, Background, ' ', snake.body[i].x, snake.body[i].y);
-    }
-
-    // Draw apple
+    // Draw new apple
     if (apple.spawned) {
-        consoleWriteCharXY(Green, Background, ' ', apple.pos.x, apple.pos.y);
-    }
-
-    // Draw score at top
-    if (Console.rows > 1 && Console.columns > 10) {
-        consoleWriteXY(White, Background, "Score: ", 2, 0);
-        // Simple score display (we'll just show a number)
-        char scoreStr[20];
-        scoreStr[0] = '0' + (score / 100) % 10;
-        scoreStr[1] = '0' + (score / 10) % 10;
-        scoreStr[2] = '0' + score % 10;
-        scoreStr[3] = 0;
-        consoleWriteXY(White, Background, scoreStr, 10, 0);
+        consoleWriteCharXY(Background, Green, ' ', apple.pos.x, apple.pos.y);
+        lastApple = apple;
     }
 }
 
 /*
--> Handle input and update direction
+ * Handle input and update direction
  */
-
 void handleInput() {
     char input = Uart.readByte();
 
@@ -188,9 +184,8 @@ void handleInput() {
 }
 
 /*
--> Move the snake
+ * Move the snake and handle collisions
  */
-
 void moveSnake() {
     // Update direction
     snake.dirX = snake.nextDirX;
@@ -204,51 +199,82 @@ void moveSnake() {
     // Check wall collision
     if (newHead.x <= 0 || newHead.x >= Console.columns - 1 ||
         newHead.y <= 0 || newHead.y >= Console.rows - 1) {
+        // Clear old snake before reset
+        for (size_t i = 0; i < snake.length; i++) {
+            consoleWriteCharXY(Background, Background, ' ', snake.body[i].x, snake.body[i].y);
+        }
         snakeInit();
-        drawGame();
+        clearScreen();
         return;
     }
 
     // Check self collision
     for (size_t i = 0; i < snake.length; i++) {
         if (snake.body[i].x == newHead.x && snake.body[i].y == newHead.y) {
+            // Clear old snake before reset
+            for (size_t j = 0; j < snake.length; j++) {
+                consoleWriteCharXY(Background, Background, ' ', snake.body[j].x, snake.body[j].y);
+            }
             snakeInit();
-            drawGame();
+            clearScreen();
             return;
         }
     }
 
+    // Get the old tail position before we move
+    Position oldTail;
+    oldTail.x = snake.body[snake.length - 1].x;
+    oldTail.y = snake.body[snake.length - 1].y;
+
     // Check apple collision
+    char appleEaten = 0;
     if (apple.spawned && apple.pos.x == newHead.x && apple.pos.y == newHead.y) {
         score += 10;
         apple.spawned = 0;
+        appleEaten = 1;
         // Grow snake (don't remove tail)
         if (snake.length < SNAKE_MAX_LENGTH) {
             snake.length++;
         }
-    } else {
-        // Remove tail (snake doesn't grow)
-        for (size_t i = snake.length - 1; i > 0; i--) {
-            snake.body[i] = snake.body[i - 1];
-        }
+    }
+
+    // Shift body segments (move from tail to head)
+    for (size_t i = snake.length - 1; i > 0; i--) {
+        snake.body[i] = snake.body[i - 1];
     }
 
     // Add new head
     snake.body[0] = newHead;
 
+    // Draw new head
+    consoleWriteCharXY(Background, White, ' ', snake.body[0].x, snake.body[0].y);
+
+    // Erase old tail (only if snake didn't eat apple)
+    if (!appleEaten) {
+        consoleWriteCharXY(Background, Background, ' ', oldTail.x, oldTail.y);
+    }
+
     // Spawn new apple if needed
     if (!apple.spawned) {
         spawnApple();
+        updateApple();
     }
 }
 
 /*
--> Main snake game function
+ * Main snake game function
  */
-
 void snake() {
     snakeInit();
-    drawGame();
+    clearScreen();
+    drawBorders();
+    spawnApple();
+    updateApple();
+
+    // Draw initial snake
+    for (size_t i = 0; i < snake.length; i++) {
+        consoleWriteCharXY(Background, White, ' ', snake.body[i].x, snake.body[i].y);
+    }
 
     while (true) {
         // Non-blocking input check every cycle
@@ -259,7 +285,6 @@ void snake() {
         if (tickCounter >= TICK_RATE) {
             tickCounter = 0;
             moveSnake();
-            drawGame();
         }
     }
 }

@@ -18,20 +18,18 @@ struct console Console = {0};
 
 void redConsole();
 
-void newLine() {
-    Console.cursorX = 0;
-    Console.cursorY++;
-}
+void new_line();
 
 void kernelMain(){
     Framebuffer.init();
     consoleInit();
 
     consoleWrite(Foreground, Background, "Welcome to RedluaOS");
-    newLine();
-    consoleWriteChar(Foreground, Background, "Resolution is 1080p");
-    newLine();
+    new_line();
+    consoleWrite(Foreground, Background, "Resolution is 1080p");
+    new_line();
     consoleWrite(Foreground, Background, "Source code: https://github.com/ArchUsr69/RedluaOS");
-    newLine();
+    new_line();
+    new_line();
     redConsole();
 }

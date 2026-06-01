@@ -5,4 +5,5 @@ kernel=kernel.bin
 kernel_address=0x8000
 
 disable_overscan=1
-enable_rp1_uart=1
+enable_rp1_uart=0x1
+pciex4_reset=0

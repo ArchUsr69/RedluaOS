@@ -37,9 +37,6 @@ void BCMuartInit() {
 
 // Non-blocking read
 char BCMuartReadByte_NI() {
-    if (*PL011_FR & RXFE) {
-        return 0;  // No data available
-    }
     return *PL011_DR & 0xFF;
 }
 

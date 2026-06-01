@@ -4,6 +4,51 @@
 
 #ifdef BCM2712
 
+// RP1 UART Base Addresses
+#define RP1_MMIO_BASE           0x1c00000000UL
+#define RP1_UART0_BASE          (RP1_MMIO_BASE + 0x30000)
+
+// PL011 Register Offsets
+#define PL011_DR                ((MMIO_32)(RP1_UART0_BASE + 0x00))
+#define PL011_FR                ((MMIO_32)(RP1_UART0_BASE + 0x18))
+#define PL011_IBRD              ((MMIO_32)(RP1_UART0_BASE + 0x24))
+#define PL011_FBRD              ((MMIO_32)(RP1_UART0_BASE + 0x28))
+#define PL011_LCRH              ((MMIO_32)(RP1_UART0_BASE + 0x2C))
+#define PL011_CR                ((MMIO_32)(RP1_UART0_BASE + 0x30))
+
+// Flag Register Bits
+#define RXFE                    0x10
+#define TXFF                    0x20 
+
+void BCMuartInit() {
+    // Disable UART
+    *PL011_CR = 0x0;
+    
+    // Set line control: 8-bit data, 1 stop bit, no parity
+    *PL011_LCRH = 0x60;
+    
+    // Set baud rate (for 115200 at standard clock)
+    *PL011_IBRD = 2;
+    *PL011_FBRD = 11;
+    
+    // Enable UART, RX, TX
+    *PL011_CR = 0x301;  // UARTEN | TXE | RXE
+}
+
+// Non-blocking read
+char BCMuartReadByte_NI() {
+    if (*PL011_FR & RXFE) {
+        return 0;  // No data available
+    }
+    return *PL011_DR & 0xFF;
+}
+
+// Blocking read
+char BCMuartReadByte() {
+    while (*PL011_FR & RXFE) { }  // Wait until data available
+    return *PL011_DR & 0xFF;
+}
+
 #else
 
 // These registers actually control more than mini UART

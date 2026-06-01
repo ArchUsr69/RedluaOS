@@ -18,5 +18,5 @@ void kernelMain(){
     newLine();
     consoleWrite(Foreground, Background, "Source code: https://github.com/ArchUsr69/RedluaOS");
     newLine();
-    RedConsole();
+    redConsole();
 }

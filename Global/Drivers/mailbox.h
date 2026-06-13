@@ -10,9 +10,9 @@
 -> END_TAG : kinda like a null-termination for the message buffer;
 */
 
-#define EMPTY 0
-#define REQUEST 0
-#define END_TAG 0
+#define EMPTY     0
+#define REQUEST   0
+#define END_TAG   0
 
 // --------------------- //
 
@@ -25,9 +25,9 @@
    Example: mailboxTagCreate(FRAMEBUFFER_PHYSICAL | SET, ...);
 */
 
-#define GET 0x000
-#define TEST 0x4000
-#define SET 0x8000
+#define GET     0x000
+#define TEST    0x4000
+#define SET     0x8000
 
 enum Tag {
 

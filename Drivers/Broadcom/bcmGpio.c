@@ -4,9 +4,9 @@
 
 #ifdef BCM2712
 
-#define GPIO_BASE (RP1_BASE + 0xD0000)
-#define GPIO_REGISTER_BASE ((MMIO_32)(GPIO_BASE + 0x0))
-#define TOTAL_PINS (28)
+#define GPIO_BASE              (RP1_BASE + 0xD0000)
+#define GPIO_REGISTER_BASE     ((MMIO_32)(GPIO_BASE + 0x0))
+#define TOTAL_PINS             (28)
 
 void BCMgpioSetFunction(uint16 pin, enum gpioFunctions function) {
     GPIO_REGISTER_BASE[(pin * 2) + 1] &= ~(0x1F);
@@ -15,24 +15,24 @@ void BCMgpioSetFunction(uint16 pin, enum gpioFunctions function) {
 
 #else
 
-#define GPIO_BASE (PERIPHERAL_BASE + 0x200000)
+#define GPIO_BASE             (PERIPHERAL_BASE + 0x200000)
 
 // GPIO Pin Function selector registers
-#define GPIOFSELECT_BASE ((MMIO_32)(GPIO_BASE + 0x00))
+#define GPIOFSELECT_BASE      ((MMIO_32)(GPIO_BASE + 0x00))
 
 // Output set Registers
-#define GPIOSET0 ((MMIO_32)(GPIO_BASE + 0x1C))
-#define GPIOSET1 ((MMIO_32)(GPIO_BASE + 0x20))
+#define GPIOSET0              ((MMIO_32)(GPIO_BASE + 0x1C))
+#define GPIOSET1              ((MMIO_32)(GPIO_BASE + 0x20))
 
 // Output clear Registers
-#define GPIOCLEAR0 ((MMIO_32)(GPIO_BASE + 0x28))
-#define GPIOCLEAR1 ((MMIO_32)(GPIO_BASE + 0x2C))
+#define GPIOCLEAR0            ((MMIO_32)(GPIO_BASE + 0x28))
+#define GPIOCLEAR1            ((MMIO_32)(GPIO_BASE + 0x2C))
 
 // Pull-up/down controller
-#define GPIO_PULL_CONTROL ((MMIO_32)(GPIO_BASE + 0x94))
-#define GPIO_PULL_CLOCK_0 ((MMIO_32)(GPIO_BASE + 98))
+#define GPIO_PULL_CONTROL     ((MMIO_32)(GPIO_BASE + 0x94))
+#define GPIO_PULL_CLOCK_0     ((MMIO_32)(GPIO_BASE + 98))
 
-#define TOTAL_PINS (53)
+#define TOTAL_PINS            (53)
 
 /*
 -> maps the standard gpio function numbers to the bcm2835 gpio function values;

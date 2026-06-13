@@ -3,33 +3,33 @@
 #include <Drivers/broadcom.h>
 
 #ifdef BCM2712
-    #define MAILBOX_BASE (PERIPHERAL_BASE + 0x13880)
+    #define MAILBOX_BASE     (PERIPHERAL_BASE + 0x13880)
 #else
-    #define MAILBOX_BASE (PERIPHERAL_BASE + 0xB880)
+    #define MAILBOX_BASE     (PERIPHERAL_BASE + 0xB880)
 #endif
 
 // Mailbox 0 Registers (VC -> ARM);
-#define MAILBOX_READ ((RO_MMIO_32)(MAILBOX_BASE + 0x00))
-#define MAILBOX_READ_PEEK ((RO_MMIO_32)(MAILBOX_BASE + 0x10))
-#define MAILBOX_READ_SENDER ((RO_MMIO_32)(MAILBOX_BASE + 0x14))
-#define MAILBOX_READ_STATUS ((RO_MMIO_32)(MAILBOX_BASE + 0x18))
-#define MAILBOX_READ_CONFIG ((RO_MMIO_32)(MAILBOX_BASE + 0x1C))
+#define MAILBOX_READ         ((RO_MMIO_32)(MAILBOX_BASE + 0x00))
+#define MAILBOX_READ_PEEK    ((RO_MMIO_32)(MAILBOX_BASE + 0x10))
+#define MAILBOX_READ_SENDER  ((RO_MMIO_32)(MAILBOX_BASE + 0x14))
+#define MAILBOX_READ_STATUS  ((RO_MMIO_32)(MAILBOX_BASE + 0x18))
+#define MAILBOX_READ_CONFIG  ((RO_MMIO_32)(MAILBOX_BASE + 0x1C))
 
 // Mailbox 1 Registers (ARM -> VC);
-#define MAILBOX_WRITE ((MMIO_32)(MAILBOX_BASE + 0x20))
-#define MAILBOX_WRITE_PEEK ((MMIO_32)(MAILBOX_BASE + 0x30))
+#define MAILBOX_WRITE        ((MMIO_32)(MAILBOX_BASE + 0x20))
+#define MAILBOX_WRITE_PEEK   ((MMIO_32)(MAILBOX_BASE + 0x30))
 #define MAILBOX_WRITE_SENDER ((MMIO_32)(MAILBOX_BASE + 0x34))
 #define MAILBOX_WRITE_STATUS ((MMIO_32)(MAILBOX_BASE + 0x38))
 #define MAILBOX_WRITE_CONFIG ((MMIO_32)(MAILBOX_BASE + 0x3C))
 
 // just some status flags;
-#define MAILBOX_FULL 0x80000000
-#define MAILBOX_EMPTY 0x40000000
-#define PARSE_SUCCESS 0x80000000
-#define PARSE_FAILURE 0x80000001
+#define MAILBOX_FULL          0x80000000
+#define MAILBOX_EMPTY         0x40000000
+#define PARSE_SUCCESS         0x80000000
+#define PARSE_FAILURE         0x80000001
 
 // this is the only channel in use;
-#define CHANNEL 8
+#define CHANNEL               8
 
 /*
 -> the message Buffer that will be sent;

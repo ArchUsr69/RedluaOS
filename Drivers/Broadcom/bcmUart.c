@@ -59,21 +59,21 @@ char BCMuartReadByte() {
 #else
 
 // These registers actually control more than mini UART
-#define AUX_BASE (PERIPHERAL_BASE + 0x215000)
-#define AUX_ENABLE ((MMIO_8)(AUX_BASE + 0x04))
+#define AUX_BASE               (PERIPHERAL_BASE + 0x215000)
+#define AUX_ENABLE             ((MMIO_8)(AUX_BASE + 0x04))
 
-#define AUX_UART_IO ((MMIO_8)(AUX_BASE + 0x40))
-#define AUX_UART_INTERUPT ((MMIO_8)(AUX_BASE + 0x44))
-#define AUX_UART_INTERUPT_ID ((MMIO_8)(AUX_BASE + 0x48))
-#define AUX_UART_LINE_CONTROL ((MMIO_8)(AUX_BASE + 0x4C))
+#define AUX_UART_IO            ((MMIO_8)(AUX_BASE + 0x40))
+#define AUX_UART_INTERUPT      ((MMIO_8)(AUX_BASE + 0x44))
+#define AUX_UART_INTERUPT_ID   ((MMIO_8)(AUX_BASE + 0x48))
+#define AUX_UART_LINE_CONTROL  ((MMIO_8)(AUX_BASE + 0x4C))
 #define AUX_UART_MODEM_CONTROL ((MMIO_8)(AUX_BASE + 0x50))
-#define AUX_UART_LINE_STATUS ((MMIO_8)(AUX_BASE + 0x54))
+#define AUX_UART_LINE_STATUS   ((MMIO_8)(AUX_BASE + 0x54))
 #define AUX_UART_EXTRA_CONTROL ((MMIO_8)(AUX_BASE + 0x60))
-#define AUX_UART_EXTRA_STATUS ((MMIO_32)(AUX_BASE + 0x64))
-#define AUX_UART_BAUD ((MMIO_16)(AUX_BASE + 0x68))
+#define AUX_UART_EXTRA_STATUS  ((MMIO_32)(AUX_BASE + 0x64))
+#define AUX_UART_BAUD          ((MMIO_16)(AUX_BASE + 0x68))
 
-#define TX_FIFO_FULL 0x20
-#define RX_FIFO_EMPTY HIGH
+#define TX_FIFO_FULL           0x20
+#define RX_FIFO_EMPTY          HIGH
 
 /*
 -> Right now this is dependand on the clock speed; it might work, maybe not.

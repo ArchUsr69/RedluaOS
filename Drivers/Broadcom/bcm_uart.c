@@ -23,21 +23,23 @@
 void BCMuartInit() {
     // Disable UART
     *PL011_CR = 0x0;
-    
+
     // Set line control: 8-bit data, 1 stop bit, no parity
     *PL011_LCRH = 0x60;
-    
+
     // Set baud rate (for 115200 at standard clock)
     *PL011_IBRD = 2;
     *PL011_FBRD = 11;
-    
+
     // Enable UART, RX, TX
     *PL011_CR = 0x301;  // UARTEN | TXE | RXE
 }
 
 // Non-blocking read
 char BCMuartReadByte_NI() {
-    return *PL011_DR & 0xFF;
+    if (*PL011_FR & RXFE) return 0;
+
+    return *PL011_DR;
 }
 
 // Blocking read

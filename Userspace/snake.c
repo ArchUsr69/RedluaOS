@@ -3,6 +3,9 @@
 #include <Kernel/console.h>
 #include <Kernel/uart.h>
 
+void redConsole();
+void new_line();
+
 /*
  * Simple Snake Game for RedluaOS
  * Uses the entire screen with white space characters
@@ -14,7 +17,7 @@
  * - Optimized rendering (only updates changed tiles)
  */
 
-#define SNAKE_MAX_LENGTH 1024
+#define SNAKE_MAX_LENGTH 256
 
 typedef struct {
     uint16 x;
@@ -40,7 +43,7 @@ static Apple apple;
 static Apple lastApple;
 static size_t score = 0;
 static size_t tickCounter = 0;
-static const size_t TICK_RATE = 5000;  // Cycles per movement
+static const size_t TICK_RATE = 10000;  // Cycles per movement
 
 /*
  * Simple pseudo-random number generator
@@ -103,8 +106,8 @@ void drawBorders() {
  * Clear the screen (fill with spaces)
  */
 void clearScreen() {
-    for (uint16 y = 1; y < Console.rows - 1; y++) {
-        for (uint16 x = 1; x < Console.columns - 1; x++) {
+    for (uint16 x = 1; x <= Console.columns - 1; x++) {
+        for (uint16 y = 1; y < Console.rows -1; y++) {
             consoleWriteCharXY(Background, Background, ' ', x, y);
         }
     }
@@ -138,6 +141,7 @@ void spawnApple() {
 /*
  * Draw only the apple (called when apple changes)
  */
+
 void updateApple() {
     // Erase old apple if it existed
     if (lastApple.spawned) {
@@ -179,6 +183,18 @@ void handleInput() {
                 snake.nextDirX = 1;
                 snake.nextDirY = 0;
             }
+        } else if (input == 'x' || input == 'X') {
+            for (uint16 y = 0; y < Console.rows; y++) {
+                for (uint16 x = 0; x < Console.columns; x++) {
+                    consoleWriteCharXY(Background, Background, ' ', x, y);
+                }
+            }
+
+            new_line();
+            Console.cursorX = 0;
+            Console.cursorY = 0;
+
+            redConsole();
         }
     }
 }
@@ -264,7 +280,7 @@ void moveSnake() {
 /*
  * Main snake game function
  */
-void snake() {
+void Game() {
     snakeInit();
     clearScreen();
     drawBorders();

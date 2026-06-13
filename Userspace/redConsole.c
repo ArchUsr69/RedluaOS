@@ -3,10 +3,11 @@
 #include <Kernel/console.h>
 #include <Kernel/uart.h>
 
-void snake();
+void Game();
+void clearScreen();
 
-char InputBuffer[40];
-size_t Index = 0;
+static char InputBuffer[80];
+static size_t Index = 0;
 
 void new_line() {
     Index = 0;
@@ -18,7 +19,10 @@ void new_line() {
 
 void parseCommand() {
     if (memoryCompare(InputBuffer, "snake", 5) == 0) {
-        snake();
+        Game();
+    } else if (InputBuffer[0] == ' ') {
+        new_line();
+        return;
     } else {
         new_line();
         consoleWrite(Foreground, Background, "This command doesn't exist. Check for typos");
@@ -56,6 +60,12 @@ void redConsole() {
     consoleWrite(Red, Background, "$ ");
 
     while (true) {
+
+        if (Console.cursorY >= Console.rows) {
+            clearScreen();
+            redConsole();
+        }
+
         char input = waitForInput();
 
         if (input == '\r') {
@@ -70,11 +80,10 @@ void redConsole() {
             Console.cursorX--;
             consoleWriteCharXY(Background, Background, ' ', Console.cursorX, Console.cursorY);
 
-        } else if ((input > 32 || input == ' ') && Index < sizeof(InputBuffer)) {
+        } else if ((input > 32 || input == ' ') && Index < 20) {
 
             consoleWriteChar(Foreground, Background, input);
             InputBuffer[Index++] = input;
         }
     }
 }
-

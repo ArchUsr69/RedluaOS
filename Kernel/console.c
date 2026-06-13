@@ -3,6 +3,8 @@
 #include <Kernel/framebuffer.h>
 #include <Kernel/font.h>
 
+struct console Console = {0};
+
 /*
 -> The default colour Palette RedluaOS will use;
 -> Later on, i will make it possible to change the colours via user input;

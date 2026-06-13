@@ -3,8 +3,8 @@
 #include <Kernel/console.h>
 #include <Kernel/uart.h>
 
-void Game();
-void clearScreen();
+void snake();
+void clear();
 
 static char InputBuffer[80];
 static size_t Index = 0;
@@ -19,9 +19,10 @@ void new_line() {
 
 void parseCommand() {
     if (memoryCompare(InputBuffer, "snake", 5) == 0) {
-        Game();
-    } else if (InputBuffer[0] == ' ') {
-        new_line();
+        snake();
+    } else if (memoryCompare(InputBuffer, "clear", 5) == 0) {
+        clear();
+    } else if (InputBuffer[0] == 0) {
         return;
     } else {
         new_line();
@@ -58,11 +59,12 @@ char waitForInput() {
 
 void redConsole() {
     consoleWrite(Red, Background, "$ ");
+    if (Console.cursorY == Console.rows) clear();
 
     while (true) {
 
         if (Console.cursorY >= Console.rows) {
-            clearScreen();
+            clear();
             redConsole();
         }
 

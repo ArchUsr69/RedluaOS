@@ -2,6 +2,18 @@
 #include <Drivers/mailbox.h>
 #include <Kernel/framebuffer.h>
 
+struct framebuffer Framebuffer = {
+    .init = BCMframebufferInit,
+    .virtualHeight = 1080,
+    .virtualWidth = 1920,
+    .physicalHeight = 1080,
+    .physicalWidth = 1920,
+    .virtual_X_Offset = 0,
+    .virtual_Y_Offset = 0,
+    .depth = 16,
+    .pixelOrder = 1
+};
+
 /*
 -> All values must already be initialized;
 -> look down to see what values must be initialised;

@@ -5,6 +5,7 @@
 
 void redConsole();
 void new_line();
+void clear();
 
 /*
  * Simple Snake Game for RedluaOS
@@ -17,7 +18,7 @@ void new_line();
  * - Optimized rendering (only updates changed tiles)
  */
 
-#define SNAKE_MAX_LENGTH 256
+#define SNAKE_MAX_LENGTH 1024
 
 typedef struct {
     uint16 x;
@@ -31,14 +32,14 @@ typedef struct {
     int dirY;
     int nextDirX;
     int nextDirY;
-} Snake;
+} MainSnake;
 
 typedef struct {
     Position pos;
     char spawned;
 } Apple;
 
-static Snake snake;
+static MainSnake mainSnake;
 static Apple apple;
 static Apple lastApple;
 static size_t score = 0;
@@ -66,18 +67,18 @@ uint16 randomRange(uint16 min, uint16 max) {
  */
 void snakeInit() {
     // Initialize snake in the middle
-    snake.length = 3;
-    snake.body[0].x = Console.columns / 2;
-    snake.body[0].y = Console.rows / 2;
-    snake.body[1].x = snake.body[0].x - 1;
-    snake.body[1].y = snake.body[0].y;
-    snake.body[2].x = snake.body[0].x - 2;
-    snake.body[2].y = snake.body[0].y;
+    mainSnake.length = 3;
+    mainSnake.body[0].x = Console.columns / 2;
+    mainSnake.body[0].y = Console.rows / 2;
+    mainSnake.body[1].x = mainSnake.body[0].x - 1;
+    mainSnake.body[1].y = mainSnake.body[0].y;
+    mainSnake.body[2].x = mainSnake.body[0].x - 2;
+    mainSnake.body[2].y = mainSnake.body[0].y;
 
-    snake.dirX = 1;
-    snake.dirY = 0;
-    snake.nextDirX = 1;
-    snake.nextDirY = 0;
+    mainSnake.dirX = 1;
+    mainSnake.dirY = 0;
+    mainSnake.nextDirX = 1;
+    mainSnake.nextDirY = 0;
 
     apple.spawned = 0;
     lastApple.spawned = 0;
@@ -85,7 +86,7 @@ void snakeInit() {
     tickCounter = 0;
 
     // Seed the random generator with a somewhat unique value
-    seed = (uint32)&snake;
+    seed = (uint32)&mainSnake;
 }
 
 /*
@@ -126,8 +127,8 @@ void spawnApple() {
         newPos.y = randomRange(1, Console.rows - 1);
 
         // Check if apple spawns on snake
-        for (size_t i = 0; i < snake.length; i++) {
-            if (snake.body[i].x == newPos.x && snake.body[i].y == newPos.y) {
+        for (size_t i = 0; i < mainSnake.length; i++) {
+            if (mainSnake.body[i].x == newPos.x && mainSnake.body[i].y == newPos.y) {
                 collision = 1;
                 break;
             }
@@ -164,38 +165,26 @@ void handleInput() {
     if (input != 0) {
         // Arrow keys or WASD controls
         if (input == 'w' || input == 'W') {
-            if (snake.dirY != 1) {
-                snake.nextDirX = 0;
-                snake.nextDirY = -1;
+            if (mainSnake.dirY != 1) {
+                mainSnake.nextDirX = 0;
+                mainSnake.nextDirY = -1;
             }
         } else if (input == 's' || input == 'S') {
-            if (snake.dirY != -1) {
-                snake.nextDirX = 0;
-                snake.nextDirY = 1;
+            if (mainSnake.dirY != -1) {
+                mainSnake.nextDirX = 0;
+                mainSnake.nextDirY = 1;
             }
         } else if (input == 'a' || input == 'A') {
-            if (snake.dirX != 1) {
-                snake.nextDirX = -1;
-                snake.nextDirY = 0;
+            if (mainSnake.dirX != 1) {
+                mainSnake.nextDirX = -1;
+                mainSnake.nextDirY = 0;
             }
         } else if (input == 'd' || input == 'D') {
-            if (snake.dirX != -1) {
-                snake.nextDirX = 1;
-                snake.nextDirY = 0;
+            if (mainSnake.dirX != -1) {
+                mainSnake.nextDirX = 1;
+                mainSnake.nextDirY = 0;
             }
-        } else if (input == 'x' || input == 'X') {
-            for (uint16 y = 0; y < Console.rows; y++) {
-                for (uint16 x = 0; x < Console.columns; x++) {
-                    consoleWriteCharXY(Background, Background, ' ', x, y);
-                }
-            }
-
-            new_line();
-            Console.cursorX = 0;
-            Console.cursorY = 0;
-
-            redConsole();
-        }
+        } else if (input == 'x' || input == 'X') clear();
     }
 }
 
@@ -204,20 +193,20 @@ void handleInput() {
  */
 void moveSnake() {
     // Update direction
-    snake.dirX = snake.nextDirX;
-    snake.dirY = snake.nextDirY;
+    mainSnake.dirX = mainSnake.nextDirX;
+    mainSnake.dirY = mainSnake.nextDirY;
 
     // Calculate new head position
     Position newHead;
-    newHead.x = snake.body[0].x + snake.dirX;
-    newHead.y = snake.body[0].y + snake.dirY;
+    newHead.x = mainSnake.body[0].x + mainSnake.dirX;
+    newHead.y = mainSnake.body[0].y + mainSnake.dirY;
 
     // Check wall collision
     if (newHead.x <= 0 || newHead.x >= Console.columns - 1 ||
         newHead.y <= 0 || newHead.y >= Console.rows - 1) {
         // Clear old snake before reset
-        for (size_t i = 0; i < snake.length; i++) {
-            consoleWriteCharXY(Background, Background, ' ', snake.body[i].x, snake.body[i].y);
+        for (size_t i = 0; i < mainSnake.length; i++) {
+            consoleWriteCharXY(Background, Background, ' ', mainSnake.body[i].x, mainSnake.body[i].y);
         }
         snakeInit();
         clearScreen();
@@ -225,11 +214,11 @@ void moveSnake() {
     }
 
     // Check self collision
-    for (size_t i = 0; i < snake.length; i++) {
-        if (snake.body[i].x == newHead.x && snake.body[i].y == newHead.y) {
+    for (size_t i = 0; i < mainSnake.length; i++) {
+        if (mainSnake.body[i].x == newHead.x && mainSnake.body[i].y == newHead.y) {
             // Clear old snake before reset
-            for (size_t j = 0; j < snake.length; j++) {
-                consoleWriteCharXY(Background, Background, ' ', snake.body[j].x, snake.body[j].y);
+            for (size_t j = 0; j < mainSnake.length; j++) {
+                consoleWriteCharXY(Background, Background, ' ', mainSnake.body[j].x, mainSnake.body[j].y);
             }
             snakeInit();
             clearScreen();
@@ -239,8 +228,8 @@ void moveSnake() {
 
     // Get the old tail position before we move
     Position oldTail;
-    oldTail.x = snake.body[snake.length - 1].x;
-    oldTail.y = snake.body[snake.length - 1].y;
+    oldTail.x = mainSnake.body[mainSnake.length - 1].x;
+    oldTail.y = mainSnake.body[mainSnake.length - 1].y;
 
     // Check apple collision
     char appleEaten = 0;
@@ -249,21 +238,21 @@ void moveSnake() {
         apple.spawned = 0;
         appleEaten = 1;
         // Grow snake (don't remove tail)
-        if (snake.length < SNAKE_MAX_LENGTH) {
-            snake.length++;
+        if (mainSnake.length < SNAKE_MAX_LENGTH) {
+            mainSnake.length++;
         }
     }
 
     // Shift body segments (move from tail to head)
-    for (size_t i = snake.length - 1; i > 0; i--) {
-        snake.body[i] = snake.body[i - 1];
+    for (size_t i = mainSnake.length - 1; i > 0; i--) {
+        mainSnake.body[i] = mainSnake.body[i - 1];
     }
 
     // Add new head
-    snake.body[0] = newHead;
+    mainSnake.body[0] = newHead;
 
     // Draw new head
-    consoleWriteCharXY(Background, White, ' ', snake.body[0].x, snake.body[0].y);
+    consoleWriteCharXY(Background, White, ' ', mainSnake.body[0].x, mainSnake.body[0].y);
 
     // Erase old tail (only if snake didn't eat apple)
     if (!appleEaten) {
@@ -280,7 +269,8 @@ void moveSnake() {
 /*
  * Main snake game function
  */
-void Game() {
+
+void snake() {
     snakeInit();
     clearScreen();
     drawBorders();
@@ -288,8 +278,8 @@ void Game() {
     updateApple();
 
     // Draw initial snake
-    for (size_t i = 0; i < snake.length; i++) {
-        consoleWriteCharXY(Background, White, ' ', snake.body[i].x, snake.body[i].y);
+    for (size_t i = 0; i < mainSnake.length; i++) {
+        consoleWriteCharXY(Background, White, ' ', mainSnake.body[i].x, mainSnake.body[i].y);
     }
 
     while (true) {

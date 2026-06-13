@@ -1,6 +1,14 @@
 #include <redlib.h>
 #include <Kernel/gpio.h>
+#include <Kernel/uart.h>
 #include <Drivers/broadcom.h>
+
+
+struct uart Uart = {
+    .init = BCMuartInit,
+    .readByte = BCMuartReadByte_NI,
+    .baudrate = 115200
+};
 
 #ifdef BCM2712
 

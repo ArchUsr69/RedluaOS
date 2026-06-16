@@ -5,6 +5,7 @@
 
 void snake();
 void clear();
+void test();
 
 static char InputBuffer[80];
 static size_t Index = 0;
@@ -18,10 +19,12 @@ void new_line() {
 }
 
 void parseCommand() {
-    if (memoryCompare(InputBuffer, "snake", 5) == 0) {
+    if ((memoryCompare(InputBuffer, "snake", 5) == 0) && InputBuffer[5] == 0) {
         snake();
-    } else if (memoryCompare(InputBuffer, "clear", 5) == 0) {
+    } else if ((memoryCompare(InputBuffer, "clear", 5) == 0) && InputBuffer[5] == 0) {
         clear();
+    } else if ((memoryCompare(InputBuffer, "test", 4) == 0) && InputBuffer[4] == 0) {
+        test();
     } else if (InputBuffer[0] == 0) {
         return;
     } else {

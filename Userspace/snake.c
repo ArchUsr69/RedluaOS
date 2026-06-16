@@ -146,12 +146,12 @@ void spawnApple() {
 void updateApple() {
     // Erase old apple if it existed
     if (lastApple.spawned) {
-        consoleWriteCharXY(Background, Background, ' ', lastApple.pos.x, lastApple.pos.y);
+        consoleWriteCharXY(Background, White, ' ', lastApple.pos.x, lastApple.pos.y);
     }
 
     // Draw new apple
     if (apple.spawned) {
-        consoleWriteCharXY(Background, Green, ' ', apple.pos.x, apple.pos.y);
+        consoleWriteCharXY(Background, Red, ' ', apple.pos.x, apple.pos.y);
         lastApple = apple;
     }
 }

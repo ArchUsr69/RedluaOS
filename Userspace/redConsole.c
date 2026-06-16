@@ -38,7 +38,7 @@ void parseCommand() {
 */
 
 char waitForInput() {
-    for (size_t cycles = 15000; cycles > 0; cycles--) {
+    for (size_t cycles = 10000; cycles > 0; cycles--) {
         char input = Uart.readByte();
         if (input != 0){
             consoleWriteCharXY(Background, Background, '_', Console.cursorX, Console.cursorY);
@@ -48,7 +48,7 @@ char waitForInput() {
         consoleWriteCharXY(Foreground, Background, '_', Console.cursorX, Console.cursorY);
     }
 
-    for (size_t cycles = 15000; cycles > 0; cycles--) {
+    for (size_t cycles = 10000; cycles > 0; cycles--) {
         char input = Uart.readByte();
         if (input != 0) return input;
         consoleWriteCharXY(Background, Background, '_', Console.cursorX, Console.cursorY);
@@ -63,7 +63,7 @@ void redConsole() {
 
     while (true) {
 
-        if (Console.cursorY >= Console.rows) {
+        if (Console.cursorY > Console.rows) {
             clear();
             redConsole();
         }

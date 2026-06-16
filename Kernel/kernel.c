@@ -2,6 +2,8 @@
 #include <Kernel/console.h>
 #include <Drivers/broadcom.h>
 
+struct console Console = {0};
+
 void redConsole();
 void new_line();
 
